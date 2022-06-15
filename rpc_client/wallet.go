@@ -1,9 +1,10 @@
-package rpc
+package rpc_client
 
 import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/deroproject/derohe/rpc"
 	"github.com/ybbus/jsonrpc/v2"
 )
 
@@ -52,13 +53,19 @@ func (c *Wallet) Echo() (string, error) {
 }
 
 func (c *Wallet) GetAddress() (string, error) {
-	var result *RPCGetAddressResult
+	var result *rpc.GetAddress_Result
 	err := c.client.CallFor(&result, "GetAddress")
 	return result.Address, err
 }
 
-func (c *Wallet) GetBalance() (*RPCGetBalanceResult, error) {
-	var result *RPCGetBalanceResult
+func (c *Wallet) GetBalance() (*rpc.GetBalance_Result, error) {
+	var result *rpc.GetBalance_Result
 	err := c.client.CallFor(&result, "GetBalance")
+	return result, err
+}
+
+func (c *Wallet) Transfer(params *rpc.Transfer_Params) (*rpc.Transfer_Result, error) {
+	var result *rpc.Transfer_Result
+	err := c.client.CallFor(&result, "Transfer", params)
 	return result, err
 }

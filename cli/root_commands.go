@@ -310,7 +310,7 @@ func CommandCreateWallet() *cli.Command {
 				goto setWalletName
 			}
 
-			folder := fmt.Sprintf("%s/%s", config.WALLET_FOLDER_PATH, Context.config.Env)
+			folder := fmt.Sprintf("%s/%s", config.WALLET_FOLDER_PATH, Context.Config.Env)
 			utils.CreateFoldersIfNotExists(folder)
 			filePath := fmt.Sprintf("%s/%s.wallet", folder, walletFileName)
 

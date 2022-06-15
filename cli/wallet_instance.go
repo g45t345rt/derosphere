@@ -8,9 +8,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/deroproject/derohe/rpc"
 	deroWallet "github.com/deroproject/derohe/walletapi"
 	"github.com/g45t345rt/derosphere/config"
-	"github.com/g45t345rt/derosphere/rpc"
+	"github.com/g45t345rt/derosphere/rpc_client"
+
+	//"github.com/g45t345rt/derosphere/rpc"
 	"github.com/tidwall/buntdb"
 )
 
@@ -19,13 +22,13 @@ type WalletInstance struct {
 	DaemonAddress string
 	WalletAddress string
 	WalletPath    string
-	Daemon        *rpc.Daemon
-	WalletRPC     *rpc.Wallet
+	Daemon        *rpc_client.Daemon
+	WalletRPC     *rpc_client.Wallet
 	WalletDisk    *deroWallet.Wallet_Disk
 }
 
 func (w *WalletInstance) SetupDaemon() error {
-	w.Daemon = new(rpc.Daemon)
+	w.Daemon = new(rpc_client.Daemon)
 	w.Daemon.SetClient(w.DaemonAddress)
 
 	_, err := w.Daemon.GetInfo()
@@ -45,7 +48,7 @@ func (w *WalletInstance) Open() error {
 	fmt.Println("Daemon rpc connection was successful.")
 
 	if w.WalletAddress != "" {
-		walletRPC := new(rpc.Wallet)
+		walletRPC := new(rpc_client.Wallet)
 		walletRPC.SetClient(w.WalletAddress)
 
 		count := 0
@@ -207,9 +210,77 @@ func (w *WalletInstance) GetBalance() uint64 {
 			log.Fatal(err)
 		}
 		return result.Balance
+	} else if w.WalletDisk != nil {
+		m_balance, _ := w.WalletDisk.Get_Balance()
+		return m_balance
 	}
 
 	return 0
+}
+
+func (w *WalletInstance) Transfer(params *rpc.Transfer_Params) (string, error) {
+	if w.WalletRPC != nil {
+		result, err := w.WalletRPC.Transfer(params)
+		if err != nil {
+			return "", err
+		}
+
+		return result.TXID, nil
+	} else if w.WalletDisk != nil {
+		tx, err := w.WalletDisk.TransferPayload0(params.Transfers, params.Ringsize, false, params.SC_RPC, params.Fees, false)
+		if err != nil {
+			return "", err
+		}
+
+		err = w.WalletDisk.SendTransaction(tx)
+		if err != nil {
+			return "", err
+		}
+
+		return tx.GetHash().String(), nil
+	}
+
+	return "", nil
+}
+
+func (w *WalletInstance) EstimateFeesAndTransfer(scid string, ringsize uint64, args rpc.Arguments) (string, error) {
+	signer := w.GetAddress()
+
+	arg_sc := rpc.Argument{Name: "SC_ID", DataType: "H", Value: scid}
+	arg_sc_action := rpc.Argument{Name: "SC_ACTION", DataType: "U", Value: 0}
+
+	estimate, err := w.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
+		Ringsize: ringsize,
+		Signer:   signer,
+		SC_RPC:   append(args, arg_sc, arg_sc_action),
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	fees := estimate.GasStorage
+	yes, err := PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
+	if HandlePromptErr(err) {
+		return "", err
+	}
+
+	if !yes {
+		return "", errors.New("transaction cancelled")
+	}
+
+	txid, err := w.Transfer(&rpc.Transfer_Params{
+		SC_ID:    scid,
+		Ringsize: ringsize,
+		Fees:     fees,
+		SC_RPC:   args,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return txid, nil
 }
 
 func LoadWalletInstances() {

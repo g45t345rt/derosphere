@@ -31,7 +31,7 @@ func CommandWalletInfo() *cli.Command {
 		Aliases: []string{"i"},
 		Usage:   "Wallet generic information",
 		Action: func(ctx *cli.Context) error {
-			w := Context.currentWalletInstance
+			w := Context.CurrentWalletInstance
 			fmt.Println("Name: ", w.Name)
 			fmt.Println("Daemon: ", w.DaemonAddress)
 			fmt.Println("Wallet: ", w.GetConnectionAddress())
@@ -136,7 +136,7 @@ func CommandWalletAddress() *cli.Command {
 		Aliases: []string{"a"},
 		Usage:   "Wallet address",
 		Action: func(ctx *cli.Context) error {
-			fmt.Println(Context.currentWalletInstance.GetAddress())
+			fmt.Println(Context.CurrentWalletInstance.GetAddress())
 			return nil
 		},
 	}
@@ -148,7 +148,7 @@ func CommandWalletBalance() *cli.Command {
 		Aliases: []string{"b"},
 		Usage:   "Wallet balance",
 		Action: func(ctx *cli.Context) error {
-			balance := Context.currentWalletInstance.GetBalance()
+			balance := Context.CurrentWalletInstance.GetBalance()
 			fmt.Printf("%s\n", globals.FormatMoney(balance))
 			return nil
 		},

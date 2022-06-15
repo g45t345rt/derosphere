@@ -1,4 +1,4 @@
-package rpc
+package rpc_client
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"encoding/hex"
+
+	"github.com/deroproject/derohe/rpc"
 )
 
 type Commit struct {
@@ -16,7 +18,7 @@ type Commit struct {
 }
 
 func (d *Daemon) GetSCCommitCount(scid string) uint64 {
-	result, err := d.GetSC(RPCGetSCParams{
+	result, err := d.GetSC(&rpc.GetSC_Params{
 		SCID:       scid,
 		Variables:  false,
 		Code:       false,
@@ -41,7 +43,7 @@ func (d *Daemon) GetSCCommits(scid string, start uint64, end uint64) []Commit {
 		commitKeys = append(commitKeys, fmt.Sprintf("commit_%d", i))
 	}
 
-	result, err := d.GetSC(RPCGetSCParams{
+	result, err := d.GetSC(&rpc.GetSC_Params{
 		SCID:       scid,
 		Variables:  false,
 		Code:       false,

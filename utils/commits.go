@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/g45t345rt/derosphere/rpc"
+	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/tidwall/buntdb"
 )
 
@@ -30,7 +30,7 @@ func GetCommitAt(db *buntdb.DB) (uint64, error) {
 	return start, nil
 }
 
-func SyncCommits(db *buntdb.DB, daemon *rpc.Daemon, scid string) error {
+func SyncCommits(db *buntdb.DB, daemon *rpc_client.Daemon, scid string) error {
 	commitCount := daemon.GetSCCommitCount(scid)
 	commitAt, err := GetCommitAt(db)
 	if err != nil {
@@ -60,7 +60,7 @@ func SyncCommits(db *buntdb.DB, daemon *rpc.Daemon, scid string) error {
 
 	var i uint64
 	for i = commitAt; i < commitCount; i += chunk {
-		var commits []rpc.Commit
+		var commits []rpc_client.Commit
 		end := i + chunk
 		if end > commitCount {
 			commitAt = commitCount

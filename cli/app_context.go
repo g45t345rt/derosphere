@@ -22,10 +22,10 @@ type Config struct {
 }
 
 type AppContext struct {
-	config                Config
+	Config                Config
 	rootApp               *cli.App
 	currentDApp           *dapps.DApp
-	currentWalletInstance *WalletInstance
+	CurrentWalletInstance *WalletInstance
 	walletInstances       []*WalletInstance
 	readlineInstance      *readline.Instance
 }
@@ -90,21 +90,21 @@ out:
 }
 
 func (app *AppContext) SetEnv(env string) {
-	app.config.Env = env
+	app.Config.Env = env
 	//app.RefreshPrompt()
 	app.SaveConfig()
 }
 
 func (app *AppContext) SetCurrentWalletInstance(wallet *WalletInstance) {
-	if app.currentWalletInstance != nil {
-		app.currentWalletInstance.Close()
+	if app.CurrentWalletInstance != nil {
+		app.CurrentWalletInstance.Close()
 	}
 
 	if wallet == nil {
 		app.SetRootApp()
 	}
 
-	app.currentWalletInstance = wallet
+	app.CurrentWalletInstance = wallet
 	//app.RefreshPrompt()
 }
 
@@ -138,14 +138,14 @@ func (app *AppContext) RemoveWalletInstance(index int) {
 }
 
 func (app *AppContext) RefreshPrompt() {
-	prompt := fmt.Sprintf("[%s] > ", app.config.Env)
+	prompt := fmt.Sprintf("[%s] > ", app.Config.Env)
 
-	if app.currentWalletInstance != nil {
-		prompt = fmt.Sprintf("[%s] > %s > ", app.config.Env, app.currentWalletInstance.Name)
+	if app.CurrentWalletInstance != nil {
+		prompt = fmt.Sprintf("[%s] > %s > ", app.Config.Env, app.CurrentWalletInstance.Name)
 	}
 
 	if app.currentDApp != nil {
-		prompt = fmt.Sprintf("[%s] > %s > %s > ", app.config.Env, app.currentWalletInstance.Name, app.currentDApp.Name)
+		prompt = fmt.Sprintf("[%s] > %s > %s > ", app.Config.Env, app.CurrentWalletInstance.Name, app.currentDApp.Name)
 	}
 
 	app.readlineInstance.SetPrompt(prompt)
@@ -154,18 +154,18 @@ func (app *AppContext) RefreshPrompt() {
 func (app *AppContext) LoadConfig() {
 	content, err := ioutil.ReadFile("./data/config.json")
 	if err != nil {
-		app.config.Env = "mainnet"
+		app.Config.Env = "mainnet"
 		return
 	}
 
-	err = json.Unmarshal(content, &app.config)
+	err = json.Unmarshal(content, &app.Config)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func (app *AppContext) SaveConfig() {
-	configString, err := json.Marshal(app.config)
+	configString, err := json.Marshal(app.Config)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,6 +1,7 @@
 package dapps
 
 import (
+	"github.com/g45t345rt/derosphere/dapps/dapp_username"
 	"github.com/g45t345rt/derosphere/dapps/lotto"
 	"github.com/urfave/cli/v2"
 )
@@ -34,7 +35,7 @@ func GetDApps() []DApp {
 			Name:        "dapp-username",
 			Description: "Register a single username used by other dApps.",
 			Version:     "0.0.1",
-			Commands:    []*cli.Command{},
+			Commands:    dapp_username.Commands(),
 		},
 		{
 			Name:        "lotto",
