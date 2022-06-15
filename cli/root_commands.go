@@ -141,6 +141,7 @@ func CommandAttachWallet() *cli.Command {
 			}
 
 			walletInstance = new(app.WalletInstance)
+			walletInstance.Env = app.Context.Config.Env
 
 			if name == "" {
 				fmt.Println("Name cannot be empty.")

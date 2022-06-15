@@ -1,4 +1,4 @@
-package dapp_username
+package username
 
 import (
 	"fmt"
@@ -7,6 +7,10 @@ import (
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/urfave/cli/v2"
 )
+
+var SCID_MAINNET = ""
+var SCID_TESTNET = ""
+var SCID_SIMULATOR = ""
 
 func CommandRegister() *cli.Command {
 	return &cli.Command{
@@ -102,7 +106,7 @@ func CommandUnRegister() *cli.Command {
 
 func App() *cli.App {
 	return &cli.App{
-		Name:        "dapp-username",
+		Name:        "username",
 		Description: "Register a single username used by other dApps.",
 		Version:     "0.0.1",
 		Commands: []*cli.Command{

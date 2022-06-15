@@ -17,6 +17,7 @@ import (
 )
 
 type WalletInstance struct {
+	Env           string
 	Name          string
 	DaemonAddress string
 	WalletAddress string
@@ -154,6 +155,7 @@ func (w *WalletInstance) Del() {
 
 func (w *WalletInstance) Marshal() ([]byte, error) {
 	instance := map[string]interface{}{
+		"env":    w.Env,
 		"name":   w.Name,
 		"daemon": w.DaemonAddress,
 	}
@@ -174,6 +176,7 @@ func (w *WalletInstance) Unmarshal(data string) {
 		log.Fatal(err)
 	}
 
+	w.Env = fmt.Sprint(result["env"])
 	w.Name = fmt.Sprint(result["name"])
 	w.DaemonAddress = fmt.Sprint(result["daemon"])
 

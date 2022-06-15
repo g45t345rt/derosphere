@@ -89,6 +89,7 @@ out:
 func (app *AppContext) SetEnv(env string) {
 	app.Config.Env = env
 	app.SaveConfig()
+	app.LoadWalletInstances()
 }
 
 func (app *AppContext) GetWalletInstance(name string) (index int, wallet *WalletInstance) {
@@ -167,7 +168,10 @@ func (app *AppContext) LoadWalletInstances() {
 		tx.Ascend("", func(key, value string) bool {
 			walletInstance := new(WalletInstance)
 			walletInstance.Unmarshal(value)
-			app.walletInstances = append(app.walletInstances, walletInstance)
+			if walletInstance.Env == app.Config.Env {
+				app.walletInstances = append(app.walletInstances, walletInstance)
+			}
+
 			return true
 		})
 
