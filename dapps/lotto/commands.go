@@ -21,3 +21,14 @@ func CommandDraws() *cli.Command {
 func Commands() []*cli.Command {
 	return []*cli.Command{CommandDraws()}
 }
+
+func App() *cli.App {
+	return &cli.App{
+		Name:        "lotto",
+		Description: "Official custom lottery pool. Create your own type of lottery.",
+		Version:     "0.0.1",
+		Authors: []*cli.Author{
+			{Name: "g45t345rt"},
+		},
+	}
+}

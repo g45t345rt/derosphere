@@ -6,20 +6,22 @@ import (
 	"github.com/blang/semver/v4"
 	"github.com/deroproject/derohe/globals"
 	"github.com/fatih/color"
+	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/dapps"
+	"github.com/g45t345rt/derosphere/utils"
 	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 )
 
-func displayAppsTable() {
+func displayDAppsTable() {
 	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
-	tbl := table.New("", "Name", "Description", "Version")
+	tbl := table.New("", "Name", "Description", "Version", "Authors")
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-	for index, dapp := range dapps.GetDApps() {
-		tbl.AddRow(index, dapp.Name, dapp.Description, dapp.Version)
+	for index, dapp := range dapps.List() {
+		tbl.AddRow(index, dapp.Name, dapp.Description, dapp.Version, utils.AppAuthors(dapp))
 	}
 
 	tbl.Print()
@@ -31,7 +33,7 @@ func CommandWalletInfo() *cli.Command {
 		Aliases: []string{"i"},
 		Usage:   "Wallet generic information",
 		Action: func(ctx *cli.Context) error {
-			w := Context.CurrentWalletInstance
+			w := app.Context.WalletInstance
 			fmt.Println("Name: ", w.Name)
 			fmt.Println("Daemon: ", w.DaemonAddress)
 			fmt.Println("Wallet: ", w.GetConnectionAddress())
@@ -54,7 +56,7 @@ func CommandListDApps() *cli.Command {
 		Aliases: []string{"l"},
 		Usage:   "Show a list of available apps",
 		Action: func(ctx *cli.Context) error {
-			displayAppsTable()
+			displayDAppsTable()
 			return nil
 		},
 	}
@@ -78,13 +80,13 @@ func CommandOpenDApp() *cli.Command {
 		Usage:   "Open speficic app",
 		Action: func(ctx *cli.Context) error {
 			dappName := ctx.Args().First()
-			dapp := dapps.FindDApp(dappName)
+			dapp := dapps.Find(dappName)
 			if dapp == nil {
 				fmt.Println("DApp does not exists.")
 				return nil
 			}
 
-			Context.SetCurrentDApp(dapp)
+			//app.Context.SetCurrentDApp(dapp)
 
 			return nil
 		},
@@ -96,7 +98,8 @@ func CommandDAppBack() *cli.Command {
 		Name:  "back",
 		Usage: "Back to wallet",
 		Action: func(ctx *cli.Context) error {
-			Context.SetCurrentDApp(nil)
+			app.Context.UseApp = "walletApp"
+			//app.Context.SetCurrentDApp(nil)
 			return nil
 		},
 	}
@@ -124,7 +127,10 @@ func CommandCloseWallet() *cli.Command {
 		Aliases: []string{"c"},
 		Usage:   "Close wallet",
 		Action: func(ctx *cli.Context) error {
-			Context.SetCurrentWalletInstance(nil)
+			//app.Context.SetWalletInstance(nil)
+			app.Context.WalletInstance.Close()
+			app.Context.WalletInstance = nil
+			app.Context.UseApp = "rootApp"
 			return nil
 		},
 	}
@@ -136,7 +142,7 @@ func CommandWalletAddress() *cli.Command {
 		Aliases: []string{"a"},
 		Usage:   "Wallet address",
 		Action: func(ctx *cli.Context) error {
-			fmt.Println(Context.CurrentWalletInstance.GetAddress())
+			fmt.Println(app.Context.WalletInstance.GetAddress())
 			return nil
 		},
 	}
@@ -148,22 +154,23 @@ func CommandWalletBalance() *cli.Command {
 		Aliases: []string{"b"},
 		Usage:   "Wallet balance",
 		Action: func(ctx *cli.Context) error {
-			balance := Context.CurrentWalletInstance.GetBalance()
+			balance := app.Context.WalletInstance.GetBalance()
 			fmt.Printf("%s\n", globals.FormatMoney(balance))
 			return nil
 		},
 	}
 }
 
-func DAppApp(dapp *dapps.DApp) *cli.App {
+func DAppApp(app *cli.App) *cli.App {
 	return &cli.App{
 		Name:                  "",
+		Description:           app.Description,
 		CustomAppHelpTemplate: AppTemplate,
-		Commands: append(dapp.Commands,
+		Commands: append(app.Commands,
 			CommandDAppInfo(),
 			CommandDAppBack(),
 			CommandSwitchWallet(),
-			CommandVersion(semver.MustParse(dapp.Version)),
+			CommandVersion(semver.MustParse(app.Version)),
 			CommandExit(),
 		),
 	}

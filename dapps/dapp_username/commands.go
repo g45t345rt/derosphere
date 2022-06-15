@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/deroproject/derohe/rpc"
-	dscli "github.com/g45t345rt/derosphere/cli"
+	"github.com/g45t345rt/derosphere/app"
 	"github.com/urfave/cli/v2"
 )
 
@@ -14,12 +14,12 @@ func CommandRegister() *cli.Command {
 		Aliases: []string{"r"},
 		Usage:   "",
 		Action: func(c *cli.Context) error {
-			username, err := dscli.Prompt("Enter username", "")
-			if dscli.HandlePromptErr(err) {
+			username, err := app.Prompt("Enter username", "")
+			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			walletInstance := dscli.Context.CurrentWalletInstance
+			walletInstance := app.Context.WalletInstance
 
 			scid := ""
 			signer := walletInstance.GetAddress()
@@ -48,8 +48,8 @@ func CommandRegister() *cli.Command {
 			}
 
 			fees := estimate.GasStorage
-			yes, err := dscli.PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
-			if dscli.HandlePromptErr(err) {
+			yes, err := app.PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
+			if app.HandlePromptErr(err) {
 				return nil
 			}
 
@@ -94,5 +94,16 @@ func Commands() []*cli.Command {
 	return []*cli.Command{
 		CommandRegister(),
 		CommandUnRegister(),
+	}
+}
+
+func App() *cli.App {
+	return &cli.App{
+		Name:        "dapp-username",
+		Description: "Register a single username used by other dApps.",
+		Version:     "0.0.1",
+		Authors: []*cli.Author{
+			{Name: "g45t345rt"},
+		},
 	}
 }

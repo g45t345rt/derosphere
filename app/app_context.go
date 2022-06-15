@@ -1,4 +1,4 @@
-package cli
+package app
 
 import (
 	"encoding/json"
@@ -13,7 +13,6 @@ import (
 	"github.com/tidwall/buntdb"
 	"github.com/urfave/cli/v2"
 
-	"github.com/g45t345rt/derosphere/dapps"
 	"github.com/g45t345rt/derosphere/utils"
 )
 
@@ -22,19 +21,23 @@ type Config struct {
 }
 
 type AppContext struct {
-	Config                Config
-	rootApp               *cli.App
-	currentDApp           *dapps.DApp
-	CurrentWalletInstance *WalletInstance
-	walletInstances       []*WalletInstance
-	readlineInstance      *readline.Instance
+	Config           Config
+	UseApp           string
+	rootApp          *cli.App
+	walletApp        *cli.App
+	dappApp          *cli.App
+	WalletInstance   *WalletInstance
+	walletInstances  []*WalletInstance
+	readlineInstance *readline.Instance
 }
 
 var Context *AppContext
 
-func InitAppContext() {
+func InitAppContext(rootApp *cli.App, walletApp *cli.App) {
 	app := new(AppContext)
-	app.SetRootApp()
+	app.rootApp = rootApp
+	app.walletApp = walletApp
+	app.UseApp = "rootApp"
 
 	instance, err := readline.New("")
 	if err != nil {
@@ -46,27 +49,14 @@ func InitAppContext() {
 	app.readlineInstance = instance
 	app.LoadConfig()
 	app.LoadWalletInstances()
-	//app.RefreshPrompt()
 
 	Context = app
-}
-
-func (app *AppContext) SetRootApp() {
-	app.rootApp = &cli.App{
-		Name:                  "DeroSphere",
-		Commands:              Commands(),
-		CustomAppHelpTemplate: AppTemplate,
-		Action: func(ctx *cli.Context) error {
-			fmt.Println("Command not found. Type 'help' for a list of commands.")
-			return nil
-		},
-	}
 }
 
 func (app *AppContext) Run() {
 out:
 	for {
-		Context.RefreshPrompt()
+		app.RefreshPrompt()
 		line, err := app.readlineInstance.Readline()
 
 		switch err {
@@ -85,42 +75,49 @@ out:
 			break out
 		}
 
-		app.rootApp.Run(strings.Fields("cmd " + line))
+		switch app.UseApp {
+		case "rootApp":
+			app.rootApp.Run(strings.Fields("cmd " + line))
+		case "walletApp":
+			app.walletApp.Run(strings.Fields("cmd " + line))
+		case "dappApp":
+			app.dappApp.Run(strings.Fields("cmd " + line))
+		}
 	}
 }
 
 func (app *AppContext) SetEnv(env string) {
 	app.Config.Env = env
-	//app.RefreshPrompt()
 	app.SaveConfig()
 }
 
-func (app *AppContext) SetCurrentWalletInstance(wallet *WalletInstance) {
-	if app.CurrentWalletInstance != nil {
-		app.CurrentWalletInstance.Close()
+/*
+func (app *AppContext) SetWalletInstance(wallet *WalletInstance) {
+	if app.WalletInstance != nil {
+		app.WalletInstance.Close()
 	}
 
 	if wallet == nil {
-		app.SetRootApp()
+		//app.SetRootApp()
 	}
 
-	app.CurrentWalletInstance = wallet
-	//app.RefreshPrompt()
-}
+	app.WalletInstance = wallet
+}*/
+/*
+func (app *AppContext) SetCurrentDApp(a *cli.App) {
+	/*
+			if dapp != nil {
+				app.rootApp = DAppApp(dapp)
+			} else {
+				app.rootApp = WalletApp()
+			}
 
-func (app *AppContext) SetCurrentDApp(dapp *dapps.DApp) {
-	if dapp != nil {
-		app.rootApp = DAppApp(dapp)
-	} else {
-		app.rootApp = WalletApp()
-	}
-
-	app.currentDApp = dapp
-	//app.RefreshPrompt()
+		app.currentDApp = dapp
 }
+*/
 
 func (app *AppContext) GetWalletInstance(name string) (index int, wallet *WalletInstance) {
-	for i, w := range Context.walletInstances {
+	for i, w := range app.walletInstances {
 		if w.Name == name {
 			return i, w
 		}
@@ -129,23 +126,27 @@ func (app *AppContext) GetWalletInstance(name string) (index int, wallet *Wallet
 	return -1, nil
 }
 
+func (app *AppContext) GetWalletInstances() []*WalletInstance {
+	return app.walletInstances
+}
+
 func (app *AppContext) AddWalletInstance(wallet *WalletInstance) {
-	Context.walletInstances = append(Context.walletInstances, wallet)
+	app.walletInstances = append(app.walletInstances, wallet)
 }
 
 func (app *AppContext) RemoveWalletInstance(index int) {
-	Context.walletInstances = append(Context.walletInstances[:index], Context.walletInstances[index+1:]...)
+	app.walletInstances = append(app.walletInstances[:index], app.walletInstances[index+1:]...)
 }
 
 func (app *AppContext) RefreshPrompt() {
 	prompt := fmt.Sprintf("[%s] > ", app.Config.Env)
 
-	if app.CurrentWalletInstance != nil {
-		prompt = fmt.Sprintf("[%s] > %s > ", app.Config.Env, app.CurrentWalletInstance.Name)
+	if app.WalletInstance != nil {
+		prompt = fmt.Sprintf("[%s] > %s > ", app.Config.Env, app.WalletInstance.Name)
 	}
 
-	if app.currentDApp != nil {
-		prompt = fmt.Sprintf("[%s] > %s > %s > ", app.Config.Env, app.CurrentWalletInstance.Name, app.currentDApp.Name)
+	if app.dappApp != nil {
+		prompt = fmt.Sprintf("[%s] > %s > %s > ", app.Config.Env, app.WalletInstance.Name, app.dappApp.Name)
 	}
 
 	app.readlineInstance.SetPrompt(prompt)

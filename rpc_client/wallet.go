@@ -33,16 +33,16 @@ func (c *Wallet) SetClientWithAuth(address, username string, password string) {
 	})
 }
 
-func (c *Wallet) NeedAuth() bool {
+func (c *Wallet) NeedAuth() (bool, error) {
 	_, err := c.Echo()
 
 	switch err.(type) {
 	case nil:
-		return false
+		return false, nil
 	case *jsonrpc.HTTPError:
-		return true
+		return true, nil
 	default:
-		return false
+		return false, err
 	}
 }
 

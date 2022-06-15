@@ -11,6 +11,7 @@ import (
 	"github.com/deroproject/derohe/cryptography/crypto"
 	deroWallet "github.com/deroproject/derohe/walletapi"
 	"github.com/fatih/color"
+	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/rodaine/table"
@@ -24,19 +25,20 @@ func displayWalletsTable() {
 	tbl := table.New("", "Name", "Daemon", "Wallet")
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-	for index, w := range Context.walletInstances {
+	walletInstances := app.Context.GetWalletInstances()
+	for index, w := range walletInstances {
 		tbl.AddRow(index, w.Name, w.DaemonAddress, w.GetConnectionAddress())
 	}
 
 	tbl.Print()
-	if len(Context.walletInstances) == 0 {
+	if len(walletInstances) == 0 {
 		fmt.Println("No wallets")
 	}
 }
 
-func editWalletInstanceDaemon(walletInstance *WalletInstance) error {
+func editWalletInstanceDaemon(walletInstance *app.WalletInstance) error {
 setDaemon:
-	nodeType, err := PromptChoose("Set node from", []string{"local", "trustednode", "rpc"}, "local")
+	nodeType, err := app.PromptChoose("Set node from", []string{"local", "trustednode", "rpc"}, "local")
 	if err != nil {
 		return err
 	}
@@ -45,7 +47,7 @@ setDaemon:
 	case "local":
 		walletInstance.DaemonAddress = fmt.Sprintf("http://localhost:%d", deroConfig.Mainnet.RPC_Default_Port)
 	case "trustednode":
-		remoteNodeEnv, err := PromptChoose("Remote node environment?", []string{"mainnet", "testnet"}, "mainnet")
+		remoteNodeEnv, err := app.PromptChoose("Remote node environment?", []string{"mainnet", "testnet"}, "mainnet")
 		if err != nil {
 			return err
 		}
@@ -57,7 +59,7 @@ setDaemon:
 			walletInstance.DaemonAddress = fmt.Sprintf("http://%s", deroConfig.Testnet_seed_nodes[0])
 		}
 	case "rpc":
-		address, err := Prompt("Enter node rpc address", fmt.Sprintf("http://localhost:%d", deroConfig.Mainnet.RPC_Default_Port))
+		address, err := app.Prompt("Enter node rpc address", fmt.Sprintf("http://localhost:%d", deroConfig.Mainnet.RPC_Default_Port))
 		if err != nil {
 			return err
 		}
@@ -76,15 +78,15 @@ setDaemon:
 	return nil
 }
 
-func editWalletInstanceWallet(walletInstance *WalletInstance) error {
-	walletType, err := PromptChoose("Set wallet connection from", []string{"rpc", "file"}, "rpc")
+func editWalletInstanceWallet(walletInstance *app.WalletInstance) error {
+	walletType, err := app.PromptChoose("Set wallet connection from", []string{"rpc", "file"}, "rpc")
 	if err != nil {
 		return err
 	}
 
 	switch walletType {
 	case "rpc":
-		address, err := Prompt("Enter wallet rpc address", "")
+		address, err := app.Prompt("Enter wallet rpc address", "")
 		if err != nil {
 			return err
 		}
@@ -97,7 +99,7 @@ func editWalletInstanceWallet(walletInstance *WalletInstance) error {
 		}
 
 	case "file":
-		walletFilePath, err := Prompt("Enter wallet file location", "")
+		walletFilePath, err := app.Prompt("Enter wallet file location", "")
 		if err != nil {
 			return err
 		}
@@ -125,20 +127,20 @@ func CommandAttachWallet() *cli.Command {
 
 		name:
 			if name == "" {
-				name, err = Prompt("Enter wallet name", "")
-				if HandlePromptErr(err) {
+				name, err = app.Prompt("Enter wallet name", "")
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 			}
 
-			_, walletInstance := Context.GetWalletInstance(name)
+			_, walletInstance := app.Context.GetWalletInstance(name)
 			if walletInstance != nil {
 				fmt.Println("A wallet with this name is already attached.")
 				name = ""
 				goto name
 			}
 
-			walletInstance = new(WalletInstance)
+			walletInstance = new(app.WalletInstance)
 
 			if name == "" {
 				fmt.Println("Name cannot be empty.")
@@ -148,17 +150,17 @@ func CommandAttachWallet() *cli.Command {
 			walletInstance.Name = name
 
 			err = editWalletInstanceDaemon(walletInstance)
-			if HandlePromptErr(err) {
+			if app.HandlePromptErr(err) {
 				return nil
 			}
 
 			err = editWalletInstanceWallet(walletInstance)
-			if HandlePromptErr(err) {
+			if app.HandlePromptErr(err) {
 				return nil
 			}
 
 			walletInstance.Save()
-			Context.AddWalletInstance(walletInstance)
+			app.Context.AddWalletInstance(walletInstance)
 
 			fmt.Println("New wallet attached and saved.")
 			return nil
@@ -173,14 +175,14 @@ func CommandDetachWallet() *cli.Command {
 		Aliases: []string{"d"},
 		Action: func(ctx *cli.Context) error {
 			name := ctx.Args().First()
-			walletIndex, walletInstance := Context.GetWalletInstance(name)
+			walletIndex, walletInstance := app.Context.GetWalletInstance(name)
 			if walletInstance == nil {
 				fmt.Println("This wallet does not exists.")
 				return nil
 			}
 
-			yes, err := PromptYesNo("Are you sure?", true)
-			if HandlePromptErr(err) {
+			yes, err := app.PromptYesNo("Are you sure?", true)
+			if app.HandlePromptErr(err) {
 				return nil
 			}
 
@@ -189,7 +191,7 @@ func CommandDetachWallet() *cli.Command {
 			}
 
 			walletInstance.Del()
-			Context.RemoveWalletInstance(walletIndex)
+			app.Context.RemoveWalletInstance(walletIndex)
 
 			return nil
 		},
@@ -203,28 +205,28 @@ func CommandEditWallet() *cli.Command {
 		Aliases: []string{"e"},
 		Action: func(ctx *cli.Context) error {
 			name := ctx.Args().First()
-			_, walletInstance := Context.GetWalletInstance(name)
+			_, walletInstance := app.Context.GetWalletInstance(name)
 			if walletInstance == nil {
 				fmt.Println("This wallet does not exists.")
 				return nil
 			}
 
-			editType, err := PromptChoose("What do you want to change?", []string{"daemon", "wallet"}, "")
-			if HandlePromptErr(err) {
+			editType, err := app.PromptChoose("What do you want to change?", []string{"daemon", "wallet"}, "")
+			if app.HandlePromptErr(err) {
 				return nil
 			}
 
 			switch editType {
 			case "daemon":
 				err = editWalletInstanceDaemon(walletInstance)
-				if HandlePromptErr(err) {
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 
 				walletInstance.Save()
 			case "wallet":
 				err = editWalletInstanceWallet(walletInstance)
-				if HandlePromptErr(err) {
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 
@@ -254,13 +256,13 @@ func OpenWalletAction(ctx *cli.Context) error {
 
 setWalletName:
 	if walletName == "" {
-		walletName, err = Prompt("Enter wallet name", "")
-		if HandlePromptErr(err) {
+		walletName, err = app.Prompt("Enter wallet name", "")
+		if app.HandlePromptErr(err) {
 			return nil
 		}
 	}
 
-	_, walletInstance := Context.GetWalletInstance(walletName)
+	_, walletInstance := app.Context.GetWalletInstance(walletName)
 	if walletInstance == nil {
 		fmt.Println("Wallet does not exists.")
 		walletName = ""
@@ -268,13 +270,17 @@ setWalletName:
 	}
 
 	err = walletInstance.Open()
-	if HandlePromptErr(err) {
+	if app.HandlePromptErr(err) {
 		return nil
 	}
 
-	Context.SetCurrentWalletInstance(walletInstance)
+	//app.Context.SetWalletInstance(walletInstance)
+	app.Context.WalletInstance.Close()
+	app.Context.WalletInstance = walletInstance
+	app.Context.UseApp = "walletApp"
+
 	fmt.Println("Wallet connection successful.")
-	Context.rootApp = WalletApp()
+	//app.Context.rootApp = WalletApp()
 
 	return nil
 }
@@ -299,8 +305,8 @@ func CommandCreateWallet() *cli.Command {
 
 		setWalletName:
 			if walletFileName == "" {
-				walletFileName, err = Prompt("Enter new wallet filename", "")
-				if HandlePromptErr(err) {
+				walletFileName, err = app.Prompt("Enter new wallet filename", "")
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 			}
@@ -310,7 +316,7 @@ func CommandCreateWallet() *cli.Command {
 				goto setWalletName
 			}
 
-			folder := fmt.Sprintf("%s/%s", config.WALLET_FOLDER_PATH, Context.Config.Env)
+			folder := fmt.Sprintf("%s/%s", config.WALLET_FOLDER_PATH, app.Context.Config.Env)
 			utils.CreateFoldersIfNotExists(folder)
 			filePath := fmt.Sprintf("%s/%s.wallet", folder, walletFileName)
 
@@ -321,15 +327,15 @@ func CommandCreateWallet() *cli.Command {
 				goto setWalletName
 			}
 
-			createType, err := PromptChoose("Create disk wallet from", []string{"seed-random", "seed-words", "seed-hex"}, "seed-random")
-			if HandlePromptErr(err) {
+			createType, err := app.PromptChoose("Create disk wallet from", []string{"seed-random", "seed-words", "seed-hex"}, "seed-random")
+			if app.HandlePromptErr(err) {
 				return nil
 			}
 
 			switch createType {
 			case "seed-random":
-				password, err := PromptPassword("Enter new wallet password")
-				if HandlePromptErr(err) {
+				password, err := app.PromptPassword("Enter new wallet password")
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 
@@ -351,13 +357,13 @@ func CommandCreateWallet() *cli.Command {
 					return nil
 				}
 			case "seed-words":
-				seed, err := Prompt("Enter seed (25 words)", "")
-				if HandlePromptErr(err) {
+				seed, err := app.Prompt("Enter seed (25 words)", "")
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 
-				password, err := PromptPassword("Enter new wallet password")
-				if HandlePromptErr(err) {
+				password, err := app.PromptPassword("Enter new wallet password")
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 
@@ -373,8 +379,8 @@ func CommandCreateWallet() *cli.Command {
 					return nil
 				}
 			case "seed-hex":
-				seed, err := Prompt("Enter seed (64 chars)", "")
-				if HandlePromptErr(err) {
+				seed, err := app.Prompt("Enter seed (64 chars)", "")
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 
@@ -389,8 +395,8 @@ func CommandCreateWallet() *cli.Command {
 					return nil
 				}
 
-				password, err := PromptPassword("Enter new wallet password")
-				if HandlePromptErr(err) {
+				password, err := app.PromptPassword("Enter new wallet password")
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 
@@ -447,8 +453,8 @@ func CommandSetEnv() *cli.Command {
 			var err error = nil
 
 			if env == "" {
-				env, err = PromptChoose("Enter environment", []string{"mainnet", "testnet", "simulator"}, "")
-				if HandlePromptErr(err) {
+				env, err = app.PromptChoose("Enter environment", []string{"mainnet", "testnet", "simulator"}, "")
+				if app.HandlePromptErr(err) {
 					return nil
 				}
 			}
@@ -462,7 +468,7 @@ func CommandSetEnv() *cli.Command {
 				return nil
 			}
 
-			Context.SetEnv(env)
+			app.Context.SetEnv(env)
 			return nil
 		},
 	}
@@ -474,5 +480,17 @@ func Commands() []*cli.Command {
 		CommandSetEnv(),
 		CommandVersion(config.Version),
 		CommandExit(),
+	}
+}
+
+func RootApp() *cli.App {
+	return &cli.App{
+		Name:                  "DeroSphere",
+		Commands:              Commands(),
+		CustomAppHelpTemplate: AppTemplate,
+		Action: func(ctx *cli.Context) error {
+			fmt.Println("Command not found. Type 'help' for a list of commands.")
+			return nil
+		},
 	}
 }

@@ -1,4 +1,4 @@
-package cli
+package app
 
 import (
 	"fmt"
@@ -106,7 +106,6 @@ func HandlePromptErr(err error) bool {
 			fmt.Println(err)
 		}
 
-		//Context.RefreshPrompt()
 		return true
 	}
 

@@ -1,4 +1,4 @@
-package cli
+package app
 
 import (
 	"encoding/json"
@@ -13,7 +13,6 @@ import (
 	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/rpc_client"
 
-	//"github.com/g45t345rt/derosphere/rpc"
 	"github.com/tidwall/buntdb"
 )
 
@@ -53,7 +52,10 @@ func (w *WalletInstance) Open() error {
 
 		count := 0
 	checkAuth:
-		needAuth := walletRPC.NeedAuth()
+		needAuth, err := walletRPC.NeedAuth()
+		if err != nil {
+			return err
+		}
 
 		if needAuth {
 			if count == 0 {
