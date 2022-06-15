@@ -25,7 +25,7 @@ type AppContext struct {
 	UseApp           string
 	rootApp          *cli.App
 	walletApp        *cli.App
-	dappApp          *cli.App
+	DAppApp          *cli.App
 	WalletInstance   *WalletInstance
 	walletInstances  []*WalletInstance
 	readlineInstance *readline.Instance
@@ -81,7 +81,7 @@ out:
 		case "walletApp":
 			app.walletApp.Run(strings.Fields("cmd " + line))
 		case "dappApp":
-			app.dappApp.Run(strings.Fields("cmd " + line))
+			app.DAppApp.Run(strings.Fields("cmd " + line))
 		}
 	}
 }
@@ -90,31 +90,6 @@ func (app *AppContext) SetEnv(env string) {
 	app.Config.Env = env
 	app.SaveConfig()
 }
-
-/*
-func (app *AppContext) SetWalletInstance(wallet *WalletInstance) {
-	if app.WalletInstance != nil {
-		app.WalletInstance.Close()
-	}
-
-	if wallet == nil {
-		//app.SetRootApp()
-	}
-
-	app.WalletInstance = wallet
-}*/
-/*
-func (app *AppContext) SetCurrentDApp(a *cli.App) {
-	/*
-			if dapp != nil {
-				app.rootApp = DAppApp(dapp)
-			} else {
-				app.rootApp = WalletApp()
-			}
-
-		app.currentDApp = dapp
-}
-*/
 
 func (app *AppContext) GetWalletInstance(name string) (index int, wallet *WalletInstance) {
 	for i, w := range app.walletInstances {
@@ -145,8 +120,8 @@ func (app *AppContext) RefreshPrompt() {
 		prompt = fmt.Sprintf("[%s] > %s > ", app.Config.Env, app.WalletInstance.Name)
 	}
 
-	if app.dappApp != nil {
-		prompt = fmt.Sprintf("[%s] > %s > %s > ", app.Config.Env, app.WalletInstance.Name, app.dappApp.Name)
+	if app.DAppApp != nil {
+		prompt = fmt.Sprintf("[%s] > %s > %s > ", app.Config.Env, app.WalletInstance.Name, app.DAppApp.Name)
 	}
 
 	app.readlineInstance.SetPrompt(prompt)

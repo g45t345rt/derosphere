@@ -39,6 +39,7 @@ func (w *WalletInstance) SetupDaemon() error {
 }
 
 func (w *WalletInstance) Open() error {
+	fmt.Println("Connecting to daemon rpc...")
 	err := w.SetupDaemon()
 	if err != nil {
 		return err
@@ -52,6 +53,7 @@ func (w *WalletInstance) Open() error {
 
 		count := 0
 	checkAuth:
+		fmt.Println("Connecting to wallet rpc...")
 		needAuth, err := walletRPC.NeedAuth()
 		if err != nil {
 			return err

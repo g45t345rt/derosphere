@@ -14,7 +14,7 @@ func AppAuthors(app *cli.App) string {
 	for _, author := range app.Authors {
 		authorNames = append(authorNames, author.Name)
 	}
-	return strings.Join(authorNames, ",")
+	return strings.Join(authorNames, ", ")
 }
 
 func CreateFoldersIfNotExists(folder string) {

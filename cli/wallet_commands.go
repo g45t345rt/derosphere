@@ -44,9 +44,10 @@ func CommandWalletInfo() *cli.Command {
 
 func CommandSwitchWallet() *cli.Command {
 	return &cli.Command{
-		Name:   "switch",
-		Usage:  "Quicky change to another wallet",
-		Action: OpenWalletAction,
+		Name:    "switch",
+		Usage:   "Quickly change to another wallet",
+		Aliases: []string{"s"},
+		Action:  OpenWalletAction,
 	}
 }
 
@@ -68,6 +69,10 @@ func CommandDAppInfo() *cli.Command {
 		Aliases: []string{"i"},
 		Usage:   "A basic description of the application",
 		Action: func(ctx *cli.Context) error {
+			app := ctx.App
+			fmt.Printf("Name: %s\n", app.Name)
+			fmt.Printf("Description: %s\n", app.Description)
+			fmt.Printf("Authors: %s\n", utils.AppAuthors(app))
 			return nil
 		},
 	}
@@ -82,11 +87,12 @@ func CommandOpenDApp() *cli.Command {
 			dappName := ctx.Args().First()
 			dapp := dapps.Find(dappName)
 			if dapp == nil {
-				fmt.Println("DApp does not exists.")
+				fmt.Println("App does not exists.")
 				return nil
 			}
 
-			//app.Context.SetCurrentDApp(dapp)
+			app.Context.DAppApp = DAppApp(dapp)
+			app.Context.UseApp = "dappApp"
 
 			return nil
 		},
@@ -95,11 +101,12 @@ func CommandOpenDApp() *cli.Command {
 
 func CommandDAppBack() *cli.Command {
 	return &cli.Command{
-		Name:  "back",
-		Usage: "Back to wallet",
+		Name:    "back",
+		Usage:   "Back to wallet",
+		Aliases: []string{"b"},
 		Action: func(ctx *cli.Context) error {
+			app.Context.DAppApp = nil
 			app.Context.UseApp = "walletApp"
-			//app.Context.SetCurrentDApp(nil)
 			return nil
 		},
 	}
@@ -127,7 +134,6 @@ func CommandCloseWallet() *cli.Command {
 		Aliases: []string{"c"},
 		Usage:   "Close wallet",
 		Action: func(ctx *cli.Context) error {
-			//app.Context.SetWalletInstance(nil)
 			app.Context.WalletInstance.Close()
 			app.Context.WalletInstance = nil
 			app.Context.UseApp = "rootApp"
@@ -163,9 +169,10 @@ func CommandWalletBalance() *cli.Command {
 
 func DAppApp(app *cli.App) *cli.App {
 	return &cli.App{
-		Name:                  "",
+		Name:                  app.Name,
 		Description:           app.Description,
 		CustomAppHelpTemplate: AppTemplate,
+		Authors:               app.Authors,
 		Commands: append(app.Commands,
 			CommandDAppInfo(),
 			CommandDAppBack(),
@@ -173,6 +180,10 @@ func DAppApp(app *cli.App) *cli.App {
 			CommandVersion(semver.MustParse(app.Version)),
 			CommandExit(),
 		),
+		Action: func(ctx *cli.Context) error {
+			fmt.Println("Command not found. Type 'help' for a list of commands.")
+			return nil
+		},
 	}
 }
 

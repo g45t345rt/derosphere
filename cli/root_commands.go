@@ -86,7 +86,7 @@ func editWalletInstanceWallet(walletInstance *app.WalletInstance) error {
 
 	switch walletType {
 	case "rpc":
-		address, err := app.Prompt("Enter wallet rpc address", "")
+		address, err := app.Prompt("Enter wallet rpc address", fmt.Sprintf("http://localhost:%d", deroConfig.Mainnet.Wallet_RPC_Default_Port))
 		if err != nil {
 			return err
 		}
@@ -181,7 +181,7 @@ func CommandDetachWallet() *cli.Command {
 				return nil
 			}
 
-			yes, err := app.PromptYesNo("Are you sure?", true)
+			yes, err := app.PromptYesNo("Are you sure?", false)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -274,13 +274,14 @@ setWalletName:
 		return nil
 	}
 
-	//app.Context.SetWalletInstance(walletInstance)
-	app.Context.WalletInstance.Close()
+	if app.Context.WalletInstance != nil {
+		app.Context.WalletInstance.Close()
+	}
+
 	app.Context.WalletInstance = walletInstance
 	app.Context.UseApp = "walletApp"
 
 	fmt.Println("Wallet connection successful.")
-	//app.Context.rootApp = WalletApp()
 
 	return nil
 }

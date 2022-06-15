@@ -3,6 +3,7 @@ package dapps
 import (
 	"github.com/g45t345rt/derosphere/dapps/dapp_username"
 	"github.com/g45t345rt/derosphere/dapps/lotto"
+	"github.com/g45t345rt/derosphere/dapps/nameservice"
 	"github.com/urfave/cli/v2"
 )
 
@@ -18,13 +19,7 @@ func Find(name string) *cli.App {
 
 func List() []*cli.App {
 	return []*cli.App{
-
-		/*{
-			Name:        "nameservice",
-			Description: "Register multiple names to receive DERO from others.",
-			Version:     "0.0.1",
-			Commands:    []*cli.Command{},
-		},*/
+		nameservice.App(),
 		dapp_username.App(),
 		lotto.App(),
 	}
