@@ -8,9 +8,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var SCID_MAINNET = ""
-var SCID_TESTNET = ""
-var SCID_SIMULATOR = ""
+var SC_ID map[string]string = map[string]string{
+	"mainnet":   "",
+	"testnet":   "",
+	"simulator": "900f10626046c2160bbaa9bdaee9bf025ff8596d10d5da8af0c6638ba50277f9",
+}
 
 func CommandRegister() *cli.Command {
 	return &cli.Command{
@@ -25,61 +27,14 @@ func CommandRegister() *cli.Command {
 
 			walletInstance := app.Context.WalletInstance
 
-			scid := ""
-			//signer := walletInstance.GetAddress()
-			ringsize := uint64(2)
+			scid := SC_ID[app.Context.Config.Env]
+			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Register"}
+			arg2 := rpc.Argument{Name: "name", DataType: rpc.DataString, Value: username}
 
-			arg1 := rpc.Argument{Name: "entrypoint", DataType: "S", Value: "Register"}
-			arg2 := rpc.Argument{Name: "name", DataType: "S", Value: username}
-
-			txid, err := walletInstance.EstimateFeesAndTransfer(scid, ringsize, rpc.Arguments{
+			txid, err := walletInstance.EstimateFeesAndTransfer(scid, uint64(2), rpc.Arguments{
 				arg1,
 				arg2,
 			})
-
-			/*
-				arg_sc := rpc.Argument{Name: "SC_ID", DataType: "H", Value: scid}
-				arg_sc_action := rpc.Argument{Name: "SC_ACTION", DataType: "U", Value: 0}
-
-				arg1 := rpc.Argument{Name: "entrypoint", DataType: "S", Value: "Register"}
-				arg2 := rpc.Argument{Name: "name", DataType: "S", Value: username}
-
-				estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
-					Ringsize: ringsize,
-					Signer:   signer,
-					SC_RPC: rpc.Arguments{
-						arg_sc,
-						arg_sc_action,
-						arg1,
-						arg2,
-					},
-				})
-
-				if err != nil {
-					fmt.Println(err)
-					return nil
-				}
-
-				fees := estimate.GasStorage
-				yes, err := app.PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
-				if app.HandlePromptErr(err) {
-					return nil
-				}
-
-				if !yes {
-					return nil
-				}
-
-				txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
-					SC_ID:    scid,
-					Ringsize: ringsize,
-					Fees:     estimate.GasStorage,
-					SC_RPC: rpc.Arguments{
-						arg1,
-						arg2,
-					},
-				})
-			*/
 
 			if err != nil {
 				fmt.Println(err)
@@ -98,7 +53,30 @@ func CommandUnRegister() *cli.Command {
 		Aliases: []string{"u"},
 		Usage:   "",
 		Action: func(c *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
 
+			yes, err := app.PromptYesNo("Are you sure?", false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if !yes {
+				return nil
+			}
+
+			scid := SC_ID[app.Context.Config.Env]
+			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Unregister"}
+
+			txid, err := walletInstance.EstimateFeesAndTransfer(scid, uint64(2), rpc.Arguments{
+				arg1,
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(txid)
 			return nil
 		},
 	}

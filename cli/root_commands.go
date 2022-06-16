@@ -422,13 +422,13 @@ func CommandCreateWallet() *cli.Command {
 	}
 }
 
-func CommandVersion(version semver.Version) *cli.Command {
+func CommandVersion(name string, version semver.Version) *cli.Command {
 	return &cli.Command{
 		Name:    "version",
 		Aliases: []string{"v"},
 		Usage:   "Display current version",
 		Action: func(ctx *cli.Context) error {
-			fmt.Println(config.Version)
+			fmt.Printf("%s v%s\n", name, version)
 			return nil
 		},
 	}
@@ -480,7 +480,7 @@ func Commands() []*cli.Command {
 	return []*cli.Command{
 		WalletCommands(),
 		CommandSetEnv(),
-		CommandVersion(config.Version),
+		CommandVersion("derosphere", config.Version),
 		CommandExit(),
 	}
 }

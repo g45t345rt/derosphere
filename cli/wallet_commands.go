@@ -1,10 +1,13 @@
 package cli
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/blang/semver/v4"
 	"github.com/deroproject/derohe/globals"
+	"github.com/deroproject/derohe/rpc"
 	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/dapps"
@@ -167,6 +170,162 @@ func CommandWalletBalance() *cli.Command {
 	}
 }
 
+func CommandUpdateSC() *cli.Command {
+	return &cli.Command{
+		Name:    "update",
+		Aliases: []string{"u"},
+		Usage:   "Update smart contract",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			codeFilePath, err := app.Prompt("Enter new code filepath", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			code, err := ioutil.ReadFile(codeFilePath)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			codeString := string(code)
+			ringsize := uint64(2)
+			sc_rpc := rpc.Arguments{
+				{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL},
+				{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid},
+				{Name: "entrypoint", DataType: rpc.DataString, Value: "UpdateCode"},
+				{Name: "code", DataType: rpc.DataString, Value: codeString},
+			}
+
+			estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
+				Ringsize: ringsize,
+				SC_RPC:   sc_rpc,
+				Signer:   walletInstance.GetAddress(),
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fees := estimate.GasStorage
+			yes, err := app.PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if !yes {
+				return nil
+			}
+
+			txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
+				SC_RPC:   sc_rpc,
+				Ringsize: ringsize,
+				Fees:     fees,
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(txid)
+
+			return nil
+		},
+	}
+}
+
+func CommandInstallSC() *cli.Command {
+	return &cli.Command{
+		Name:    "install",
+		Aliases: []string{"i"},
+		Usage:   "Install smart contract",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			codeFilePath, err := app.Prompt("Enter code filepath", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			code, err := ioutil.ReadFile(codeFilePath)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			//codeString := string(code)
+			codeBase64 := base64.StdEncoding.EncodeToString(code)
+			ringsize := uint64(2)
+
+			estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
+				SC_Code: codeBase64,
+				SC_RPC: rpc.Arguments{
+					{Name: "entrypoint", DataType: rpc.DataString, Value: codeBase64},
+				},
+				Signer: walletInstance.GetAddress(),
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fees := estimate.GasStorage
+			yes, err := app.PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if !yes {
+				return nil
+			}
+
+			txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
+				SC_Code: codeBase64,
+				/*SC_RPC: rpc.Arguments{
+					{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_INSTALL},
+					{Name: rpc.SCCODE, DataType: rpc.DataString, Value: codeString},
+				},*/
+				Ringsize: ringsize,
+				Fees:     fees,
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(txid)
+
+			return nil
+		},
+	}
+}
+
+func SCCommands() *cli.Command {
+	return &cli.Command{
+		Name:               "sc",
+		Usage:              "Smart contract commands",
+		CustomHelpTemplate: AppTemplate,
+		Subcommands: []*cli.Command{
+			CommandInstallSC(),
+			CommandUpdateSC(),
+		},
+		Action: func(ctx *cli.Context) error {
+			ctx.App.Run([]string{"cmd", "help"})
+			return nil
+		},
+	}
+}
+
 func DAppApp(app *cli.App) *cli.App {
 	return &cli.App{
 		Name:                  app.Name,
@@ -177,7 +336,7 @@ func DAppApp(app *cli.App) *cli.App {
 			CommandDAppInfo(),
 			CommandDAppBack(),
 			CommandSwitchWallet(),
-			CommandVersion(semver.MustParse(app.Version)),
+			CommandVersion(app.Name, semver.MustParse(app.Version)),
 			CommandExit(),
 		),
 		Action: func(ctx *cli.Context) error {
@@ -197,6 +356,7 @@ func WalletApp() *cli.App {
 			CommandWalletBalance(),
 			CommandWalletAddress(),
 			CommandSwitchWallet(),
+			SCCommands(),
 			CommandCloseWallet(),
 			CommandExit(),
 		},

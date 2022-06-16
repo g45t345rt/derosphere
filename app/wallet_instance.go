@@ -253,8 +253,8 @@ func (w *WalletInstance) Transfer(params *rpc.Transfer_Params) (string, error) {
 func (w *WalletInstance) EstimateFeesAndTransfer(scid string, ringsize uint64, args rpc.Arguments) (string, error) {
 	signer := w.GetAddress()
 
-	arg_sc := rpc.Argument{Name: "SC_ID", DataType: "H", Value: scid}
-	arg_sc_action := rpc.Argument{Name: "SC_ACTION", DataType: "U", Value: 0}
+	arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
+	arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
 
 	estimate, err := w.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
 		Ringsize: ringsize,
