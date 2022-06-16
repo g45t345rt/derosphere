@@ -2,8 +2,9 @@
 
 A CLI to easily interact with a bunch of decentralized DERO applications.
 
-- Use decentralized apps / smart contracts in a trully decentralized manner
-- Manage multiple wallets from different environment [mainnet, testnet]
+- Use dapps / smart contracts in a trully decentralized manner. No centralized entity!
+- Manage multiple wallets from different environment [mainnet, testnet, simulator]
+- Install, update or call custom smart contracts
 - Multi level command interface - intuitive and easy to use
 
 ## Donations
