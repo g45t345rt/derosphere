@@ -9,7 +9,7 @@ import (
 )
 
 func GetCommitAt(db *buntdb.DB) (uint64, error) {
-	var start uint64
+	var start uint64 = 0
 	err := db.View(func(tx *buntdb.Tx) error {
 		commitAt, err := tx.Get("commit_at")
 		if err != nil {
@@ -23,7 +23,7 @@ func GetCommitAt(db *buntdb.DB) (uint64, error) {
 		return nil
 	})
 
-	if err != nil {
+	if err != nil && err != buntdb.ErrNotFound {
 		return 0, err
 	}
 
@@ -39,25 +39,6 @@ func SyncCommits(db *buntdb.DB, daemon *rpc_client.Daemon, scid string) error {
 
 	chunk := uint64(1000)
 
-	err = db.View(func(tx *buntdb.Tx) error {
-		_, err := tx.Get("scid")
-		return err
-	})
-
-	if err == buntdb.ErrNotFound {
-		err = db.Update(func(tx *buntdb.Tx) error {
-			if commitAt == 0 {
-				tx.Set("scid", scid, nil)
-			}
-
-			return nil
-		})
-	}
-
-	if err != nil {
-		return err
-	}
-
 	var i uint64
 	for i = commitAt; i < commitCount; i += chunk {
 		var commits []rpc_client.Commit
@@ -70,11 +51,11 @@ func SyncCommits(db *buntdb.DB, daemon *rpc_client.Daemon, scid string) error {
 			commits = daemon.GetSCCommits(scid, i, commitAt)
 		}
 
-		fmt.Print(commits)
+		// fmt.Print(commits)
 
 		err := db.Update(func(tx *buntdb.Tx) error {
 			for _, commit := range commits {
-				if commit.Action == "A" {
+				if commit.Action == "S" {
 					tx.Set(commit.Key, commit.Value, nil)
 				}
 

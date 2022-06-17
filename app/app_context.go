@@ -163,6 +163,7 @@ func (app *AppContext) LoadWalletInstances() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 
 	err = db.View(func(tx *buntdb.Tx) error {
 		tx.Ascend("", func(key, value string) bool {

@@ -125,10 +125,10 @@ func (w *WalletInstance) Close() {
 
 func (w *WalletInstance) Save() {
 	db, err := buntdb.Open(config.DB_WALLETS_FILEPATH)
-
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 
 	data, err := w.Marshal()
 	if err != nil {
@@ -146,6 +146,7 @@ func (w *WalletInstance) Del() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 
 	db.Update(func(tx *buntdb.Tx) error {
 		_, err := tx.Delete(w.Name)
@@ -288,41 +289,4 @@ func (w *WalletInstance) EstimateFeesAndTransfer(scid string, ringsize uint64, a
 	}
 
 	return txid, nil
-}
-
-func LoadWalletInstances() {
-	Context.walletInstances = []*WalletInstance{}
-
-	folder := config.DATA_FOLDER
-	_, err := os.Stat(folder)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			err := os.Mkdir(folder, os.ModePerm)
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			log.Fatal(err)
-		}
-	}
-
-	db, err := buntdb.Open(fmt.Sprintf("%s/wallets.db", folder))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = db.View(func(tx *buntdb.Tx) error {
-		tx.Ascend("", func(key, value string) bool {
-			walletInstance := new(WalletInstance)
-			walletInstance.Unmarshal(value)
-			Context.walletInstances = append(Context.walletInstances, walletInstance)
-			return true
-		})
-
-		return nil
-	})
-
-	if err != nil {
-		log.Fatal(err)
-	}
 }
