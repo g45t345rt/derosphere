@@ -6,9 +6,11 @@ import (
 	"strings"
 
 	"github.com/deroproject/derohe/rpc"
+	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/utils"
+	"github.com/rodaine/table"
 	"github.com/tidwall/buntdb"
 	"github.com/urfave/cli/v2"
 )
@@ -55,6 +57,23 @@ func openDBAndSync(scid string) *buntdb.DB {
 	}
 
 	return db
+}
+
+func displayNamesTable(names []Name) {
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+	tbl := table.New("", "Name", "Address")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+	for index, n := range names {
+		tbl.AddRow(index, n.Name, n.Address)
+	}
+
+	tbl.Print()
+	if len(names) == 0 {
+		fmt.Println("No names")
+	}
 }
 
 func CommandRegister() *cli.Command {
@@ -154,7 +173,7 @@ func CommandListNames() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(names)
+			displayNamesTable(names)
 			return nil
 		},
 	}
