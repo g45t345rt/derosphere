@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 
 	"github.com/blang/semver/v4"
 	"github.com/deroproject/derohe/globals"
@@ -88,10 +89,31 @@ func CommandOpenDApp() *cli.Command {
 		Usage:   "Open speficic app",
 		Action: func(ctx *cli.Context) error {
 			dappName := ctx.Args().First()
-			dapp := dapps.Find(dappName)
+			var err error
+
+		setAppName:
+			if dappName == "" {
+				dappName, err = app.Prompt("Enter app name/index", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			appIndex, err := strconv.ParseInt(dappName, 10, 64)
+			var dapp *cli.App
+			if err == nil {
+				list := dapps.List()
+				if int(appIndex) < len(list) {
+					dapp = dapps.List()[appIndex]
+				}
+			} else {
+				dapp = dapps.Find(dappName)
+			}
+
 			if dapp == nil {
 				fmt.Println("App does not exists.")
-				return nil
+				dappName = ""
+				goto setAppName
 			}
 
 			app.Context.DAppApp = DAppApp(dapp)
