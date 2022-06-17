@@ -72,7 +72,7 @@ End Function
 
 Function Register(name String) Uint64
 10 DIM name_length as Uint64
-20 DIM signer_string, signer_key as String
+20 DIM signer_string, signer_name_key as String
 30 beginCommit()
 40 LET name_length = STRLEN(name)
 50 IF name_length > 2 THEN GOTO 70
@@ -84,28 +84,27 @@ Function Register(name String) Uint64
 110 LET signer_string = ADDRESS_STRING(SIGNER())
 120 IF signer_string != "" THEN GOTO 140 // ring size 2 only
 130 RETURN 1
-140 LET signer_key = nameKey(signer_string)
-150 IF stateExists(signer_key) == 0 THEN GOTO 170
-160 DELETE(loadStateString(signer_key))
+140 LET signer_name_key = nameKey(signer_string)
+150 IF stateExists(signer_name_key) == 0 THEN GOTO 170
+160 DELETE(nameKey(loadStateString(signer_name_key))) // delete previous name for somebody else to register
 170 STORE(nameKey(name), signer_string)
-180 storeStateString(signer_key, name)
+180 storeStateString(signer_name_key, name)
 190 storeTX()
 200 endCommit()
 210 RETURN 0
 End Function
 
 Function Unregister() Uint64
-10 DIM signer_key, name as String
+10 DIM signer_name_key as String
 20 beginCommit()
-30 LET signer_key = nameKey(ADDRESS_STRING(SIGNER()))
-40 IF stateExists(signer_key) == 1 THEN GOTO 60
+30 LET signer_name_key = nameKey(ADDRESS_STRING(SIGNER()))
+40 IF stateExists(signer_name_key) == 1 THEN GOTO 60
 50 RETURN 1
-60 LET name = loadStateString(signer_key)
-70 DELETE(nameKey(name))
-80 deleteState(signer_key)
-90 storeTX()
-100 endCommit()
-110 RETURN 0
+60 DELETE(nameKey(loadStateString(signer_name_key)))
+70 deleteState(signer_name_key)
+80 storeTX()
+90 endCommit()
+100 RETURN 0
 End Function
 
 Function Initialize() Uint64
