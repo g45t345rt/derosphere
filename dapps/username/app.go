@@ -3,17 +3,21 @@ package username
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
+
+	"database/sql"
 
 	"github.com/deroproject/derohe/rpc"
 	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
-	"github.com/g45t345rt/derosphere/config"
+	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/rodaine/table"
-	"github.com/tidwall/buntdb"
 	"github.com/urfave/cli/v2"
 )
+
+var DAPP_NAME = "username"
 
 var SC_ID map[string]string = map[string]string{
 	"mainnet":   "",
@@ -26,37 +30,129 @@ type Name struct {
 	Address string
 }
 
-func dbFolderPath() string {
-	return config.DAPPS_FOLDER + "/" + app.Context.Config.Env + "/username"
-}
-
-func dbFilePath(scid string) string {
-	return dbFolderPath() + "/" + scid + ".db"
-}
-
 func getSCID() string {
 	return SC_ID[app.Context.Config.Env]
 }
 
-func openDBAndSync(scid string) *buntdb.DB {
-	utils.CreateFoldersIfNotExists(dbFolderPath())
-	db, err := buntdb.Open(dbFilePath(scid))
+func initData() {
+	sqlQuery := `
+		create table if not exists username (
+			wallet_address varchar primary key,
+			name varchar
+		)
+	`
+
+	db := app.Context.DB
+	_, err := db.Exec(sqlQuery)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = db.CreateIndex("names", "state_name_*", buntdb.IndexString)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// reset table
+	counts := utils.GetCommitCounts()
+	commitAt := counts[DAPP_NAME]
+	if commitAt == 0 {
+		sqlQuery = `
+			delete from username
+		`
 
+		_, err = db.Exec(sqlQuery)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func sync() {
 	daemon := app.Context.WalletInstance.Daemon
-	err = utils.SyncCommits(db, daemon, scid)
+	scid := getSCID()
+	commitCount := daemon.GetSCCommitCount(scid)
+	counts := utils.GetCommitCounts()
+	commitAt := counts[DAPP_NAME]
+	chunk := uint64(1000)
+	db := app.Context.DB
+	nameKey, err := regexp.Compile(`state_name_(.+)`)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return db
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	sqlQuery := `
+		insert into username (wallet_address, name)
+		values (?,?)
+		on conflict(wallet_address) do update set name = ?
+	`
+
+	setTx, err := tx.Prepare(sqlQuery)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer setTx.Close()
+
+	sqlQuery = `
+		delete from username where wallet_address == ?
+	`
+
+	delTx, err := tx.Prepare(sqlQuery)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer setTx.Close()
+
+	var i uint64
+	for i = commitAt; i < commitCount; i += chunk {
+		var commits []rpc_client.Commit
+		end := i + chunk
+		if end > commitCount {
+			commitAt = commitCount
+			commits = daemon.GetSCCommits(scid, i, commitCount)
+		} else {
+			commitAt = end
+			commits = daemon.GetSCCommits(scid, i, commitAt)
+		}
+
+		for _, commit := range commits {
+			key := commit.Key
+
+			if strings.HasPrefix(commit.Key, "state_name_") {
+				walletAddress := nameKey.ReplaceAllString(key, "$1")
+				if commit.Action == "S" {
+
+					fmt.Println("set", walletAddress, commit.Value)
+					_, err := setTx.Exec(walletAddress, commit.Value, commit.Value)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					continue
+				}
+
+				if commit.Action == "D" {
+					fmt.Println("del", walletAddress)
+					_, err := delTx.Exec(walletAddress)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					continue
+				}
+			}
+		}
+
+		err := tx.Commit()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		utils.SetCommitCount(DAPP_NAME, commitAt)
+	}
 }
 
 func displayNamesTable(names []Name) {
@@ -93,9 +189,8 @@ func CommandRegister() *cli.Command {
 			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Register"}
 			arg2 := rpc.Argument{Name: "name", DataType: rpc.DataString, Value: username}
 
-			txid, err := walletInstance.EstimateFeesAndTransfer(scid, uint64(2), rpc.Arguments{
-				arg1,
-				arg2,
+			txid, err := walletInstance.EstimateFeesAndTransfer(scid, 2, nil, rpc.Arguments{
+				arg1, arg2,
 			})
 
 			if err != nil {
@@ -129,7 +224,7 @@ func CommandUnRegister() *cli.Command {
 			scid := getSCID()
 			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Unregister"}
 
-			txid, err := walletInstance.EstimateFeesAndTransfer(scid, uint64(2), rpc.Arguments{
+			txid, err := walletInstance.EstimateFeesAndTransfer(scid, 2, nil, rpc.Arguments{
 				arg1,
 			})
 
@@ -150,27 +245,32 @@ func CommandListNames() *cli.Command {
 		Aliases: []string{"l"},
 		Usage:   "List of registered names",
 		Action: func(c *cli.Context) error {
-			scid := getSCID()
-			db := openDBAndSync(scid)
-			defer db.Close()
+			sync()
+
+			db := app.Context.DB
+
+			query := `
+				select * from username
+			`
+
+			rows, err := db.Query(query)
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			var names []Name
-			err := db.View(func(tx *buntdb.Tx) error {
-				err := tx.Ascend("names", func(key, value string) bool {
-					address := strings.Replace(key, "state_name_", "", -1)
-					names = append(names, Name{
-						Name:    value,
-						Address: address,
-					})
-					return true
+			for rows.Next() {
+				var walletAddress string
+				var name string
+				err = rows.Scan(&walletAddress, &name)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				names = append(names, Name{
+					Address: walletAddress,
+					Name:    name,
 				})
-
-				return err
-			})
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
 			}
 
 			displayNamesTable(names)
@@ -182,28 +282,26 @@ func CommandListNames() *cli.Command {
 func CommandName() *cli.Command {
 	return &cli.Command{
 		Name:    "name",
-		Usage:   "What is my name?",
+		Usage:   "What is my username?",
 		Aliases: []string{"n"},
 		Action: func(c *cli.Context) error {
-			scid := getSCID()
-			db := openDBAndSync(scid)
-			defer db.Close()
+			sync()
 
-			walletInstance := app.Context.WalletInstance
-			address := walletInstance.GetAddress()
-			err := db.View(func(tx *buntdb.Tx) error {
-				val, err := tx.Get("state_name_" + address)
-				if err != nil {
-					return err
-				}
+			db := app.Context.DB
+			walletAddress := app.Context.WalletInstance.GetAddress()
+			sqlQuery := `select name from username where wallet_address == ?`
 
-				fmt.Println(val)
-				return nil
-			})
-
+			row := db.QueryRow(sqlQuery, walletAddress)
+			var name string
+			err := row.Scan(&name)
 			if err != nil {
-				fmt.Println(err)
-				return nil
+				if err == sql.ErrNoRows {
+					fmt.Println("You don't have a registered username")
+				} else {
+					log.Fatal(err)
+				}
+			} else {
+				fmt.Println(name)
 			}
 
 			return nil
@@ -212,8 +310,9 @@ func CommandName() *cli.Command {
 }
 
 func App() *cli.App {
+	initData()
 	return &cli.App{
-		Name:        "username",
+		Name:        DAPP_NAME,
 		Description: "Register a single username used by other dApps.",
 		Version:     "0.0.1",
 		Commands: []*cli.Command{

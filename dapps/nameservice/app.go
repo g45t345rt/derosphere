@@ -51,9 +51,8 @@ func CommandRegister() *cli.Command {
 			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Register"}
 			arg2 := rpc.Argument{Name: "name", DataType: rpc.DataString, Value: username}
 
-			txid, err := walletInstance.EstimateFeesAndTransfer(SC_ID, uint64(2), rpc.Arguments{
-				arg1,
-				arg2,
+			txid, err := walletInstance.EstimateFeesAndTransfer(SC_ID, 2, nil, rpc.Arguments{
+				arg1, arg2,
 			})
 
 			if err != nil {
@@ -86,7 +85,6 @@ func CommandNames() *cli.Command {
 				return nil
 			}
 
-			// address := walletInstance.GetAddress()
 			var names []Name
 			for key, value := range result.VariableStringKeys {
 				if key != "C" {

@@ -51,3 +51,13 @@ func (d *Daemon) GetGasEstimate(params *rpc.GasEstimate_Params) (*rpc.GasEstimat
 
 	return result, nil
 }
+
+func (d *Daemon) GetRandomAddresses(params *rpc.GetRandomAddress_Params) (*rpc.GetRandomAddress_Result, error) {
+	var result *rpc.GetRandomAddress_Result
+	err := d.client.CallFor(&result, "DERO.GetRandomAddress", params)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

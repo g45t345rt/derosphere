@@ -1,77 +1,45 @@
 package utils
 
 import (
-	"fmt"
-	"strconv"
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"log"
+	"os"
 
-	"github.com/g45t345rt/derosphere/rpc_client"
-	"github.com/tidwall/buntdb"
+	"github.com/g45t345rt/derosphere/config"
 )
 
-func GetCommitAt(db *buntdb.DB) (uint64, error) {
-	var start uint64 = 0
-	err := db.View(func(tx *buntdb.Tx) error {
-		commitAt, err := tx.Get("commit_at")
-		if err != nil {
-			return err
+func GetCommitCounts() map[string]uint64 {
+	content, err := ioutil.ReadFile(config.DATA_FOLDER + "/commit_counts.json")
+	var counts = make(map[string]uint64)
+
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return counts
 		}
 
-		start, err = strconv.ParseUint(commitAt, 10, 64)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-
-	if err != nil && err != buntdb.ErrNotFound {
-		return 0, err
+		log.Fatal(err)
 	}
 
-	return start, nil
+	err = json.Unmarshal(content, &counts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return counts
 }
 
-func SyncCommits(db *buntdb.DB, daemon *rpc_client.Daemon, scid string) error {
-	commitCount := daemon.GetSCCommitCount(scid)
-	commitAt, err := GetCommitAt(db)
+func SetCommitCount(name string, count uint64) {
+	counts := GetCommitCounts()
+	counts[name] = count
+	countsString, err := json.Marshal(counts)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	chunk := uint64(1000)
-
-	var i uint64
-	for i = commitAt; i < commitCount; i += chunk {
-		var commits []rpc_client.Commit
-		end := i + chunk
-		if end > commitCount {
-			commitAt = commitCount
-			commits = daemon.GetSCCommits(scid, i, commitCount)
-		} else {
-			commitAt = end
-			commits = daemon.GetSCCommits(scid, i, commitAt)
-		}
-
-		// fmt.Print(commits)
-
-		err := db.Update(func(tx *buntdb.Tx) error {
-			for _, commit := range commits {
-				if commit.Action == "S" {
-					tx.Set(commit.Key, commit.Value, nil)
-				}
-
-				if commit.Action == "D" {
-					tx.Delete(commit.Key)
-				}
-			}
-
-			tx.Set("commit_at", fmt.Sprint(commitAt), nil)
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
+	err = ioutil.WriteFile(config.DATA_FOLDER+"/commit_counts.json", countsString, os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	return nil
 }

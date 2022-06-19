@@ -141,7 +141,7 @@ func CommandAttachWallet() *cli.Command {
 			}
 
 			walletInstance = new(app.WalletInstance)
-			walletInstance.Env = app.Context.Config.Env
+			//walletInstance.Env = app.Context.Config.Env
 
 			if name == "" {
 				fmt.Println("Name cannot be empty.")
@@ -160,8 +160,9 @@ func CommandAttachWallet() *cli.Command {
 				return nil
 			}
 
-			walletInstance.Save()
-			app.Context.AddWalletInstance(walletInstance)
+			//walletInstance.Save()
+			//app.Context.AddWalletInstance(walletInstance)
+			walletInstance.Add()
 
 			fmt.Println("New wallet attached and saved.")
 			return nil
@@ -176,7 +177,7 @@ func CommandDetachWallet() *cli.Command {
 		Aliases: []string{"d"},
 		Action: func(ctx *cli.Context) error {
 			name := ctx.Args().First()
-			walletIndex, walletInstance := app.Context.GetWalletInstance(name)
+			listIndex, walletInstance := app.Context.GetWalletInstance(name)
 			if walletInstance == nil {
 				fmt.Println("This wallet does not exists.")
 				return nil
@@ -191,8 +192,8 @@ func CommandDetachWallet() *cli.Command {
 				return nil
 			}
 
-			walletInstance.Del()
-			app.Context.RemoveWalletInstance(walletIndex)
+			walletInstance.Del(listIndex)
+			//app.Context.RemoveWalletInstance(walletIndex)
 
 			return nil
 		},

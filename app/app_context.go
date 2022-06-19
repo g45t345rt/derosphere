@@ -1,6 +1,7 @@
 package app
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,9 +11,9 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/tidwall/buntdb"
 	"github.com/urfave/cli/v2"
 
+	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/utils"
 )
 
@@ -29,6 +30,7 @@ type AppContext struct {
 	WalletInstance   *WalletInstance
 	walletInstances  []*WalletInstance
 	readlineInstance *readline.Instance
+	DB               *sql.DB
 }
 
 var Context *AppContext
@@ -44,10 +46,9 @@ func InitAppContext(rootApp *cli.App, walletApp *cli.App) {
 		log.Fatal(err)
 	}
 
-	//defer instance.Close()
-
 	app.readlineInstance = instance
 	app.LoadConfig()
+	app.LoadDB()
 	app.LoadWalletInstances()
 
 	Context = app
@@ -86,9 +87,38 @@ out:
 	}
 }
 
+func (app *AppContext) LoadDB() {
+	dataFolder := config.DATA_FOLDER
+	utils.CreateFoldersIfNotExists(dataFolder)
+	db, err := sql.Open("sqlite3", dataFolder+"/"+app.Config.Env+".db")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	sql := `
+		create table if not exists app_wallets (
+			id integer primary key,
+			name varchar unique,
+			daemon_rpc varchar,
+			wallet_rpc varchar,
+			wallet_path varchar
+		);
+	`
+
+	_, err = db.Exec(sql)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app.DB = db
+}
+
 func (app *AppContext) SetEnv(env string) {
 	app.Config.Env = env
 	app.SaveConfig()
+
+	app.DB.Close()
+	app.LoadDB()
 	app.LoadWalletInstances()
 }
 
@@ -104,14 +134,6 @@ func (app *AppContext) GetWalletInstance(name string) (index int, wallet *Wallet
 
 func (app *AppContext) GetWalletInstances() []*WalletInstance {
 	return app.walletInstances
-}
-
-func (app *AppContext) AddWalletInstance(wallet *WalletInstance) {
-	app.walletInstances = append(app.walletInstances, wallet)
-}
-
-func (app *AppContext) RemoveWalletInstance(index int) {
-	app.walletInstances = append(app.walletInstances[:index], app.walletInstances[index+1:]...)
 }
 
 func (app *AppContext) RefreshPrompt() {
@@ -156,30 +178,28 @@ func (app *AppContext) SaveConfig() {
 func (app *AppContext) LoadWalletInstances() {
 	app.walletInstances = []*WalletInstance{}
 
-	folder := "data"
-	utils.CreateFoldersIfNotExists(folder)
+	query := `
+		select * from app_wallets
+	`
 
-	db, err := buntdb.Open(fmt.Sprintf("./%s/wallets.db", folder))
+	rows, err := app.DB.Query(query)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
-	err = db.View(func(tx *buntdb.Tx) error {
-		tx.Ascend("", func(key, value string) bool {
-			walletInstance := new(WalletInstance)
-			walletInstance.Unmarshal(value)
-			if walletInstance.Env == app.Config.Env {
-				app.walletInstances = append(app.walletInstances, walletInstance)
-			}
+	for rows.Next() {
+		walletInstance := new(WalletInstance)
+		err = rows.Scan(&walletInstance.Id,
+			&walletInstance.Name,
+			&walletInstance.DaemonAddress,
+			&walletInstance.WalletAddress,
+			&walletInstance.WalletPath,
+		)
 
-			return true
-		})
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		return nil
-	})
-
-	if err != nil {
-		log.Fatal(err)
+		app.walletInstances = append(app.walletInstances, walletInstance)
 	}
 }

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -10,14 +9,11 @@ import (
 
 	"github.com/deroproject/derohe/rpc"
 	deroWallet "github.com/deroproject/derohe/walletapi"
-	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/rpc_client"
-
-	"github.com/tidwall/buntdb"
 )
 
 type WalletInstance struct {
-	Env           string
+	Id            int64
 	Name          string
 	DaemonAddress string
 	WalletAddress string
@@ -120,72 +116,52 @@ func (w *WalletInstance) Close() {
 
 	if w.WalletDisk != nil {
 		w.WalletDisk.Close_Encrypted_Wallet()
+		w.WalletDisk = nil
 	}
 }
 
 func (w *WalletInstance) Save() {
-	db, err := buntdb.Open(config.DB_WALLETS_FILEPATH)
+	sql := `
+		update app_wallets set name = ?, daemon_rpc = ?, wallet_rpc = ?, wallet_path = ? where id == ?
+	`
+
+	_, err := Context.DB.Exec(sql, w.Name, w.DaemonAddress, w.WalletAddress, w.WalletPath, w.Id)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
-
-	data, err := w.Marshal()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db.Update(func(tx *buntdb.Tx) error {
-		_, _, err := tx.Set(w.Name, string(data), nil)
-		return err
-	})
 }
 
-func (w *WalletInstance) Del() {
-	db, err := buntdb.Open(config.DB_WALLETS_FILEPATH)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
+func (w *WalletInstance) Add() {
+	sql := `
+		insert into app_wallets(name, daemon_rpc, wallet_rpc, wallet_path)
+		values (?,?,?,?)
+	`
 
-	db.Update(func(tx *buntdb.Tx) error {
-		_, err := tx.Delete(w.Name)
-		return err
-	})
-}
-
-func (w *WalletInstance) Marshal() ([]byte, error) {
-	instance := map[string]interface{}{
-		"env":    w.Env,
-		"name":   w.Name,
-		"daemon": w.DaemonAddress,
-	}
-
-	if w.WalletAddress != "" {
-		instance["wallet_rpc"] = w.WalletAddress
-	} else if w.WalletPath != "" {
-		instance["wallet_path"] = w.WalletPath
-	}
-
-	return json.Marshal(instance)
-}
-
-func (w *WalletInstance) Unmarshal(data string) {
-	var result map[string]interface{}
-	err := json.Unmarshal([]byte(data), &result)
+	res, err := Context.DB.Exec(sql, w.Name, w.DaemonAddress, w.WalletAddress, w.WalletPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	w.Env = fmt.Sprint(result["env"])
-	w.Name = fmt.Sprint(result["name"])
-	w.DaemonAddress = fmt.Sprint(result["daemon"])
-
-	if result["wallet_rpc"] != nil {
-		w.WalletAddress = fmt.Sprint(result["wallet_rpc"])
-	} else if result["wallet_path"] != nil {
-		w.WalletPath = fmt.Sprint(result["wallet_path"])
+	id, err := res.LastInsertId()
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	w.Id = id
+	Context.walletInstances = append(Context.walletInstances, w)
+}
+
+func (w *WalletInstance) Del(listIndex int) {
+	sql := `
+		delete from app_wallets where id == ?
+	`
+
+	_, err := Context.DB.Exec(sql, w.Id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	Context.walletInstances = append(Context.walletInstances[:listIndex], Context.walletInstances[listIndex+1:]...)
 }
 
 func (w *WalletInstance) GetConnectionAddress() string {
@@ -251,16 +227,17 @@ func (w *WalletInstance) Transfer(params *rpc.Transfer_Params) (string, error) {
 	return "", nil
 }
 
-func (w *WalletInstance) EstimateFeesAndTransfer(scid string, ringsize uint64, args rpc.Arguments) (string, error) {
+func (w *WalletInstance) EstimateFeesAndTransfer(scid string, ringsize int, transfers []rpc.Transfer, args rpc.Arguments) (string, error) {
 	signer := w.GetAddress()
 
 	arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
 	arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
 
 	estimate, err := w.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
-		Ringsize: ringsize,
-		Signer:   signer,
-		SC_RPC:   append(args, arg_sc, arg_sc_action),
+		Ringsize:  uint64(ringsize),
+		Signer:    signer,
+		Transfers: transfers,
+		SC_RPC:    append(args, arg_sc, arg_sc_action),
 	})
 
 	if err != nil {
@@ -278,10 +255,11 @@ func (w *WalletInstance) EstimateFeesAndTransfer(scid string, ringsize uint64, a
 	}
 
 	txid, err := w.Transfer(&rpc.Transfer_Params{
-		SC_ID:    scid,
-		Ringsize: ringsize,
-		Fees:     fees,
-		SC_RPC:   args,
+		SC_ID:     scid,
+		Ringsize:  uint64(ringsize),
+		Fees:      fees,
+		Transfers: transfers,
+		SC_RPC:    args,
 	})
 
 	if err != nil {

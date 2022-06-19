@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/chzyer/readline"
@@ -26,6 +27,20 @@ func Prompt(prompt string, defaultValue string) (string, error) {
 	}
 
 	return line, nil
+}
+
+func PromptInt(prompt string, defaultValue int64) (int64, error) {
+	valueString, err := Prompt(prompt, fmt.Sprintf("%d", defaultValue))
+	if err != nil {
+		return 0, err
+	}
+
+	value, err := strconv.ParseInt(valueString, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return value, nil
 }
 
 func PromptYesNo(prompt string, defaultAnswer bool) (bool, error) {

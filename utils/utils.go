@@ -1,11 +1,13 @@
 package utils
 
 import (
+	"database/sql"
 	"errors"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/g45t345rt/derosphere/config"
 	"github.com/urfave/cli/v2"
 )
 
@@ -29,4 +31,15 @@ func CreateFoldersIfNotExists(folder string) {
 			log.Fatal(err)
 		}
 	}
+}
+
+func OpenDB(env string) *sql.DB {
+	filePath := config.DATA_FOLDER + "/" + env + ".db"
+	CreateFoldersIfNotExists(config.DATA_FOLDER)
+	db, err := sql.Open("sqlite3", filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return db
 }
