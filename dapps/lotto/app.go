@@ -180,6 +180,8 @@ func CommandCreateLotto() *cli.Command {
 			}
 
 			antiSpamFee := int64(100000)
+			arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
+			arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
 			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Create"}
 			arg2 := rpc.Argument{Name: "maxTickets", DataType: rpc.DataUint64, Value: maxTickets}
 			arg3 := rpc.Argument{Name: "ticketPrice", DataType: rpc.DataUint64, Value: ticketPrice}
@@ -194,17 +196,18 @@ func CommandCreateLotto() *cli.Command {
 				return nil
 			}
 
-			txid, err := walletInstance.EstimateFeesAndTransfer(scid, 2,
-				[]rpc.Transfer{
+			txid, err := walletInstance.EstimateFeesAndTransfer(&rpc.Transfer_Params{
+				Ringsize: 2,
+				Transfers: []rpc.Transfer{
 					{
 						Burn:        uint64(antiSpamFee + baseReward),
 						Destination: randomAddresses.Address[0],
 					},
 				},
-				rpc.Arguments{
-					arg1, arg2, arg3, arg4, arg5, arg6, arg7,
+				SC_RPC: rpc.Arguments{
+					arg_sc, arg_sc_action, arg1, arg2, arg3, arg4, arg5, arg6, arg7,
 				},
-			)
+			})
 
 			if err != nil {
 				fmt.Println(err)

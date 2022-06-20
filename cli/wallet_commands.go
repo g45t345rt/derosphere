@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/blang/semver/v4"
+	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/globals"
 	"github.com/deroproject/derohe/rpc"
 	"github.com/fatih/color"
@@ -187,6 +188,65 @@ func CommandWalletBalance() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			balance := app.Context.WalletInstance.GetBalance()
 			fmt.Printf("%s\n", globals.FormatMoney(balance))
+			return nil
+		},
+	}
+}
+
+func CommandWalletTransferDero() *cli.Command {
+	return &cli.Command{
+		Name:    "transfer",
+		Aliases: []string{"t"},
+		Usage:   "Transfer DERO to another address",
+		Action: func(ctx *cli.Context) error {
+
+			walletInstance := app.Context.WalletInstance
+
+			assetToken, err := app.Prompt("Enter asset token (empty for sending DERO)", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			addressOrName, err := app.Prompt("Enter address/name", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			amount, err := app.PromptInt("Enter amount", 0)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			ringsize, err := app.PromptInt("Set ringsize", 2)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			transfer := rpc.Transfer{SCID: crypto.HashHexToHash(assetToken), Destination: addressOrName, Amount: uint64(amount)}
+
+			yes, err := app.PromptYesNo(fmt.Sprintf("Are you sure you want to send %s to %s", globals.FormatMoney(transfer.Amount), addressOrName), false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if !yes {
+				return nil
+			}
+
+			txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
+				Ringsize: uint64(ringsize),
+				Transfers: []rpc.Transfer{
+					transfer,
+				},
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(txid)
+
 			return nil
 		},
 	}
@@ -375,6 +435,7 @@ func WalletApp() *cli.App {
 		Commands: []*cli.Command{
 			CommandWalletInfo(),
 			CommandDApp(),
+			CommandWalletTransferDero(),
 			CommandWalletBalance(),
 			CommandWalletAddress(),
 			CommandSwitchWallet(),

@@ -227,25 +227,22 @@ func (w *WalletInstance) Transfer(params *rpc.Transfer_Params) (string, error) {
 	return "", nil
 }
 
-func (w *WalletInstance) EstimateFeesAndTransfer(scid string, ringsize int, transfers []rpc.Transfer, args rpc.Arguments) (string, error) {
+func (w *WalletInstance) EstimateFeesAndTransfer(transfer *rpc.Transfer_Params) (string, error) {
 	signer := w.GetAddress()
 
-	arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
-	arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
-
 	estimate, err := w.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
-		Ringsize:  uint64(ringsize),
+		Ringsize:  transfer.Ringsize,
 		Signer:    signer,
-		Transfers: transfers,
-		SC_RPC:    append(args, arg_sc, arg_sc_action),
+		Transfers: transfer.Transfers,
+		SC_RPC:    transfer.SC_RPC,
 	})
 
 	if err != nil {
 		return "", err
 	}
 
-	fees := estimate.GasStorage
-	yes, err := PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
+	transfer.Fees = estimate.GasStorage
+	yes, err := PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(transfer.Fees)), false)
 	if HandlePromptErr(err) {
 		return "", err
 	}
@@ -254,13 +251,7 @@ func (w *WalletInstance) EstimateFeesAndTransfer(scid string, ringsize int, tran
 		return "", errors.New("transaction cancelled")
 	}
 
-	txid, err := w.Transfer(&rpc.Transfer_Params{
-		SC_ID:     scid,
-		Ringsize:  uint64(ringsize),
-		Fees:      fees,
-		Transfers: transfers,
-		SC_RPC:    args,
-	})
+	txid, err := w.Transfer(transfer)
 
 	if err != nil {
 		return "", err
