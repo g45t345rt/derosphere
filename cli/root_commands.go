@@ -141,7 +141,6 @@ func CommandAttachWallet() *cli.Command {
 			}
 
 			walletInstance = new(app.WalletInstance)
-			//walletInstance.Env = app.Context.Config.Env
 
 			if name == "" {
 				fmt.Println("Name cannot be empty.")
@@ -160,8 +159,6 @@ func CommandAttachWallet() *cli.Command {
 				return nil
 			}
 
-			//walletInstance.Save()
-			//app.Context.AddWalletInstance(walletInstance)
 			walletInstance.Add()
 
 			fmt.Println("New wallet attached and saved.")
@@ -252,7 +249,7 @@ func CommandListWallets() *cli.Command {
 	}
 }
 
-func OpenWalletAction(ctx *cli.Context) error {
+func OpenWalletAction(ctx *cli.Context, useApp string) error {
 	walletName := ctx.Args().First()
 	var err error = nil
 
@@ -281,7 +278,9 @@ setWalletName:
 	}
 
 	app.Context.WalletInstance = walletInstance
-	app.Context.UseApp = "walletApp"
+	if useApp != "" {
+		app.Context.UseApp = useApp // "walletApp"
+	}
 
 	fmt.Println("Wallet connection successful.")
 
@@ -293,7 +292,9 @@ func CommandOpenWallet() *cli.Command {
 		Name:    "open",
 		Aliases: []string{"o"},
 		Usage:   "Use a specific wallet for interacting with apps",
-		Action:  OpenWalletAction,
+		Action: func(ctx *cli.Context) error {
+			return OpenWalletAction(ctx, "walletApp")
+		},
 	}
 }
 

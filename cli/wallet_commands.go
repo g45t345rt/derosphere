@@ -70,12 +70,33 @@ func CommandWalletInfo() *cli.Command {
 	}
 }
 
+func CommandWalletSeed() *cli.Command {
+	return &cli.Command{
+		Name:    "seed",
+		Usage:   "Display wallet seed",
+		Aliases: []string{"s"},
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			if walletInstance.WalletRPC != nil {
+				fmt.Println("Can't get seed from wallet connected through rpc connection.")
+			} else if walletInstance.WalletDisk != nil {
+				fmt.Println(walletInstance.WalletDisk.GetSeed())
+			}
+
+			return nil
+		},
+	}
+}
+
 func CommandSwitchWallet() *cli.Command {
 	return &cli.Command{
 		Name:    "switch",
 		Usage:   "Quickly change to another wallet",
 		Aliases: []string{"s"},
-		Action:  OpenWalletAction,
+		Action: func(ctx *cli.Context) error {
+			return OpenWalletAction(ctx, "")
+		},
 	}
 }
 
@@ -465,12 +486,34 @@ func DAppApp(app *cli.App) *cli.App {
 		Commands: append(app.Commands,
 			CommandDAppInfo(),
 			CommandDAppBack(),
-			CommandSwitchWallet(),
+			DAppWalletCommands(),
+			//CommandSwitchWallet(),
 			CommandVersion(app.Name, semver.MustParse(app.Version)),
 			CommandExit(),
 		),
 		Action: func(ctx *cli.Context) error {
 			fmt.Println("Command not found. Type 'help' for a list of commands.")
+			return nil
+		},
+	}
+}
+
+func DAppWalletCommands() *cli.Command {
+	return &cli.Command{
+		Name:               "wallet",
+		Aliases:            []string{"w"},
+		Usage:              "Wallet commands",
+		CustomHelpTemplate: AppTemplate,
+		Subcommands: []*cli.Command{
+			CommandWalletInfo(),
+			CommandWalletTransferDero(),
+			CommandWalletBalance(),
+			CommandWalletAddress(),
+			CommandWalletTransactions(),
+			CommandSwitchWallet(),
+		},
+		Action: func(ctx *cli.Context) error {
+			ctx.App.Run([]string{"cmd", "help"})
 			return nil
 		},
 	}
@@ -487,6 +530,7 @@ func WalletApp() *cli.App {
 			CommandWalletBalance(),
 			CommandWalletAddress(),
 			CommandWalletTransactions(),
+			CommandWalletSeed(),
 			CommandSwitchWallet(),
 			SCCommands(),
 			CommandCloseWallet(),

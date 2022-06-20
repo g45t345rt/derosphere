@@ -80,12 +80,13 @@ func (w *WalletInstance) Open() error {
 
 		w.WalletRPC = walletRPC
 	} else if w.WalletPath != "" {
-		wd, err := os.Getwd()
+		/*wd, err := os.Getwd()
 		if err != nil {
 			return err
-		}
+		}*/
 
-		path := filepath.ToSlash(fmt.Sprintf("%s/%s", wd, w.WalletPath))
+		//path := filepath.ToSlash(fmt.Sprintf("%s/%s", wd, w.WalletPath))
+		path := filepath.ToSlash(w.WalletPath)
 		fmt.Println(path)
 		_, err = os.Stat(path)
 
@@ -93,6 +94,7 @@ func (w *WalletInstance) Open() error {
 			return err
 		}
 
+	retryPass:
 		password, err := PromptPassword("Enter wallet password")
 		if err != nil {
 			return err
@@ -100,6 +102,11 @@ func (w *WalletInstance) Open() error {
 
 		wallet, err := deroWallet.Open_Encrypted_Wallet(w.WalletPath, password)
 		if err != nil {
+			if err.Error() == "Invalid Password" {
+				fmt.Println("Invalid password")
+				goto retryPass
+			}
+
 			return err
 		}
 
