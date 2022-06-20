@@ -73,6 +73,12 @@ func (c *Wallet) Transfer(params *rpc.Transfer_Params) (*rpc.Transfer_Result, er
 	return result, err
 }
 
+func (c *Wallet) GetTransfers(params *rpc.Get_Transfers_Params) (*rpc.Get_Transfers_Result, error) {
+	var result *rpc.Get_Transfers_Result
+	err := c.client.CallFor(&result, "GetTransfers", params)
+	return result, err
+}
+
 // Useless func since I use transfer - keep it for archive
 func (c *Wallet) InstallSC(code string) (string, error) {
 	client := &http.Client{

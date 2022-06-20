@@ -32,6 +32,29 @@ func displayDAppsTable() {
 	tbl.Print()
 }
 
+func displayWalletTransactions(transactions []rpc.Entry) {
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+	tbl := table.New("", "Amount", "Burn", "Fees", "Time", "Height", "Destination", "Coinbase", "TXID")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+	for index, tx := range transactions {
+		tbl.AddRow(
+			index,
+			globals.FormatMoney(tx.Amount),
+			globals.FormatMoney(tx.Burn),
+			globals.FormatMoney(tx.Fees),
+			tx.Time,
+			tx.Height,
+			tx.Destination,
+			tx.Coinbase,
+			tx.TXID)
+	}
+
+	tbl.Print()
+}
+
 func CommandWalletInfo() *cli.Command {
 	return &cli.Command{
 		Name:    "info",
@@ -324,6 +347,31 @@ func CommandUpdateSC() *cli.Command {
 	}
 }
 
+func CommandWalletTransactions() *cli.Command {
+	return &cli.Command{
+		Name:    "transactions",
+		Aliases: []string{"tx"},
+		Usage:   "Show transaction history",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			entries, err := walletInstance.GetTransfers(&rpc.Get_Transfers_Params{
+				In:       true,
+				Out:      true,
+				Coinbase: true,
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			displayWalletTransactions(entries)
+			return nil
+		},
+	}
+}
+
 func CommandInstallSC() *cli.Command {
 	return &cli.Command{
 		Name:    "install",
@@ -438,6 +486,7 @@ func WalletApp() *cli.App {
 			CommandWalletTransferDero(),
 			CommandWalletBalance(),
 			CommandWalletAddress(),
+			CommandWalletTransactions(),
 			CommandSwitchWallet(),
 			SCCommands(),
 			CommandCloseWallet(),

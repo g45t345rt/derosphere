@@ -202,6 +202,34 @@ func (w *WalletInstance) GetBalance() uint64 {
 	return 0
 }
 
+func (w *WalletInstance) GetTransfers(params *rpc.Get_Transfers_Params) ([]rpc.Entry, error) {
+	if w.WalletRPC != nil {
+		result, err := w.WalletRPC.GetTransfers(params)
+		if err != nil {
+			return nil, err
+		}
+
+		return result.Entries, nil
+	} else if w.WalletDisk != nil {
+		entries := w.WalletDisk.Show_Transfers(
+			params.SCID,
+			params.Coinbase,
+			params.In,
+			params.Out,
+			params.Min_Height,
+			params.Max_Height,
+			params.Sender,
+			params.Receiver,
+			params.DestinationPort,
+			0,
+		)
+
+		return entries, nil
+	}
+
+	return nil, nil
+}
+
 func (w *WalletInstance) Transfer(params *rpc.Transfer_Params) (string, error) {
 	if w.WalletRPC != nil {
 		result, err := w.WalletRPC.Transfer(params)
