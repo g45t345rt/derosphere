@@ -100,12 +100,41 @@ func (l *Lotto) DisplayWinnerReward() string {
 	return winnerReward
 }
 
+func (l *Lotto) DisplayWinner() string {
+	if l.WinnerName.Valid {
+		return l.WinnerName.String
+	}
+
+	return l.Winner.String
+}
+
+func (l *Lotto) Print() {
+	fmt.Println("Creator:", l.DisplayCreator())
+	fmt.Println("Tickets:", l.DisplayTickets())
+	fmt.Println("Ticket price:", globals.FormatMoney(uint64(l.TicketPrice.Int64)))
+	fmt.Println("Winner reward:", l.DisplayWinnerReward())
+	fmt.Println("Base reward:", globals.FormatMoney(uint64(l.BaseReward.Int64)))
+	fmt.Println("Start timestamp:", l.DisplayStartTimestamp())
+	fmt.Println("Draw timestamp:", l.DisplayDrawTimestamp())
+	fmt.Println("Unique wallet:", l.UniqueWallet.Bool)
+	fmt.Println("Password lock:", l.PasswordHash.Valid)
+}
+
 type LottoTicket struct {
 	LottoTxId    sql.NullString `db:"lotto_tx_id"`
 	TicketNumber sql.NullInt64  `db:"ticker_number"`
 	Owner        sql.NullString `db:"owner"`
 	Timestamp    sql.NullInt64  `db:"timestamp"`
 	PlayTxId     sql.NullString `db:"play_tx_id"`
+	OwnerName    sql.NullString `db:"owner_name"`
+}
+
+func (lt *LottoTicket) DisplayOwner() string {
+	if lt.OwnerName.Valid {
+		return lt.OwnerName.String
+	}
+
+	return lt.Owner.String
 }
 
 func initData() {
@@ -156,10 +185,12 @@ func sync() {
 	commitAt := counts[DAPP_NAME]
 	chunk := uint64(1000)
 	db := app.Context.DB
-	lottoKey, err := regexp.Compile(`state_lotto_([a-zA-Z0-9-]+)_(.+)`)
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	isLotto, _ := regexp.Compile(`state_lotto_`)
+	lottoKey, _ := regexp.Compile(`state_lotto_([a-zA-Z0-9-]+)_(.+)`)
+
+	isTicket, _ := regexp.Compile(`state_lotto_[a-zA-Z0-9-]+_ticket_\d+`)
+	ticketKey, _ := regexp.Compile(`state_lotto_([a-zA-Z0-9-]+)_ticket_(\d+)_(.+)`)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -182,12 +213,36 @@ func sync() {
 		for _, commit := range commits {
 			key := commit.Key
 
-			if strings.HasPrefix(commit.Key, "state_lotto_") {
+			if isTicket.Match([]byte(key)) {
+				txId := ticketKey.ReplaceAllString(key, "$1")
+				ticketNumber := ticketKey.ReplaceAllString(key, "$2")
+				columnName := ticketKey.ReplaceAllString(key, "$3")
+
+				if commit.Action == "S" {
+					fmt.Println("set-ticket", txId, columnName, commit.Value)
+
+					query := fmt.Sprintf(`
+						insert into lotto_tickets (lotto_tx_id, ticket_number, %s)
+						values (?, ?, ?)
+						on conflict(lotto_tx_id, ticket_number) do update 
+						set %s = ?
+					`, columnName, columnName)
+
+					_, err := tx.Exec(query, txId, ticketNumber, commit.Value, commit.Value)
+					if err != nil {
+						log.Fatal(err)
+					}
+				}
+			} else if isLotto.Match([]byte(key)) {
 				txId := lottoKey.ReplaceAllString(key, "$1")
 				columnName := lottoKey.ReplaceAllString(key, "$2")
 
+				if strings.HasPrefix(columnName, "unique_ticket_") {
+					continue
+				}
+
 				if commit.Action == "S" {
-					fmt.Println("set", txId, columnName, commit.Value)
+					fmt.Println("set-lotto", txId, columnName, commit.Value)
 
 					query := fmt.Sprintf(`
 						insert into lotto (tx_id, %s)
@@ -195,42 +250,41 @@ func sync() {
 						on conflict(tx_id) do update 
 						set %s = ?
 					`, columnName, columnName)
-					_, err := tx.Exec(query, txId, commit.Value, commit.Value)
 
+					_, err := tx.Exec(query, txId, commit.Value, commit.Value)
 					if err != nil {
 						log.Fatal(err)
 					}
+				} else if commit.Action == "D" {
+					fmt.Println("del-lotto", txId, columnName)
 
-					continue
-				}
+					query := fmt.Sprintf(`
+					  update lotto
+						set %s = null
+						where tx_id = ?
+					`, columnName)
 
-				if commit.Action == "D" {
-					fmt.Println("del", "TODO")
-					// TODO
-					continue
+					_, err := tx.Exec(query, txId)
+					if err != nil {
+						log.Fatal(err)
+					}
 				}
 			}
 		}
 
-		err := tx.Commit()
+		// we if ticket price null means a lotto has been cancelled and deleted from sc
+		_, err := tx.Exec("delete from lotto where ticket_price is null")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = tx.Commit()
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		utils.SetCommitCount(DAPP_NAME, commitAt)
 	}
-}
-
-func displayLotto(lotto Lotto) {
-	fmt.Println("Creator:", lotto.DisplayCreator())
-	fmt.Println("Tickets:", lotto.DisplayTickets())
-	fmt.Println("Ticket price:", globals.FormatMoney(uint64(lotto.TicketPrice.Int64)))
-	fmt.Println("Winner reward:", lotto.DisplayWinnerReward())
-	fmt.Println("Base reward:", globals.FormatMoney(uint64(lotto.BaseReward.Int64)))
-	fmt.Println("Start timestamp:", lotto.DisplayStartTimestamp())
-	fmt.Println("Draw timestamp:", lotto.DisplayDrawTimestamp())
-	fmt.Println("Unique wallet:", lotto.UniqueWallet.Bool)
-	fmt.Println("Password lock:", lotto.PasswordHash.Valid)
 }
 
 func displayLiveLottoTable(lottos []Lotto) {
@@ -250,6 +304,40 @@ func displayLiveLottoTable(lottos []Lotto) {
 	}
 }
 
+func displayDrawLottoTable(lottos []Lotto) {
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+	tbl := table.New("", "Tickets", "Winning Ticket", "Winner", "Winner Reward", "Claimed", "Draw timestamp", "TxId")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+	for index, l := range lottos {
+		tbl.AddRow(index, l.DisplayTickets(), l.WinningTicket.Int64, l.DisplayWinner(), l.DisplayWinnerReward(), l.ClaimTimestamp.Valid, l.DisplayDrawTimestamp(), l.TxId.String)
+	}
+
+	tbl.Print()
+	if len(lottos) == 0 {
+		fmt.Println("No draw results")
+	}
+}
+
+func displayTicketsTable(tickets []LottoTicket) {
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+	tbl := table.New("", "Owner", "Ticket Number", "Timestamp", "TxId")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+	for index, t := range tickets {
+		tbl.AddRow(index, t.DisplayOwner(), t.TicketNumber.Int64, t.Timestamp.Int64, t.PlayTxId.String)
+	}
+
+	tbl.Print()
+	if len(tickets) == 0 {
+		fmt.Println("No tickets bought")
+	}
+}
+
 func promptTxId(c *cli.Context) (string, error) {
 	txId := c.Args().First()
 	var err error
@@ -264,12 +352,78 @@ func promptTxId(c *cli.Context) (string, error) {
 	return txId, nil
 }
 
+func getLotto(db *sql.DB, txId string) (*Lotto, error) {
+	query := `
+		select tx_id, ticket_price, max_tickets, base_reward, ticket_count,
+			unique_wallet, password_hash, draw_timestamp, claim_tx_id, claim_timestamp,
+			start_timestamp, winner, winning_ticket, winner_comment, owner, u1.name as owner_name, u2.name as winner_name
+		from lotto
+		left join username as u1 on u1.wallet_address = owner
+		left join username as u2 on u2.wallet_address = winner
+		where tx_id = ?
+	`
+
+	row := db.QueryRow(query, txId)
+	var lotto Lotto
+	err := row.Scan(&lotto.TxId, &lotto.TicketPrice, &lotto.MaxTickets, &lotto.BaseReward,
+		&lotto.TicketCount, &lotto.UniqueWallet, &lotto.PasswordHash, &lotto.DrawTimestamp, &lotto.ClaimTxId,
+		&lotto.ClaimTimestamp, &lotto.StartTimestamp, &lotto.Winner, &lotto.WinningTicket, &lotto.WinnerComment,
+		&lotto.Owner, &lotto.OwnerName, &lotto.WinnerName,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("Lotto does not exists")
+		} else {
+			return nil, err
+		}
+	}
+
+	return &lotto, nil
+}
+
 func CommandViewResult() *cli.Command {
 	return &cli.Command{
 		Name:    "result",
 		Aliases: []string{"r"},
 		Usage:   "View lottery draws / result",
 		Action: func(c *cli.Context) error {
+			sync()
+
+			db := app.Context.DB
+
+			query := `
+				select tx_id, ticket_price, max_tickets, base_reward, ticket_count,
+					unique_wallet, password_hash, draw_timestamp, claim_tx_id, claim_timestamp,
+					start_timestamp, winner, winning_ticket, winner_comment, owner, u1.name as owner_name, u2.name as winner_name
+				from lotto
+				left join username as u1 on u1.wallet_address = owner
+				left join username as u2 on u2.wallet_address = winner
+				where draw_timestamp is not null
+			`
+
+			rows, err := db.Query(query)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			var lottos []Lotto
+			for rows.Next() {
+				var lotto Lotto
+				err = rows.Scan(&lotto.TxId, &lotto.TicketPrice, &lotto.MaxTickets, &lotto.BaseReward,
+					&lotto.TicketCount, &lotto.UniqueWallet, &lotto.PasswordHash, &lotto.DrawTimestamp, &lotto.ClaimTxId,
+					&lotto.ClaimTimestamp, &lotto.StartTimestamp, &lotto.Winner, &lotto.WinningTicket, &lotto.WinnerComment,
+					&lotto.Owner, &lotto.OwnerName, &lotto.WinnerName,
+				)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				lottos = append(lottos, lotto)
+			}
+
+			displayDrawLottoTable(lottos)
 			return nil
 		},
 	}
@@ -279,44 +433,52 @@ func CommandBuyTicket() *cli.Command {
 	return &cli.Command{
 		Name:    "buy",
 		Aliases: []string{"b"},
-		Usage:   "Buy a ticket",
+		Usage:   "Buy ticket",
 		Action: func(c *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 			scid := getSCID()
+			db := app.Context.DB
 
 			txId, err := promptTxId(c)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			// TODO - get lotto ticket cost``
-			ticketPrice := 0
-
-			// TODO - check if lotto needs password
-			password, err := app.PromptPassword("Password")
-			if app.HandlePromptErr(err) {
+			lotto, err := getLotto(db, txId)
+			if err != nil {
+				fmt.Println(err)
 				return nil
 			}
 
+			ticketPrice := lotto.TicketPrice.Int64
+
 			userPasswordHash := ""
-			if password != "" {
-				walletAddress := walletInstance.GetAddress()
-				owner := "" // TODO - get owner lotto address
-				hasher := crypto.SHA3_256.New()
 
-				// first hash
-				hasher.Write([]byte(strings.Join([]string{owner, fmt.Sprintf("%d", ticketPrice), password}, ".")))
-				userPasswordHash = hex.EncodeToString(hasher.Sum(nil))
-				hasher.Reset()
+			if lotto.PasswordHash.Valid && lotto.PasswordHash.String != "" {
+				password, err := app.PromptPassword("Password")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
 
-				// second hash
-				hasher.Write([]byte(strings.Join([]string{txId, userPasswordHash}, ".")))
-				userPasswordHash = hex.EncodeToString(hasher.Sum(nil))
-				hasher.Reset()
+				if password != "" {
+					walletAddress := walletInstance.GetAddress()
+					owner := "" // TODO - get owner lotto address
+					hasher := crypto.SHA3_256.New()
 
-				// third hash
-				hasher.Write([]byte(strings.Join([]string{walletAddress, userPasswordHash}, ".")))
-				userPasswordHash = hex.EncodeToString(hasher.Sum(nil))
+					// first hash
+					hasher.Write([]byte(strings.Join([]string{owner, fmt.Sprintf("%d", ticketPrice), password}, ".")))
+					userPasswordHash = hex.EncodeToString(hasher.Sum(nil))
+					hasher.Reset()
+
+					// second hash
+					hasher.Write([]byte(strings.Join([]string{txId, userPasswordHash}, ".")))
+					userPasswordHash = hex.EncodeToString(hasher.Sum(nil))
+					hasher.Reset()
+
+					// third hash
+					hasher.Write([]byte(strings.Join([]string{walletAddress, userPasswordHash}, ".")))
+					userPasswordHash = hex.EncodeToString(hasher.Sum(nil))
+				}
 			}
 
 			arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
@@ -462,9 +624,16 @@ func CommandCancelLotto() *cli.Command {
 		Action: func(c *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 			scid := getSCID()
+			db := app.Context.DB
 
 			txId, err := promptTxId(c)
 			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			_, err = getLotto(db, txId)
+			if err != nil {
+				fmt.Println(err)
 				return nil
 			}
 
@@ -499,9 +668,21 @@ func CommandDrawLotto() *cli.Command {
 		Action: func(c *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 			scid := getSCID()
+			db := app.Context.DB
 
 			txId, err := promptTxId(c)
 			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			lotto, err := getLotto(db, txId)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			if time.Now().Unix() < lotto.DrawTimestamp.Int64 {
+				fmt.Println("Can't draw yet.")
 				return nil
 			}
 
@@ -536,16 +717,26 @@ func CommandClaimReward() *cli.Command {
 		Action: func(c *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 			scid := getSCID()
+			db := app.Context.DB
 
 			txId, err := promptTxId(c)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			// TODO check if lotto needs a password
-			password, err := app.PromptPassword("Enter password")
-			if app.HandlePromptErr(err) {
+			lotto, err := getLotto(db, txId)
+			if err != nil {
+				fmt.Println(err)
 				return nil
+			}
+
+			password := ""
+
+			if lotto.PasswordHash.Valid && lotto.PasswordHash.String != "" {
+				password, err = app.PromptPassword("Enter password")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
 			}
 
 			comment, err := app.Prompt("Enter comment (optional)", "")
@@ -582,7 +773,7 @@ func CommandViewLotto() *cli.Command {
 	return &cli.Command{
 		Name:    "view",
 		Aliases: []string{"v"},
-		Usage:   "",
+		Usage:   "View lottery specifications",
 		Action: func(c *cli.Context) error {
 			sync()
 
@@ -593,34 +784,14 @@ func CommandViewLotto() *cli.Command {
 				return nil
 			}
 
-			query := `
-				select tx_id, ticket_price, max_tickets, base_reward, ticket_count,
-					unique_wallet, password_hash, draw_timestamp, claim_tx_id, claim_timestamp,
-					start_timestamp, winner, winning_ticket, winner_comment, owner, u1.name as owner_name, u2.name as winner_name
-				from lotto
-				left join username as u1 on u1.wallet_address = owner
-				left join username as u2 on u2.wallet_address = winner
-				where tx_id = ?
-			`
-
-			row := db.QueryRow(query, txId)
-			var lotto Lotto
-			err = row.Scan(&lotto.TxId, &lotto.TicketPrice, &lotto.MaxTickets, &lotto.BaseReward,
-				&lotto.TicketCount, &lotto.UniqueWallet, &lotto.PasswordHash, &lotto.DrawTimestamp, &lotto.ClaimTxId,
-				&lotto.ClaimTimestamp, &lotto.StartTimestamp, &lotto.Winner, &lotto.WinningTicket, &lotto.WinnerComment,
-				&lotto.Owner, &lotto.OwnerName, &lotto.WinnerName,
-			)
+			lotto, err := getLotto(db, txId)
 
 			if err != nil {
-				if err == sql.ErrNoRows {
-					fmt.Println("Lotto does not exists.")
-				} else {
-					log.Fatal(err)
-				}
-			} else {
-				displayLotto(lotto)
+				fmt.Println(err)
+				return nil
 			}
 
+			lotto.Print()
 			return nil
 		},
 	}
@@ -659,6 +830,7 @@ func CommandLiveLotto() *cli.Command {
 					&lotto.ClaimTimestamp, &lotto.StartTimestamp, &lotto.Winner, &lotto.WinningTicket, &lotto.WinnerComment,
 					&lotto.Owner, &lotto.OwnerName, &lotto.WinnerName,
 				)
+
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -667,6 +839,55 @@ func CommandLiveLotto() *cli.Command {
 			}
 
 			displayLiveLottoTable(lottos)
+			return nil
+		},
+	}
+}
+
+func CommandLottoTickets() *cli.Command {
+	return &cli.Command{
+		Name:    "tickets",
+		Aliases: []string{"l"},
+		Usage:   "View lotto tickets",
+		Action: func(c *cli.Context) error {
+			sync()
+
+			db := app.Context.DB
+
+			txId, err := promptTxId(c)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			query := `
+				select lotto_tx_id, ticket_number, owner, timestamp, play_tx_id,
+				u1.name as owner_name
+				from lotto_tickets
+				left join username as u1 on u1.wallet_address = owner
+				where lotto_tx_id = ?
+			`
+
+			rows, err := db.Query(query, txId)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			var tickets []LottoTicket
+			for rows.Next() {
+				var ticket LottoTicket
+				err = rows.Scan(&ticket.LottoTxId, &ticket.TicketNumber, &ticket.Owner,
+					&ticket.Timestamp, &ticket.PlayTxId, &ticket.OwnerName,
+				)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				tickets = append(tickets, ticket)
+			}
+
+			displayTicketsTable(tickets)
 			return nil
 		},
 	}
@@ -682,6 +903,7 @@ func App() *cli.App {
 		Commands: []*cli.Command{
 			CommandLiveLotto(),
 			CommandViewLotto(),
+			CommandLottoTickets(),
 			CommandBuyTicket(),
 			CommandCreateLotto(),
 			CommandCancelLotto(),
