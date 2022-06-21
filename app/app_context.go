@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/chzyer/readline"
 	"github.com/urfave/cli/v2"
@@ -22,15 +23,16 @@ type Config struct {
 }
 
 type AppContext struct {
-	Config           Config
-	UseApp           string
-	rootApp          *cli.App
-	walletApp        *cli.App
-	DAppApp          *cli.App
-	WalletInstance   *WalletInstance
-	walletInstances  []*WalletInstance
-	readlineInstance *readline.Instance
-	DB               *sql.DB
+	Config            Config
+	UseApp            string
+	rootApp           *cli.App
+	walletApp         *cli.App
+	DAppApp           *cli.App
+	WalletInstance    *WalletInstance
+	walletInstances   []*WalletInstance
+	readlineInstance  *readline.Instance
+	DB                *sql.DB
+	StopPromptRefresh bool // prompt auto refresh every second to display block height - use this arg to disable and show other prompt
 }
 
 var Context *AppContext
@@ -55,6 +57,13 @@ func InitAppContext(rootApp *cli.App, walletApp *cli.App) {
 }
 
 func (app *AppContext) Run() {
+	go func() {
+		for {
+			app.RefreshPrompt()
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
 out:
 	for {
 		app.RefreshPrompt()
@@ -137,17 +146,24 @@ func (app *AppContext) GetWalletInstances() []*WalletInstance {
 }
 
 func (app *AppContext) RefreshPrompt() {
+	if app.StopPromptRefresh {
+		return
+	}
+
 	prompt := fmt.Sprintf("[%s] > ", app.Config.Env)
 
 	if app.WalletInstance != nil {
-		prompt = fmt.Sprintf("[%s] > %s > ", app.Config.Env, app.WalletInstance.Name)
-	}
+		daemonHeight, _ := app.WalletInstance.Daemon.GetHeight()
+		walletHeight := app.WalletInstance.GetHeight()
+		prompt = fmt.Sprintf("[%s] (%d/%d) > %s > ", app.Config.Env, walletHeight, daemonHeight.Height, app.WalletInstance.Name)
 
-	if app.DAppApp != nil {
-		prompt = fmt.Sprintf("[%s] > %s > %s > ", app.Config.Env, app.WalletInstance.Name, app.DAppApp.Name)
+		if app.DAppApp != nil {
+			prompt = fmt.Sprintf("%s%s > ", prompt, app.DAppApp.Name)
+		}
 	}
 
 	app.readlineInstance.SetPrompt(prompt)
+	app.readlineInstance.Refresh()
 }
 
 func (app *AppContext) LoadConfig() {

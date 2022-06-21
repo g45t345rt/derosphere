@@ -72,9 +72,8 @@ func CommandWalletInfo() *cli.Command {
 
 func CommandWalletSeed() *cli.Command {
 	return &cli.Command{
-		Name:    "seed",
-		Usage:   "Display wallet seed",
-		Aliases: []string{"s"},
+		Name:  "seed",
+		Usage: "Display wallet seed",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 

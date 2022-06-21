@@ -61,3 +61,13 @@ func (d *Daemon) GetRandomAddresses(params *rpc.GetRandomAddress_Params) (*rpc.G
 
 	return result, nil
 }
+
+func (d *Daemon) GetHeight() (*rpc.Daemon_GetHeight_Result, error) {
+	var result *rpc.Daemon_GetHeight_Result
+	err := d.client.CallFor(&result, "DERO.GetHeight")
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

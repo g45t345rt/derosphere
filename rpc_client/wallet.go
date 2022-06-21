@@ -79,6 +79,12 @@ func (c *Wallet) GetTransfers(params *rpc.Get_Transfers_Params) (*rpc.Get_Transf
 	return result, err
 }
 
+func (c *Wallet) GetHeight() (*rpc.GetHeight_Result, error) {
+	var result *rpc.GetHeight_Result
+	err := c.client.CallFor(&result, "GetHeight")
+	return result, err
+}
+
 // Useless func since I use transfer - keep it for archive
 func (c *Wallet) InstallSC(code string) (string, error) {
 	client := &http.Client{

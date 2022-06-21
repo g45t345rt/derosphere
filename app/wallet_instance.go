@@ -209,6 +209,21 @@ func (w *WalletInstance) GetBalance() uint64 {
 	return 0
 }
 
+func (w *WalletInstance) GetHeight() uint64 {
+	if w.WalletRPC != nil {
+		result, err := w.WalletRPC.GetHeight()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return result.Height
+	} else if w.WalletDisk != nil {
+		return w.WalletDisk.Get_Height()
+	}
+
+	return 0
+}
+
 func (w *WalletInstance) GetTransfers(params *rpc.Get_Transfers_Params) ([]rpc.Entry, error) {
 	if w.WalletRPC != nil {
 		result, err := w.WalletRPC.GetTransfers(params)

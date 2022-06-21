@@ -10,6 +10,7 @@ import (
 
 func Prompt(prompt string, defaultValue string) (string, error) {
 	i := Context.readlineInstance
+	Context.StopPromptRefresh = true
 
 	if defaultValue != "" {
 		i.SetPrompt(fmt.Sprintf("%s [%s]: ", prompt, defaultValue))
@@ -18,6 +19,7 @@ func Prompt(prompt string, defaultValue string) (string, error) {
 	}
 
 	line, err := i.Readline()
+	Context.StopPromptRefresh = false
 	if err != nil {
 		return "", err
 	}
@@ -63,6 +65,7 @@ func PromptYesNo(prompt string, defaultAnswer bool) (bool, error) {
 
 func PromptChoose(prompt string, choices []string, defaultValue string) (string, error) {
 	i := Context.readlineInstance
+	Context.StopPromptRefresh = true
 
 prompt:
 	if defaultValue != "" {
@@ -73,6 +76,7 @@ prompt:
 
 	line, err := i.Readline()
 	if err != nil {
+		Context.StopPromptRefresh = false
 		return "", err
 	}
 
@@ -92,11 +96,13 @@ prompt:
 		goto prompt
 	}
 
+	Context.StopPromptRefresh = false
 	return line, nil
 }
 
 func PromptPassword(prompt string) (string, error) {
 	i := Context.readlineInstance
+	Context.StopPromptRefresh = true
 
 	config := i.GenPasswordConfig()
 	config.SetListener(func(line []rune, pos int, key rune) (newLine []rune, newPos int, ok bool) {
@@ -106,6 +112,7 @@ func PromptPassword(prompt string) (string, error) {
 	})
 
 	line, err := i.ReadPasswordWithConfig(config)
+	Context.StopPromptRefresh = false
 	if err != nil {
 		return "", err
 	}
