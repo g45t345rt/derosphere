@@ -186,7 +186,7 @@ func CommandDApp() *cli.Command {
 	return &cli.Command{
 		Name:               "app",
 		Usage:              "App commands",
-		CustomHelpTemplate: AppTemplate,
+		CustomHelpTemplate: utils.AppTemplate,
 		Subcommands: []*cli.Command{
 			CommandListDApps(),
 			CommandOpenDApp(),
@@ -465,7 +465,7 @@ func SCCommands() *cli.Command {
 	return &cli.Command{
 		Name:               "sc",
 		Usage:              "Smart contract commands",
-		CustomHelpTemplate: AppTemplate,
+		CustomHelpTemplate: utils.AppTemplate,
 		Subcommands: []*cli.Command{
 			CommandInstallSC(),
 			CommandUpdateSC(),
@@ -481,7 +481,7 @@ func DAppApp(app *cli.App) *cli.App {
 	return &cli.App{
 		Name:                  app.Name,
 		Description:           app.Description,
-		CustomAppHelpTemplate: AppTemplate,
+		CustomAppHelpTemplate: utils.AppTemplate,
 		Authors:               app.Authors,
 		Commands: append(app.Commands,
 			CommandDAppInfo(),
@@ -503,7 +503,7 @@ func DAppWalletCommands() *cli.Command {
 		Name:               "wallet",
 		Aliases:            []string{"w"},
 		Usage:              "Wallet commands",
-		CustomHelpTemplate: AppTemplate,
+		CustomHelpTemplate: utils.AppTemplate,
 		Subcommands: []*cli.Command{
 			CommandWalletInfo(),
 			CommandWalletTransferDero(),
@@ -522,7 +522,7 @@ func DAppWalletCommands() *cli.Command {
 func WalletApp() *cli.App {
 	return &cli.App{
 		Name:                  "",
-		CustomAppHelpTemplate: AppTemplate,
+		CustomAppHelpTemplate: utils.AppTemplate,
 		Commands: []*cli.Command{
 			CommandWalletInfo(),
 			CommandDApp(),
@@ -548,7 +548,7 @@ func WalletCommands() *cli.Command {
 		Name:               "wallet",
 		Aliases:            []string{"w"},
 		Usage:              "Wallet commands",
-		CustomHelpTemplate: AppTemplate,
+		CustomHelpTemplate: utils.AppTemplate,
 		Subcommands: []*cli.Command{
 			CommandOpenWallet(),
 			CommandAttachWallet(),

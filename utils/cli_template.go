@@ -1,4 +1,4 @@
-package cli
+package utils
 
 var AppTemplate = `{{range .VisibleCategories}}{{if .Name}}
 {{.Name}}:{{range .VisibleCommands}}

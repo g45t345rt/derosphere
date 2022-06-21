@@ -491,7 +491,7 @@ func RootApp() *cli.App {
 	return &cli.App{
 		Name:                  "DeroSphere",
 		Commands:              Commands(),
-		CustomAppHelpTemplate: AppTemplate,
+		CustomAppHelpTemplate: utils.AppTemplate,
 		Action: func(ctx *cli.Context) error {
 			fmt.Println("Command not found. Type 'help' for a list of commands.")
 			return nil

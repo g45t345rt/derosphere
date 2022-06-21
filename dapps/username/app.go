@@ -39,7 +39,7 @@ func initData() {
 		create table if not exists username (
 			wallet_address varchar primary key,
 			name varchar
-		)
+		);
 	`
 
 	db := app.Context.DB
@@ -260,7 +260,7 @@ func CommandListNames() *cli.Command {
 			db := app.Context.DB
 
 			query := `
-				select * from username
+				select wallet_address, name from username
 			`
 
 			rows, err := db.Query(query)
@@ -270,17 +270,13 @@ func CommandListNames() *cli.Command {
 
 			var names []Name
 			for rows.Next() {
-				var walletAddress string
-				var name string
-				err = rows.Scan(&walletAddress, &name)
+				var name Name
+				err = rows.Scan(&name.Address, &name.Name)
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				names = append(names, Name{
-					Address: walletAddress,
-					Name:    name,
-				})
+				names = append(names, name)
 			}
 
 			displayNamesTable(names)
