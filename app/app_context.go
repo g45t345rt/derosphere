@@ -14,6 +14,8 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/urfave/cli/v2"
 
+	deroConfig "github.com/deroproject/derohe/config"
+	"github.com/deroproject/derohe/globals"
 	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/utils"
 )
@@ -122,10 +124,24 @@ func (app *AppContext) LoadDB() {
 	app.DB = db
 }
 
+func (app *AppContext) setEnvGlobals() {
+	// we need this if want to use wallet SetOnlineMode() and sync wallet with daemon
+	switch app.Config.Env {
+	case "mainnet":
+		globals.Config = deroConfig.Mainnet
+	case "testnet":
+		globals.Config = deroConfig.Testnet
+	case "simulator":
+		globals.Config = deroConfig.Testnet
+		globals.Arguments["--simulator"] = true
+	}
+}
+
 func (app *AppContext) SetEnv(env string) {
 	app.Config.Env = env
-	app.SaveConfig()
 
+	app.setEnvGlobals()
+	app.SaveConfig()
 	app.DB.Close()
 	app.LoadDB()
 	app.LoadWalletInstances()
@@ -177,6 +193,8 @@ func (app *AppContext) LoadConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	app.setEnvGlobals()
 }
 
 func (app *AppContext) SaveConfig() {

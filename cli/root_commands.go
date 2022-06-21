@@ -274,6 +274,7 @@ setWalletName:
 	}
 
 	if app.Context.WalletInstance != nil {
+		app.Context.StopPromptRefresh = true
 		app.Context.WalletInstance.Close()
 	}
 
@@ -283,7 +284,7 @@ setWalletName:
 	}
 
 	fmt.Println("Wallet connection successful.")
-
+	app.Context.StopPromptRefresh = false
 	return nil
 }
 

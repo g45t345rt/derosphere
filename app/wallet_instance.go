@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/deroproject/derohe/globals"
 	"github.com/deroproject/derohe/rpc"
 	deroWallet "github.com/deroproject/derohe/walletapi"
 	"github.com/g45t345rt/derosphere/rpc_client"
@@ -111,7 +113,10 @@ func (w *WalletInstance) Open() error {
 		}
 
 		w.WalletDisk = wallet
-		w.WalletDisk.SetDaemonAddress(w.DaemonAddress)
+		globals.Arguments["--daemon-address"] = strings.Replace(w.DaemonAddress, "http://", "", -1)
+		w.WalletDisk.SetNetwork(globals.IsMainnet())
+		w.WalletDisk.SetOnlineMode()
+		go deroWallet.Keep_Connectivity()
 	}
 
 	return nil
