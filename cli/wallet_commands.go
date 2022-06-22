@@ -4,12 +4,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"runtime"
 	"strconv"
 
 	"github.com/blang/semver/v4"
 	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/globals"
 	"github.com/deroproject/derohe/rpc"
+	"github.com/deroproject/derohe/transaction"
 	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/dapps"
@@ -65,6 +67,71 @@ func CommandWalletInfo() *cli.Command {
 			fmt.Println("Name: ", w.Name)
 			fmt.Println("Daemon: ", w.DaemonAddress)
 			fmt.Println("Wallet: ", w.GetConnectionAddress())
+			fmt.Println("Registered: ", w.IsRegistered())
+			return nil
+		},
+	}
+}
+
+func CommandRegisterWallet() *cli.Command {
+	return &cli.Command{
+		Name:    "register",
+		Aliases: []string{"r"},
+		Usage:   "Register wallet with blockchain (can take up to 2 hours - POW anti-spam)",
+		Action: func(ctx *cli.Context) error {
+			w := app.Context.WalletInstance
+
+			if w.IsRegistered() {
+				fmt.Println("Wallet already registered.")
+				return nil
+			}
+
+			if w.WalletDisk == nil {
+				fmt.Println("Can't register from rpc wallet yet. TODO")
+				return nil
+			}
+
+			wallet := w.WalletDisk
+
+			fmt.Println("Please wait while the app solves the POW to register the new wallet...")
+			fmt.Println("Can take a few hours!")
+
+			var regTx *transaction.Transaction
+			chanTx := make(chan *transaction.Transaction)
+
+			counter := 0
+			found := false // need this to cancel other parallel loop
+			maxThreads := runtime.GOMAXPROCS(0)
+			fmt.Printf("Using %d threads\n", maxThreads)
+
+			for i := 0; i < maxThreads; i++ {
+				go func() {
+					for !found {
+						tempTx := wallet.GetRegistrationTX()
+						hash := tempTx.GetHash()
+
+						if hash[0] == 0 && hash[1] == 0 && hash[2] == 0 {
+							chanTx <- tempTx
+							found = true
+							break
+						}
+
+						counter++
+						fmt.Printf("%d tries\r", counter)
+					}
+				}()
+			}
+
+			regTx = <-chanTx
+			fmt.Println("Valid registration tx found!")
+			fmt.Println("Sending transaction to blockchain...")
+			err := wallet.SendTransaction(regTx)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println("Your wallet was succesfully registered.")
 			return nil
 		},
 	}
@@ -230,11 +297,11 @@ func CommandWalletBalance() *cli.Command {
 	}
 }
 
-func CommandWalletTransferDero() *cli.Command {
+func CommandWalletTransfer() *cli.Command {
 	return &cli.Command{
 		Name:    "transfer",
 		Aliases: []string{"t"},
-		Usage:   "Transfer DERO to another address",
+		Usage:   "Transfer DERO/ASSET_TOKEN to another address",
 		Action: func(ctx *cli.Context) error {
 
 			walletInstance := app.Context.WalletInstance
@@ -505,7 +572,7 @@ func DAppWalletCommands() *cli.Command {
 		CustomHelpTemplate: utils.AppTemplate,
 		Subcommands: []*cli.Command{
 			CommandWalletInfo(),
-			CommandWalletTransferDero(),
+			CommandWalletTransfer(),
 			CommandWalletBalance(),
 			CommandWalletAddress(),
 			CommandWalletTransactions(),
@@ -525,11 +592,12 @@ func WalletApp() *cli.App {
 		Commands: []*cli.Command{
 			CommandWalletInfo(),
 			CommandDApp(),
-			CommandWalletTransferDero(),
+			CommandWalletTransfer(),
 			CommandWalletBalance(),
 			CommandWalletAddress(),
 			CommandWalletTransactions(),
 			CommandWalletSeed(),
+			CommandRegisterWallet(),
 			CommandSwitchWallet(),
 			SCCommands(),
 			CommandCloseWallet(),

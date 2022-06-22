@@ -67,6 +67,21 @@ func (c *Wallet) GetBalance() (*rpc.GetBalance_Result, error) {
 	return result, err
 }
 
+func (c *Wallet) GetRegistered() (bool, error) {
+	res, err := c.client.Call("GetBalance")
+	if err != nil {
+		return false, err
+	}
+
+	// if this address is not registered on the blockchain
+	// the error code will be -32098 and message Account Unregistered
+	if res.Error != nil {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func (c *Wallet) Transfer(params *rpc.Transfer_Params) (*rpc.Transfer_Result, error) {
 	var result *rpc.Transfer_Result
 	err := c.client.CallFor(&result, "Transfer", params)

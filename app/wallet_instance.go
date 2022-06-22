@@ -187,6 +187,17 @@ func (w *WalletInstance) GetConnectionAddress() string {
 	return ""
 }
 
+func (w *WalletInstance) IsRegistered() bool {
+	registered := false
+	if w.WalletRPC != nil {
+		registered, _ = w.WalletRPC.GetRegistered()
+	} else if w.WalletDisk != nil {
+		registered = w.WalletDisk.IsRegistered()
+	}
+
+	return registered
+}
+
 func (w *WalletInstance) GetAddress() string {
 	if w.WalletRPC != nil {
 		result, err := w.WalletRPC.GetAddress()

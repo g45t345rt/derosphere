@@ -73,6 +73,20 @@ setDaemon:
 		goto setDaemon
 	}
 
+	info, err := walletInstance.Daemon.GetInfo()
+	if err != nil {
+		return err
+	}
+
+	env := app.Context.Config.Env
+	if env == "mainnet" && info.Testnet {
+		return fmt.Errorf("Can't attach testnet/simulator daemon to mainnet environment.")
+	}
+
+	if (env == "testnet" || env == "simulator") && !info.Testnet {
+		return fmt.Errorf("Can't attach mainnet daemon to testnet/simulator environment.")
+	}
+
 	fmt.Println("Daemon rpc connection was successful.")
 
 	return nil
@@ -355,11 +369,9 @@ func CommandCreateWallet() *cli.Command {
 					return nil
 				}
 
-				fmt.Println("SEED")
-
-				fmt.Println("#########")
+				fmt.Println("####SEED####")
 				fmt.Println(wallet.GetSeed())
-				fmt.Println("#########")
+				fmt.Println("####SEED####")
 
 				err = wallet.Save_Wallet()
 				if err != nil {

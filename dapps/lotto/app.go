@@ -431,9 +431,8 @@ func CommandViewResult() *cli.Command {
 
 func CommandBuyTicket() *cli.Command {
 	return &cli.Command{
-		Name:    "buy",
-		Aliases: []string{"b"},
-		Usage:   "Buy ticket",
+		Name:  "buy",
+		Usage: "Buy ticket",
 		Action: func(c *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 			scid := getSCID()
@@ -847,7 +846,7 @@ func CommandLiveLotto() *cli.Command {
 func CommandLottoTickets() *cli.Command {
 	return &cli.Command{
 		Name:    "tickets",
-		Aliases: []string{"l"},
+		Aliases: []string{"t"},
 		Usage:   "View lotto tickets",
 		Action: func(c *cli.Context) error {
 			sync()
