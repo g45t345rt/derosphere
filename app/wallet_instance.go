@@ -127,8 +127,10 @@ func (w *WalletInstance) Close() {
 	w.WalletRPC = nil
 
 	if w.WalletDisk != nil {
+		Context.StopPromptRefresh = true
 		w.WalletDisk.Close_Encrypted_Wallet()
 		w.WalletDisk = nil
+		Context.StopPromptRefresh = false
 	}
 }
 
