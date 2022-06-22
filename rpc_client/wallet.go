@@ -85,6 +85,19 @@ func (c *Wallet) GetHeight() (*rpc.GetHeight_Result, error) {
 	return result, err
 }
 
+func (c *Wallet) GetSeed() (string, error) {
+	var result *rpc.Query_Key_Result
+	err := c.client.CallFor(&result, "QueryKey", &rpc.Query_Key_Params{
+		Key_type: "mnemonic",
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return result.Key, nil
+}
+
 // Useless func since I use transfer - keep it for archive
 func (c *Wallet) InstallSC(code string) (string, error) {
 	client := &http.Client{

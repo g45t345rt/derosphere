@@ -199,6 +199,20 @@ func (w *WalletInstance) GetAddress() string {
 	return ""
 }
 
+func (w *WalletInstance) GetSeed() string {
+	if w.WalletRPC != nil {
+		seed, err := w.WalletRPC.GetSeed()
+		if err != nil {
+			log.Fatal(err)
+		}
+		return seed
+	} else if w.WalletDisk != nil {
+		return w.WalletDisk.GetSeed()
+	}
+
+	return ""
+}
+
 func (w *WalletInstance) GetBalance() uint64 {
 	if w.WalletRPC != nil {
 		result, err := w.WalletRPC.GetBalance()

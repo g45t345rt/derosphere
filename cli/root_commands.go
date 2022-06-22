@@ -268,6 +268,13 @@ setWalletName:
 		goto setWalletName
 	}
 
+	if app.Context.WalletInstance != nil {
+		if app.Context.WalletInstance.Name == walletName {
+			fmt.Println("Already connected to this wallet.")
+			return nil
+		}
+	}
+
 	err = walletInstance.Open()
 	if app.HandlePromptErr(err) {
 		return nil

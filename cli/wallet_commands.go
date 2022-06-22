@@ -32,14 +32,14 @@ func displayDAppsTable() {
 	tbl.Print()
 }
 
-func displayWalletTransactions(transactions []rpc.Entry) {
+func displayWalletTransactions(entries []rpc.Entry) {
 	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
 	tbl := table.New("", "Amount", "Burn", "Fees", "Time", "Height", "Destination", "Coinbase", "TXID")
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-	for index, tx := range transactions {
+	for index, tx := range entries {
 		tbl.AddRow(
 			index,
 			globals.FormatMoney(tx.Amount),
@@ -76,13 +76,7 @@ func CommandWalletSeed() *cli.Command {
 		Usage: "Display wallet seed",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
-
-			if walletInstance.WalletRPC != nil {
-				fmt.Println("Can't get seed from wallet connected through rpc connection.")
-			} else if walletInstance.WalletDisk != nil {
-				fmt.Println(walletInstance.WalletDisk.GetSeed())
-			}
-
+			fmt.Println(walletInstance.GetSeed())
 			return nil
 		},
 	}
@@ -375,10 +369,16 @@ func CommandWalletTransactions() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 
+			filterType := ctx.Args().First()
+
+			in := filterType == "incoming" || filterType == ""
+			out := filterType == "outgoing" || filterType == ""
+			coinbase := filterType == "coinbase" || filterType == ""
+
 			entries, err := walletInstance.GetTransfers(&rpc.Get_Transfers_Params{
-				In:       true,
-				Out:      true,
-				Coinbase: true,
+				In:       in,
+				Out:      out,
+				Coinbase: coinbase,
 			})
 
 			if err != nil {
