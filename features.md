@@ -21,8 +21,8 @@ List of Derosphere features
 - ✔ Prompt cancellation (ctrl-c on windows)
 - ✔ Can't attach testnet daemon to mainnet env
 - ✔ Register wallet solve anti-spam POW
+- ✔ Close wallet after inactivity - default to 3min (180s)
 - ☐ Call unknown smart contract function (scan code and display funcs and params)
-- ☐ Lock wallet after inactivity
 
 ## DApps
 

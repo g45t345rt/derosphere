@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/blang/semver/v4"
 	deroConfig "github.com/deroproject/derohe/config"
@@ -496,10 +497,40 @@ func CommandSetEnv() *cli.Command {
 	}
 }
 
+func CommandSetWalletInactivity() *cli.Command {
+	return &cli.Command{
+		Name:  "set-wallet-inactivity",
+		Usage: "Close wallet if inactive after a certain amount of time. Default to 300s and 0 = always opened.",
+		Action: func(ctx *cli.Context) error {
+			timeoutString := ctx.Args().First()
+			var err error = nil
+			var timeout int64
+
+			if timeoutString != "" {
+				timeout, err = strconv.ParseInt(timeoutString, 10, 64)
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+			} else {
+				timeout, err = app.PromptInt("Enter timeout in second", 300)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			app.Context.SetWalletInactivity(timeout)
+			fmt.Printf("Wallet inactivity set to %ds\n", timeout)
+			return nil
+		},
+	}
+}
+
 func Commands() []*cli.Command {
 	return []*cli.Command{
 		WalletCommands(),
 		CommandSetEnv(),
+		CommandSetWalletInactivity(),
 		CommandVersion("derosphere", config.Version),
 		CommandExit(),
 	}

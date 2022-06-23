@@ -21,7 +21,8 @@ import (
 )
 
 type Config struct {
-	Env string
+	Env              string
+	CloseWalletAfter int64
 }
 
 type AppContext struct {
@@ -59,9 +60,32 @@ func InitAppContext(rootApp *cli.App, walletApp *cli.App) {
 }
 
 func (app *AppContext) Run() {
+	// auto refresh block height
 	go func() {
 		for {
 			app.RefreshPrompt()
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
+	// listen to keypress
+	lastActicity := time.Now()
+	app.readlineInstance.Config.SetListener(func(line []rune, pos int, key rune) (newLine []rune, newPos int, ok bool) {
+		lastActicity = time.Now()
+		return nil, 0, false
+	})
+
+	// close wallet after certain amount of time
+	go func() {
+		for {
+			closeWalletAfter := time.Duration(app.Config.CloseWalletAfter) * time.Second
+			if closeWalletAfter > 0 && app.WalletInstance != nil && time.Now().After(lastActicity.Add(closeWalletAfter)) {
+				app.WalletInstance.Close()
+				app.WalletInstance = nil
+				app.UseApp = "rootApp"
+				fmt.Printf("\nWallet close after %ds of inactivity.\n", app.Config.CloseWalletAfter)
+			}
+
 			time.Sleep(1 * time.Second)
 		}
 	}()
@@ -147,6 +171,11 @@ func (app *AppContext) SetEnv(env string) {
 	app.LoadWalletInstances()
 }
 
+func (app *AppContext) SetWalletInactivity(timeout int64) {
+	app.Config.CloseWalletAfter = timeout
+	app.SaveConfig()
+}
+
 func (app *AppContext) GetWalletInstance(name string) (index int, wallet *WalletInstance) {
 	for i, w := range app.walletInstances {
 		if w.Name == name {
@@ -186,6 +215,7 @@ func (app *AppContext) LoadConfig() {
 	content, err := ioutil.ReadFile("./data/config.json")
 	if err != nil {
 		app.Config.Env = "mainnet"
+		app.Config.CloseWalletAfter = 180 // default 180s (3min)
 		return
 	}
 
