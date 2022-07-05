@@ -290,7 +290,8 @@ func CommandWalletBalance() *cli.Command {
 		Aliases: []string{"b"},
 		Usage:   "Wallet balance",
 		Action: func(ctx *cli.Context) error {
-			balance := app.Context.WalletInstance.GetBalance()
+			var scid crypto.Hash // default DERO scid
+			balance := app.Context.WalletInstance.GetBalance(scid)
 			fmt.Printf("%s\n", globals.FormatMoney(balance))
 			return nil
 		},
@@ -466,7 +467,6 @@ func CommandInstallSC() *cli.Command {
 		Usage:   "Install smart contract",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
-
 			codeFilePath, err := app.Prompt("Enter code filepath", "")
 			if app.HandlePromptErr(err) {
 				return nil
@@ -478,7 +478,6 @@ func CommandInstallSC() *cli.Command {
 				return nil
 			}
 
-			//codeString := string(code)
 			codeBase64 := base64.StdEncoding.EncodeToString(code)
 			ringsize := uint64(2)
 
@@ -521,7 +520,6 @@ func CommandInstallSC() *cli.Command {
 			}
 
 			fmt.Println(txid)
-
 			return nil
 		},
 	}
@@ -538,6 +536,31 @@ func SCCommands() *cli.Command {
 		},
 		Action: func(ctx *cli.Context) error {
 			ctx.App.Run([]string{"cmd", "help"})
+			return nil
+		},
+	}
+}
+
+func CommandAssetBalance() *cli.Command {
+	return &cli.Command{
+		Name:    "asset-balance",
+		Aliases: []string{"ab"},
+		Usage:   "Display specific asset balance",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			scid := ctx.Args().First()
+			var err error
+
+			if scid == "" {
+				scid, err = app.Prompt("Enter asset token", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			hash := crypto.HashHexToHash(scid)
+			fmt.Println(walletInstance.GetBalance(hash))
 			return nil
 		},
 	}
@@ -594,6 +617,7 @@ func WalletApp() *cli.App {
 			CommandDApp(),
 			CommandWalletTransfer(),
 			CommandWalletBalance(),
+			CommandAssetBalance(),
 			CommandWalletAddress(),
 			CommandWalletTransactions(),
 			CommandWalletSeed(),

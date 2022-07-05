@@ -49,7 +49,7 @@ func initData() {
 	}
 
 	// reset table
-	counts := utils.GetCommitCounts()
+	counts := utils.GetCounts()
 	commitAt := counts[DAPP_NAME]
 	if commitAt == 0 {
 		sqlQuery = `
@@ -67,7 +67,7 @@ func sync() {
 	daemon := app.Context.WalletInstance.Daemon
 	scid := getSCID()
 	commitCount := daemon.GetSCCommitCount(scid)
-	counts := utils.GetCommitCounts()
+	counts := utils.GetCounts()
 	commitAt := counts[DAPP_NAME]
 	chunk := uint64(1000)
 	db := app.Context.DB
@@ -151,7 +151,7 @@ func sync() {
 			log.Fatal(err)
 		}
 
-		utils.SetCommitCount(DAPP_NAME, commitAt)
+		utils.SetCount(DAPP_NAME, commitAt)
 	}
 }
 

@@ -61,9 +61,9 @@ func (c *Wallet) GetAddress() (string, error) {
 	return result.Address, err
 }
 
-func (c *Wallet) GetBalance() (*rpc.GetBalance_Result, error) {
+func (c *Wallet) GetBalance(params *rpc.GetBalance_Params) (*rpc.GetBalance_Result, error) {
 	var result *rpc.GetBalance_Result
-	err := c.client.CallFor(&result, "GetBalance")
+	err := c.client.CallFor(&result, "GetBalance", params)
 	return result, err
 }
 

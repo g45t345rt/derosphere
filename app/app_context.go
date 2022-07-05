@@ -83,6 +83,7 @@ func (app *AppContext) Run() {
 				app.WalletInstance.Close()
 				app.WalletInstance = nil
 				app.UseApp = "rootApp"
+				app.DAppApp = nil
 				fmt.Printf("\nWallet close after %ds of inactivity.\n", app.Config.CloseWalletAfter)
 			}
 

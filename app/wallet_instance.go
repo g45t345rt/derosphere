@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/globals"
 	"github.com/deroproject/derohe/rpc"
 	deroWallet "github.com/deroproject/derohe/walletapi"
@@ -226,15 +227,23 @@ func (w *WalletInstance) GetSeed() string {
 	return ""
 }
 
-func (w *WalletInstance) GetBalance() uint64 {
+func (w *WalletInstance) GetBalance(scid crypto.Hash) uint64 {
 	if w.WalletRPC != nil {
-		result, err := w.WalletRPC.GetBalance()
+		result, err := w.WalletRPC.GetBalance(&rpc.GetBalance_Params{
+			SCID: scid,
+		})
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		return result.Balance
 	} else if w.WalletDisk != nil {
-		m_balance, _ := w.WalletDisk.Get_Balance()
+		err := w.WalletDisk.Sync_Wallet_Memory_With_Daemon_internal(scid)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		m_balance, _ := w.WalletDisk.Get_Balance_scid(scid)
 		return m_balance
 	}
 

@@ -181,7 +181,7 @@ func sync() {
 	daemon := app.Context.WalletInstance.Daemon
 	scid := getSCID()
 	commitCount := daemon.GetSCCommitCount(scid)
-	counts := utils.GetCommitCounts()
+	counts := utils.GetCounts()
 	commitAt := counts[DAPP_NAME]
 	chunk := uint64(1000)
 	db := app.Context.DB
@@ -219,7 +219,7 @@ func sync() {
 				columnName := ticketKey.ReplaceAllString(key, "$3")
 
 				if commit.Action == "S" {
-					fmt.Println("set-ticket", txId, columnName, commit.Value)
+					// fmt.Println("set-ticket", txId, columnName, commit.Value)
 
 					query := fmt.Sprintf(`
 						insert into lotto_tickets (lotto_tx_id, ticket_number, %s)
@@ -242,7 +242,7 @@ func sync() {
 				}
 
 				if commit.Action == "S" {
-					fmt.Println("set-lotto", txId, columnName, commit.Value)
+					// fmt.Println("set-lotto", txId, columnName, commit.Value)
 
 					query := fmt.Sprintf(`
 						insert into lotto (tx_id, %s)
@@ -283,7 +283,7 @@ func sync() {
 			log.Fatal(err)
 		}
 
-		utils.SetCommitCount(DAPP_NAME, commitAt)
+		utils.SetCount(DAPP_NAME, commitAt)
 	}
 }
 
