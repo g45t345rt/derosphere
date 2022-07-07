@@ -12,50 +12,11 @@ import (
 	"github.com/deroproject/derohe/globals"
 	"github.com/deroproject/derohe/rpc"
 	"github.com/deroproject/derohe/transaction"
-	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/dapps"
 	"github.com/g45t345rt/derosphere/utils"
-	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 )
-
-func displayDAppsTable() {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-	tbl := table.New("", "Name", "Description", "Version", "Authors")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-	for index, dapp := range dapps.List() {
-		tbl.AddRow(index, dapp.Name, dapp.Description, dapp.Version, utils.AppAuthors(dapp))
-	}
-
-	tbl.Print()
-}
-
-func displayWalletTransactions(entries []rpc.Entry) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-	tbl := table.New("", "Amount", "Burn", "Fees", "Time", "Height", "Destination", "Coinbase", "TXID")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-	for index, tx := range entries {
-		tbl.AddRow(
-			index,
-			globals.FormatMoney(tx.Amount),
-			globals.FormatMoney(tx.Burn),
-			globals.FormatMoney(tx.Fees),
-			tx.Time,
-			tx.Height,
-			tx.Destination,
-			tx.Coinbase,
-			tx.TXID)
-	}
-
-	tbl.Print()
-}
 
 func CommandWalletInfo() *cli.Command {
 	return &cli.Command{
@@ -166,7 +127,13 @@ func CommandListDApps() *cli.Command {
 		Aliases: []string{"l"},
 		Usage:   "Show a list of available apps",
 		Action: func(ctx *cli.Context) error {
-			displayDAppsTable()
+			dapps := dapps.List()
+			app.Context.DisplayTable(len(dapps), func(i int) []interface{} {
+				dapp := dapps[i]
+				return []interface{}{
+					i, dapp.Name, dapp.Description, dapp.Version, utils.AppAuthors(dapp),
+				}
+			}, []interface{}{"", "Name", "Description", "Version", "Authors"}, 25)
 			return nil
 		},
 	}
@@ -454,7 +421,13 @@ func CommandWalletTransactions() *cli.Command {
 				return nil
 			}
 
-			displayWalletTransactions(entries)
+			app.Context.DisplayTable(len(entries), func(i int) []interface{} {
+				tx := entries[i]
+				return []interface{}{
+					i, globals.FormatMoney(tx.Amount), globals.FormatMoney(tx.Burn), globals.FormatMoney(tx.Fees), tx.Time,
+					tx.Height, tx.Destination, tx.Coinbase, tx.TXID,
+				}
+			}, []interface{}{"", "Amount", "Burn", "Fees", "Time", "Height", "Destination", "Coinbase", "TXID"}, 25)
 			return nil
 		},
 	}

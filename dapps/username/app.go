@@ -9,11 +9,9 @@ import (
 	"database/sql"
 
 	"github.com/deroproject/derohe/rpc"
-	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/g45t345rt/derosphere/utils"
-	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 )
 
@@ -124,8 +122,6 @@ func sync() {
 			if strings.HasPrefix(commit.Key, "state_name_") {
 				walletAddress := nameKey.ReplaceAllString(key, "$1")
 				if commit.Action == "S" {
-
-					fmt.Println("set", walletAddress, commit.Value)
 					_, err := setTx.Exec(walletAddress, commit.Value, commit.Value)
 					if err != nil {
 						log.Fatal(err)
@@ -135,7 +131,6 @@ func sync() {
 				}
 
 				if commit.Action == "D" {
-					fmt.Println("del", walletAddress)
 					_, err := delTx.Exec(walletAddress)
 					if err != nil {
 						log.Fatal(err)
@@ -155,32 +150,20 @@ func sync() {
 	}
 }
 
-func displayNamesTable(names []Name) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-	tbl := table.New("", "Name", "Address")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-	for index, n := range names {
-		tbl.AddRow(index, n.Name, n.Address)
-	}
-
-	tbl.Print()
-	if len(names) == 0 {
-		fmt.Println("No names")
-	}
-}
-
 func CommandRegister() *cli.Command {
 	return &cli.Command{
 		Name:    "register",
 		Aliases: []string{"r"},
 		Usage:   "Register yourself a nice username",
 		Action: func(c *cli.Context) error {
-			username, err := app.Prompt("Enter username", "")
-			if app.HandlePromptErr(err) {
-				return nil
+			username := c.Args().First()
+			var err error
+
+			if username == "" {
+				username, err = app.Prompt("Enter username", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
 			}
 
 			walletInstance := app.Context.WalletInstance
@@ -279,7 +262,12 @@ func CommandListNames() *cli.Command {
 				names = append(names, name)
 			}
 
-			displayNamesTable(names)
+			app.Context.DisplayTable(len(names), func(i int) []interface{} {
+				n := names[i]
+				return []interface{}{
+					i, n.Name, n.Address,
+				}
+			}, []interface{}{"", "Name", "Address"}, 25)
 			return nil
 		},
 	}

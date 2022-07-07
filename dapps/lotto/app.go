@@ -12,11 +12,9 @@ import (
 
 	"github.com/deroproject/derohe/globals"
 	"github.com/deroproject/derohe/rpc"
-	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/g45t345rt/derosphere/utils"
-	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -287,57 +285,6 @@ func sync() {
 	}
 }
 
-func displayLiveLottoTable(lottos []Lotto) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-	tbl := table.New("", "Creator", "Tickets", "Ticket Price", "Winner Reward", "TxId")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-	for index, l := range lottos {
-		tbl.AddRow(index, l.DisplayCreator(), l.DisplayTickets(), globals.FormatMoney(uint64(l.TicketPrice.Int64)), l.DisplayWinnerReward(), l.TxId.String)
-	}
-
-	tbl.Print()
-	if len(lottos) == 0 {
-		fmt.Println("No lottery available")
-	}
-}
-
-func displayDrawLottoTable(lottos []Lotto) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-	tbl := table.New("", "Tickets", "Winning Ticket", "Winner", "Winner Reward", "Claimed", "Draw timestamp", "TxId")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-	for index, l := range lottos {
-		tbl.AddRow(index, l.DisplayTickets(), l.WinningTicket.Int64, l.DisplayWinner(), l.DisplayWinnerReward(), l.ClaimTimestamp.Valid, l.DisplayDrawTimestamp(), l.TxId.String)
-	}
-
-	tbl.Print()
-	if len(lottos) == 0 {
-		fmt.Println("No draw results")
-	}
-}
-
-func displayTicketsTable(tickets []LottoTicket) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-	tbl := table.New("", "Owner", "Ticket Number", "Timestamp", "TxId")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-	for index, t := range tickets {
-		tbl.AddRow(index, t.DisplayOwner(), t.TicketNumber.Int64, t.Timestamp.Int64, t.PlayTxId.String)
-	}
-
-	tbl.Print()
-	if len(tickets) == 0 {
-		fmt.Println("No tickets bought")
-	}
-}
-
 func promptTxId(c *cli.Context) (string, error) {
 	txId := c.Args().First()
 	var err error
@@ -423,7 +370,12 @@ func CommandViewResult() *cli.Command {
 				lottos = append(lottos, lotto)
 			}
 
-			displayDrawLottoTable(lottos)
+			app.Context.DisplayTable(len(lottos), func(i int) []interface{} {
+				l := lottos[i]
+				return []interface{}{
+					i, l.DisplayTickets(), l.WinningTicket.Int64, l.DisplayWinner(), l.DisplayWinnerReward(), l.ClaimTimestamp.Valid, l.DisplayDrawTimestamp(), l.TxId.String,
+				}
+			}, []interface{}{"", "Tickets", "Winning Ticket", "Winner", "Winner Reward", "Claimed", "Draw timestamp", "TxId"}, 5)
 			return nil
 		},
 	}
@@ -837,7 +789,12 @@ func CommandLiveLotto() *cli.Command {
 				lottos = append(lottos, lotto)
 			}
 
-			displayLiveLottoTable(lottos)
+			app.Context.DisplayTable(len(lottos), func(i int) []interface{} {
+				l := lottos[i]
+				return []interface{}{
+					i, l.DisplayCreator(), l.DisplayTickets(), globals.FormatMoney(uint64(l.TicketPrice.Int64)), l.DisplayWinnerReward(), l.TxId.String,
+				}
+			}, []interface{}{"", "Creator", "Tickets", "Ticket Price", "Winner Reward", "TxId"}, 10)
 			return nil
 		},
 	}
@@ -886,7 +843,12 @@ func CommandLottoTickets() *cli.Command {
 				tickets = append(tickets, ticket)
 			}
 
-			displayTicketsTable(tickets)
+			app.Context.DisplayTable(len(tickets), func(i int) []interface{} {
+				t := tickets[i]
+				return []interface{}{
+					i, t.DisplayOwner(), t.TicketNumber.Int64, t.Timestamp.Int64, t.PlayTxId.String,
+				}
+			}, []interface{}{"", "Owner", "Ticket Number", "Timestamp", "TxId"}, 5)
 			return nil
 		},
 	}

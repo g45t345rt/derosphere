@@ -11,31 +11,11 @@ import (
 	deroConfig "github.com/deroproject/derohe/config"
 	"github.com/deroproject/derohe/cryptography/crypto"
 	deroWallet "github.com/deroproject/derohe/walletapi"
-	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/utils"
-	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 )
-
-func displayWalletsTable() {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-	tbl := table.New("", "Name", "Daemon", "Wallet")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-	walletInstances := app.Context.GetWalletInstances()
-	for index, w := range walletInstances {
-		tbl.AddRow(index, w.Name, w.DaemonAddress, w.GetConnectionAddress())
-	}
-
-	tbl.Print()
-	if len(walletInstances) == 0 {
-		fmt.Println("No wallets")
-	}
-}
 
 func editWalletInstanceDaemon(walletInstance *app.WalletInstance) error {
 setDaemon:
@@ -258,7 +238,13 @@ func CommandListWallets() *cli.Command {
 		Aliases: []string{"l"},
 		Usage:   "List of your wallets",
 		Action: func(ctx *cli.Context) error {
-			displayWalletsTable()
+			walletInstances := app.Context.GetWalletInstances()
+			app.Context.DisplayTable(len(walletInstances), func(i int) []interface{} {
+				w := walletInstances[i]
+				return []interface{}{
+					i, w.Name, w.DaemonAddress, w.GetConnectionAddress(),
+				}
+			}, []interface{}{"", "Name", "Daemon", "Wallet"}, 25)
 			return nil
 		},
 	}

@@ -124,15 +124,16 @@ func (w *WalletInstance) Open() error {
 }
 
 func (w *WalletInstance) Close() {
+	Context.StopPromptRefresh = true
 	w.Daemon = nil
 	w.WalletRPC = nil
 
 	if w.WalletDisk != nil {
-		Context.StopPromptRefresh = true
 		w.WalletDisk.Close_Encrypted_Wallet()
 		w.WalletDisk = nil
-		Context.StopPromptRefresh = false
 	}
+
+	Context.StopPromptRefresh = false
 }
 
 func (w *WalletInstance) Save() {

@@ -24,6 +24,7 @@ List of Derosphere features
 - ✔ Close wallet after inactivity - default to 3min (180s)
 - ✔ View asset token balance
 - ✔ Mint G45-NFT (collection) with all available functions
+- ✔ List/Table pagination (load more data...)
 - ☐ Call unknown smart contract function (scan code and display funcs and params)
 
 ## DApps
@@ -63,14 +64,12 @@ Dero Seals NFT project. NFTs by MERU!
 
 - ✔ List entire NFT collection
 - ✔ Open specific NFT image in the browser from fileNumber or NFT token id
-- ☐ Exchange NFTs
-- ☐ NFT auction
 
 ### Dero And Dragons - dnd
 
 DeroAndDragons. Trading card fantasy world. NFTs by JoyRaptor!
 
-### Exchange Asset Token
+### Exchange / auction Asset Token
 
 Exchange any type of asset token for DERO or other Asset Token
 
@@ -78,3 +77,11 @@ Exchange any type of asset token for DERO or other Asset Token
 - ☐ Start sell
 - ☐ Cancel sell
 - ☐ Buy sell item
+- ☐ Exchange NFTs / NFT auction
+
+### dDice
+
+<https://github.com/newvcas8372/dDice>
+<https://explorer.dero.io/tx/ae55db1581b79f02f86b70fc338a7b91b14ded071a31972d9cfdb0eca6e302af>
+
+TODO

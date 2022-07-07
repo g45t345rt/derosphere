@@ -6,12 +6,10 @@ import (
 	"net/url"
 
 	"github.com/deroproject/derohe/rpc"
-	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/pkg/browser"
-	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 )
 
@@ -152,23 +150,6 @@ func sync() {
 	}
 }
 
-func displayNFTTable(nfts []SealNFT) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-	tbl := table.New("", "NFT", "File Number", "Rarity", "Traits")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-	for index, nft := range nfts {
-		tbl.AddRow(index, nft.Id, nft.FileNumber, nft.Rarity, nft.Traits())
-	}
-
-	tbl.Print()
-	if len(nfts) == 0 {
-		fmt.Println("No NFTs yet.")
-	}
-}
-
 func CommandList() *cli.Command {
 	return &cli.Command{
 		Name:    "list-collection",
@@ -200,7 +181,12 @@ func CommandList() *cli.Command {
 				nfts = append(nfts, nft)
 			}
 
-			displayNFTTable(nfts)
+			app.Context.DisplayTable(len(nfts), func(i int) []interface{} {
+				nft := nfts[i]
+				return []interface{}{
+					i, nft.Id, nft.FileNumber, nft.Rarity, nft.Traits(),
+				}
+			}, []interface{}{"", "NFT", "File Number", "Rarity", "Traits"}, 25)
 			return nil
 		},
 	}

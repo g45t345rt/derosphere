@@ -5,9 +5,7 @@ import (
 	"fmt"
 
 	"github.com/deroproject/derohe/rpc"
-	"github.com/fatih/color"
 	"github.com/g45t345rt/derosphere/app"
-	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 )
 
@@ -18,32 +16,19 @@ type Name struct {
 	Address string
 }
 
-func displayNamesTable(names []Name) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-
-	tbl := table.New("", "Name", "Address")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-	for index, n := range names {
-		tbl.AddRow(index, n.Name, n.Address)
-	}
-
-	tbl.Print()
-	if len(names) == 0 {
-		fmt.Println("No names")
-	}
-}
-
 func CommandRegister() *cli.Command {
 	return &cli.Command{
 		Name:    "register",
 		Aliases: []string{"r"},
 		Usage:   "Register a name to your address",
 		Action: func(c *cli.Context) error {
-			username, err := app.Prompt("Enter name", "")
-			if app.HandlePromptErr(err) {
-				return nil
+			username := c.Args().First()
+			var err error
+			if username == "" {
+				username, err = app.Prompt("Enter name", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
 			}
 
 			walletInstance := app.Context.WalletInstance
@@ -102,7 +87,12 @@ func CommandNames() *cli.Command {
 				}
 			}
 
-			displayNamesTable(names)
+			app.Context.DisplayTable(len(names), func(i int) []interface{} {
+				n := names[i]
+				return []interface{}{
+					i, n.Name, n.Address,
+				}
+			}, []interface{}{"", "Name", "Address"}, 25)
 			return nil
 		},
 	}

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bufio"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -12,6 +13,8 @@ import (
 	"time"
 
 	"github.com/chzyer/readline"
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 
 	deroConfig "github.com/deroproject/derohe/config"
@@ -69,9 +72,9 @@ func (app *AppContext) Run() {
 	}()
 
 	// listen to keypress
-	lastActicity := time.Now()
+	lastActivity := time.Now()
 	app.readlineInstance.Config.SetListener(func(line []rune, pos int, key rune) (newLine []rune, newPos int, ok bool) {
-		lastActicity = time.Now()
+		lastActivity = time.Now()
 		return nil, 0, false
 	})
 
@@ -79,7 +82,7 @@ func (app *AppContext) Run() {
 	go func() {
 		for {
 			closeWalletAfter := time.Duration(app.Config.CloseWalletAfter) * time.Second
-			if closeWalletAfter > 0 && app.WalletInstance != nil && time.Now().After(lastActicity.Add(closeWalletAfter)) {
+			if closeWalletAfter > 0 && app.WalletInstance != nil && time.Now().After(lastActivity.Add(closeWalletAfter)) {
 				app.WalletInstance.Close()
 				app.WalletInstance = nil
 				app.UseApp = "rootApp"
@@ -266,5 +269,49 @@ func (app *AppContext) LoadWalletInstances() {
 		}
 
 		app.walletInstances = append(app.walletInstances, walletInstance)
+	}
+}
+
+type TableRowDef func(i int) []interface{}
+
+func (app *AppContext) DisplayTable(count int, rowFunc TableRowDef, headers []interface{}, pageSize int) {
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+	cursor := 0
+
+	tbl := table.New(headers...)
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+printTable:
+	if count == 0 {
+		fmt.Println("No data available")
+		return
+	}
+
+	end := cursor + pageSize
+	for cursor < end {
+		if cursor >= count {
+			break
+		}
+
+		row := rowFunc(cursor)
+		tbl.AddRow(row...)
+		cursor++
+	}
+
+	tbl.Print()
+
+	if cursor < count {
+		fmt.Println("Press any key to load more or q to exit...")
+		app.readlineInstance.Terminal.EnterRawMode()
+		defer app.readlineInstance.Terminal.ExitRawMode()
+
+		buf := bufio.NewReader(os.Stdin)
+		ru, _, err := buf.ReadRune()
+		if ru != 113 && err == nil {
+			//cursor += pageSize
+			goto printTable
+		}
 	}
 }
