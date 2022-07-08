@@ -25,7 +25,7 @@ List of Derosphere features
 - ✔ View asset token balance
 - ✔ Mint G45-NFT (collection) with all available functions
 - ✔ List/Table pagination (load more data...)
-- ☐ Call unknown smart contract function (scan code and display funcs and params)
+- ✔ Call unknown smart contract function (scan code and display funcs and params)
 
 ## DApps
 
@@ -60,7 +60,9 @@ Official custom lottery pool. Create your own type of lottery.
 
 ### Seals
 
-Dero Seals NFT project. NFTs by MERU!
+Dero Seals NFT project. NFTs by MERU!  
+<https://www.deroseals.com/>  
+<https://twitter.com/deroseals>  
 
 - ✔ List entire NFT collection
 - ✔ Open specific NFT image in the browser from fileNumber or NFT token id
@@ -81,7 +83,7 @@ Exchange any type of asset token for DERO or other Asset Token
 
 ### dDice
 
-<https://github.com/newvcas8372/dDice>
-<https://explorer.dero.io/tx/ae55db1581b79f02f86b70fc338a7b91b14ded071a31972d9cfdb0eca6e302af>
+<https://github.com/newvcas8372/dDice>  
+<https://explorer.dero.io/tx/ae55db1581b79f02f86b70fc338a7b91b14ded071a31972d9cfdb0eca6e302af>  
 
 TODO

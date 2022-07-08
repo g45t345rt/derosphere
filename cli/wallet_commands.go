@@ -3,8 +3,10 @@ package cli
 import (
 	"fmt"
 	"io/ioutil"
+	"regexp"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/blang/semver/v4"
 	"github.com/deroproject/derohe/cryptography/crypto"
@@ -323,46 +325,6 @@ func CommandWalletTransfer() *cli.Command {
 	}
 }
 
-func CommandUpdateSC() *cli.Command {
-	return &cli.Command{
-		Name:    "update",
-		Aliases: []string{"u"},
-		Usage:   "Update smart contract",
-		Action: func(ctx *cli.Context) error {
-			walletInstance := app.Context.WalletInstance
-
-			scid, err := app.Prompt("Enter scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			codeFilePath, err := app.Prompt("Enter new code filepath", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			code, err := ioutil.ReadFile(codeFilePath)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			codeString := string(code)
-			txId, err := walletInstance.CallSmartContract(2, scid, "UpdateCode", []rpc.Argument{
-				{Name: "code", DataType: rpc.DataString, Value: codeString},
-			}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			fmt.Println(txId)
-			return nil
-		},
-	}
-}
-
 func CommandWalletTransactions() *cli.Command {
 	return &cli.Command{
 		Name:    "transactions",
@@ -430,6 +392,172 @@ func CommandInstallSC() *cli.Command {
 	}
 }
 
+func CommandUpdateSC() *cli.Command {
+	return &cli.Command{
+		Name:    "update",
+		Aliases: []string{"u"},
+		Usage:   "Update smart contract",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			codeFilePath, err := app.Prompt("Enter new code filepath", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			code, err := ioutil.ReadFile(codeFilePath)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			codeString := string(code)
+			txId, err := walletInstance.CallSmartContract(2, scid, "UpdateCode", []rpc.Argument{
+				{Name: "code", DataType: rpc.DataString, Value: codeString},
+			}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(txId)
+			return nil
+		},
+	}
+}
+
+type SCFunc struct {
+	Name string
+	Args []SCFuncArg
+}
+
+type SCFuncArg struct {
+	Name string
+	Type string
+}
+
+func CommandCallSC() *cli.Command {
+	return &cli.Command{
+		Name:    "call",
+		Aliases: []string{"c"},
+		Usage:   "Call smart contract function",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
+				SCID:      scid,
+				Code:      true,
+				Variables: false,
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			matchFunctions, err := regexp.Compile(`Function ([A-Z]\w+)\(?(.+)\)`)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			funcs := make(map[string]SCFunc)
+			var funcNames []string
+
+			values := matchFunctions.FindAllStringSubmatch(result.Code, -1)
+			for _, value := range values {
+				funcName := value[1]
+				if funcName == "Initialize" || funcName == "PrivateInitialize" || funcName == "UpdateCode" {
+					continue
+				}
+
+				scFunc := SCFunc{
+					Name: funcName,
+				}
+
+				sArgs := value[2]
+				if sArgs != "(" {
+					args := strings.Split(sArgs, ",")
+
+					for _, arg := range args {
+						def := strings.Split(strings.Trim(arg, " "), " ")
+						scFunc.Args = append(scFunc.Args, SCFuncArg{
+							Name: def[0],
+							Type: def[1],
+						})
+					}
+				}
+
+				funcs[funcName] = scFunc
+				funcNames = append(funcNames, funcName)
+			}
+
+			funcName, err := app.PromptChoose("Function to excute", funcNames, "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			function := funcs[funcName]
+
+			args := []rpc.Argument{}
+			for _, arg := range function.Args {
+				switch arg.Type {
+				case "Uint64":
+					valueInt, err := app.PromptInt(arg.Name, 0)
+					if app.HandlePromptErr(err) {
+						return nil
+					}
+
+					args = append(args, rpc.Argument{
+						Name:     arg.Name,
+						DataType: rpc.DataUint64,
+						Value:    valueInt,
+					})
+				case "String":
+					valueString, err := app.Prompt(arg.Name, "")
+					if app.HandlePromptErr(err) {
+						return nil
+					}
+
+					args = append(args, rpc.Argument{
+						Name:     arg.Name,
+						DataType: rpc.DataString,
+						Value:    valueString,
+					})
+				default:
+					fmt.Println("Unknown arg type")
+					return nil
+				}
+			}
+
+			ringSize, err := app.PromptInt("Ringsize", 2)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			txId, err := walletInstance.CallSmartContract(uint64(ringSize), scid, function.Name, args, true)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(txId)
+			return nil
+		},
+	}
+}
+
 func SCCommands() *cli.Command {
 	return &cli.Command{
 		Name:               "sc",
@@ -438,6 +566,7 @@ func SCCommands() *cli.Command {
 		Subcommands: []*cli.Command{
 			CommandInstallSC(),
 			CommandUpdateSC(),
+			CommandCallSC(),
 		},
 		Action: func(ctx *cli.Context) error {
 			ctx.App.Run([]string{"cmd", "help"})
