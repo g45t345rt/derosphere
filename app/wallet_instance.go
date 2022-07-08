@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
@@ -344,6 +345,93 @@ func (w *WalletInstance) EstimateFeesAndTransfer(transfer *rpc.Transfer_Params) 
 	}
 
 	txid, err := w.Transfer(transfer)
+
+	if err != nil {
+		return "", err
+	}
+
+	return txid, nil
+}
+
+func (walletInstance *WalletInstance) InstallSmartContract(code []byte, promptFees bool) (string, error) {
+	codeBase64 := base64.StdEncoding.EncodeToString(code)
+	ringsize := uint64(2)
+
+	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
+		SC_Code: codeBase64,
+		SC_RPC: rpc.Arguments{
+			{Name: "entrypoint", DataType: rpc.DataString, Value: codeBase64},
+		},
+		Signer: walletInstance.GetAddress(),
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	fees := estimate.GasStorage
+
+	if promptFees {
+		yes, err := PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
+		if err != nil {
+			return "", err
+		}
+
+		if !yes {
+			return "", fmt.Errorf("cancelled")
+		}
+	}
+
+	txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
+		SC_Code:  codeBase64,
+		Ringsize: ringsize,
+		Fees:     fees,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return txid, nil
+}
+
+func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid string, entrypoint string, args []rpc.Argument, promptFees bool) (string, error) {
+	sc_rpc := rpc.Arguments{
+		{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL},
+		{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid},
+		{Name: "entrypoint", DataType: rpc.DataString, Value: entrypoint},
+	}
+
+	sc_rpc = append(sc_rpc, args[:]...)
+
+	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
+		Ringsize: ringsize,
+		SC_RPC:   sc_rpc,
+		Signer:   walletInstance.GetAddress(),
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	fees := estimate.GasStorage
+
+	if promptFees {
+		yes, err := PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
+		if err != nil {
+			return "", err
+		}
+
+		if !yes {
+			return "", fmt.Errorf("cancelled")
+		}
+	}
+
+	txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
+		SC_RPC:   sc_rpc,
+		Ringsize: ringsize,
+		Fees:     fees,
+	})
 
 	if err != nil {
 		return "", err

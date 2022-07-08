@@ -137,7 +137,7 @@ func (lt *LottoTicket) DisplayOwner() string {
 
 func initData() {
 	sqlQuery := `
-		create table if not exists lotto (
+		create table if not exists dapps_lotto (
 			tx_id varchar primary key,
 			max_tickets bigint,
 			ticket_price bigint,
@@ -157,7 +157,7 @@ func initData() {
 			anti_spam_fee bigint
 		);
 
-		create table if not exists lotto_tickets (
+		create table if not exists dapps_lotto_tickets (
 			lotto_tx_id varchar,
 			ticket_number bigint,
 			owner varchar,
@@ -271,7 +271,7 @@ func sync() {
 		}
 
 		// we if ticket price null means a lotto has been cancelled and deleted from sc
-		_, err := tx.Exec("delete from lotto where ticket_price is null")
+		_, err := tx.Exec("delete from dapps_lotto where ticket_price is null")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -304,9 +304,9 @@ func getLotto(db *sql.DB, txId string) (*Lotto, error) {
 		select tx_id, ticket_price, max_tickets, base_reward, ticket_count,
 			unique_wallet, password_hash, draw_timestamp, claim_tx_id, claim_timestamp,
 			start_timestamp, winner, winning_ticket, winner_comment, owner, u1.name as owner_name, u2.name as winner_name
-		from lotto
-		left join username as u1 on u1.wallet_address = owner
-		left join username as u2 on u2.wallet_address = winner
+		from dapps_lotto
+		left join dapps_username as u1 on u1.wallet_address = owner
+		left join dapps_username as u2 on u2.wallet_address = winner
 		where tx_id = ?
 	`
 
@@ -343,9 +343,9 @@ func CommandViewResult() *cli.Command {
 				select tx_id, ticket_price, max_tickets, base_reward, ticket_count,
 					unique_wallet, password_hash, draw_timestamp, claim_tx_id, claim_timestamp,
 					start_timestamp, winner, winning_ticket, winner_comment, owner, u1.name as owner_name, u2.name as winner_name
-				from lotto
-				left join username as u1 on u1.wallet_address = owner
-				left join username as u2 on u2.wallet_address = winner
+				from dapps_lotto
+				left join dapps_username as u1 on u1.wallet_address = owner
+				left join dapps_username as u2 on u2.wallet_address = winner
 				where draw_timestamp is not null
 			`
 
@@ -762,9 +762,9 @@ func CommandLiveLotto() *cli.Command {
 				select tx_id, ticket_price, max_tickets, base_reward, ticket_count,
 					unique_wallet, password_hash, draw_timestamp, claim_tx_id, claim_timestamp,
 					start_timestamp, winner, winning_ticket, winner_comment, owner, u1.name as owner_name, u2.name as winner_name
-				from lotto
-				left join username as u1 on u1.wallet_address = owner
-				left join username as u2 on u2.wallet_address = winner
+				from dapps_lotto
+				left join dapps_username as u1 on u1.wallet_address = owner
+				left join dapps_username as u2 on u2.wallet_address = winner
 				where draw_timestamp is null
 			`
 
@@ -819,8 +819,8 @@ func CommandLottoTickets() *cli.Command {
 			query := `
 				select lotto_tx_id, ticket_number, owner, timestamp, play_tx_id,
 				u1.name as owner_name
-				from lotto_tickets
-				left join username as u1 on u1.wallet_address = owner
+				from dapps_lotto_tickets
+				left join dapps_username as u1 on u1.wallet_address = owner
 				where lotto_tx_id = ?
 			`
 

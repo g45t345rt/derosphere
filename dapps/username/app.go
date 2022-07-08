@@ -34,7 +34,7 @@ func getSCID() string {
 
 func initData() {
 	sqlQuery := `
-		create table if not exists username (
+		create table if not exists dapps_username (
 			wallet_address varchar primary key,
 			name varchar
 		);
@@ -51,7 +51,7 @@ func initData() {
 	commitAt := counts[DAPP_NAME]
 	if commitAt == 0 {
 		sqlQuery = `
-			delete from username
+			delete from dapps_username
 		`
 
 		_, err = db.Exec(sqlQuery)
@@ -81,7 +81,7 @@ func sync() {
 	defer tx.Rollback()
 
 	sqlQuery := `
-		insert into username (wallet_address, name)
+		insert into dapps_username (wallet_address, name)
 		values (?,?)
 		on conflict(wallet_address) do update set name = ?
 	`
@@ -94,7 +94,7 @@ func sync() {
 	defer setTx.Close()
 
 	sqlQuery = `
-		delete from username where wallet_address == ?
+		delete from dapps_username where wallet_address == ?
 	`
 
 	delTx, err := tx.Prepare(sqlQuery)
@@ -243,7 +243,7 @@ func CommandListNames() *cli.Command {
 			db := app.Context.DB
 
 			query := `
-				select wallet_address, name from username
+				select wallet_address, name from dapps_username
 			`
 
 			rows, err := db.Query(query)
@@ -283,7 +283,7 @@ func CommandName() *cli.Command {
 
 			db := app.Context.DB
 			walletAddress := app.Context.WalletInstance.GetAddress()
-			sqlQuery := `select name from username where wallet_address == ?`
+			sqlQuery := `select name from dapps_username where wallet_address == ?`
 
 			row := db.QueryRow(sqlQuery, walletAddress)
 			var name string

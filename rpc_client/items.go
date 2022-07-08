@@ -10,11 +10,6 @@ import (
 	"github.com/deroproject/derohe/rpc"
 )
 
-type Item struct {
-	Key   string
-	Value string
-}
-
 func (d *Daemon) GetSCItemCount(scid string, key string) uint64 {
 	result, err := d.GetSC(&rpc.GetSC_Params{
 		SCID:       scid,
@@ -35,10 +30,16 @@ func (d *Daemon) GetSCItemCount(scid string, key string) uint64 {
 	return count
 }
 
-func (d *Daemon) GetSCItems(scid string, prefixKey string, start uint64, end uint64) []Item {
+func (d *Daemon) GetSCKeyValues(scid string, prefixKey string, start uint64, end uint64, columns []string) map[string]string {
 	keys := []string{}
 	for i := start; i < end; i++ {
-		keys = append(keys, fmt.Sprintf("%s%d", prefixKey, i))
+		if len(columns) == 0 {
+			keys = append(keys, fmt.Sprintf("%s%d", prefixKey, i))
+		} else {
+			for _, column := range columns {
+				keys = append(keys, fmt.Sprintf("%s%d%s", prefixKey, i, column))
+			}
+		}
 	}
 
 	result, err := d.GetSC(&rpc.GetSC_Params{
@@ -52,7 +53,7 @@ func (d *Daemon) GetSCItems(scid string, prefixKey string, start uint64, end uin
 		log.Fatal(err)
 	}
 
-	items := []Item{}
+	keyValues := make(map[string]string)
 	for index, value := range result.ValuesString {
 		key := keys[index]
 		valuestring, err := hex.DecodeString(value)
@@ -60,11 +61,8 @@ func (d *Daemon) GetSCItems(scid string, prefixKey string, start uint64, end uin
 			log.Fatal(err)
 		}
 
-		items = append(items, Item{
-			Key:   key,
-			Value: string(valuestring),
-		})
+		keyValues[key] = string(valuestring)
 	}
 
-	return items
+	return keyValues
 }

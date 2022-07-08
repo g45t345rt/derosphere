@@ -1,7 +1,6 @@
 package g45_nft
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -14,102 +13,13 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func installSmartContractProcess(code []byte, promptFees bool) (string, error) {
-	walletInstance := app.Context.WalletInstance
-	codeBase64 := base64.StdEncoding.EncodeToString(code)
-	ringsize := uint64(2)
-
-	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
-		SC_Code: codeBase64,
-		SC_RPC: rpc.Arguments{
-			{Name: "entrypoint", DataType: rpc.DataString, Value: codeBase64},
-		},
-		Signer: walletInstance.GetAddress(),
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	fees := estimate.GasStorage
-
-	if promptFees {
-		yes, err := app.PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
-		if err != nil {
-			return "", err
-		}
-
-		if !yes {
-			return "", fmt.Errorf("Cancelled")
-		}
-	}
-
-	txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
-		SC_Code:  codeBase64,
-		Ringsize: ringsize,
-		Fees:     fees,
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	return txid, nil
-}
-
-func callSmartContractProcess(ringsize uint64, scid string, entrypoint string, args []rpc.Argument, promptFees bool) (string, error) {
-	walletInstance := app.Context.WalletInstance
-
-	sc_rpc := rpc.Arguments{
-		{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL},
-		{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid},
-		{Name: "entrypoint", DataType: rpc.DataString, Value: entrypoint},
-	}
-
-	sc_rpc = append(sc_rpc, args[:]...)
-
-	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
-		Ringsize: ringsize,
-		SC_RPC:   sc_rpc,
-		Signer:   walletInstance.GetAddress(),
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	fees := estimate.GasStorage
-
-	if promptFees {
-		yes, err := app.PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
-		if err != nil {
-			return "", err
-		}
-
-		if !yes {
-			return "", fmt.Errorf("Cancelled")
-		}
-	}
-
-	txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
-		SC_RPC:   sc_rpc,
-		Ringsize: ringsize,
-		Fees:     fees,
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	return txid, nil
-}
-
 func CommandDeployNFT() *cli.Command {
 	return &cli.Command{
 		Name:    "deploy-nft",
 		Aliases: []string{"d"},
 		Usage:   "Deploy G45-NFT Smart Contract",
 		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
 			assetType, err := app.PromptChoose("Asset token type", []string{"public", "private"}, "public")
 			if app.HandlePromptErr(err) {
 				return nil
@@ -120,7 +30,7 @@ func CommandDeployNFT() *cli.Command {
 				code = utils.G45_NFT_PRIVATE
 			}
 
-			txId, err := installSmartContractProcess([]byte(code), true)
+			txId, err := walletInstance.InstallSmartContract([]byte(code), true)
 			if err != nil {
 				fmt.Println(err)
 				return nil
@@ -183,7 +93,8 @@ func CommandInitNFT() *cli.Command {
 				uFreezeSupply = 1
 			}
 
-			txId, err := callSmartContractProcess(2, nftAssetToken, "InitStore", []rpc.Argument{
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "InitStore", []rpc.Argument{
 				{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
 				{Name: "supply", DataType: rpc.DataUint64, Value: supply},
 				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
@@ -223,7 +134,8 @@ func CommandAddSupply() *cli.Command {
 				return nil
 			}
 
-			txId, err := callSmartContractProcess(2, nftAssetToken, "AddSupply", []rpc.Argument{
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "AddSupply", []rpc.Argument{
 				{Name: "supply", DataType: rpc.DataUint64, Value: supply},
 			}, true)
 
@@ -255,7 +167,8 @@ func CommandFreezeSupply() *cli.Command {
 				}
 			}
 
-			txId, err := callSmartContractProcess(2, nftAssetToken, "FreezeSupply", []rpc.Argument{}, true)
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "FreezeSupply", []rpc.Argument{}, true)
 			if err != nil {
 				fmt.Println(err)
 				return nil
@@ -283,7 +196,45 @@ func CommandFreezeMetadata() *cli.Command {
 				}
 			}
 
-			txId, err := callSmartContractProcess(2, nftAssetToken, "FreezeMetadata", []rpc.Argument{}, true)
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "FreezeMetadata", []rpc.Argument{}, true)
+			if err != nil {
+				fmt.Println(txId)
+				return nil
+			}
+
+			fmt.Println(txId)
+			return nil
+		},
+	}
+}
+
+func CommandSetMetadata() *cli.Command {
+	return &cli.Command{
+		Name:    "set-metadata",
+		Aliases: []string{"fm"},
+		Usage:   "Set/edit metadata of the NFT",
+		Action: func(ctx *cli.Context) error {
+			nftAssetToken := ctx.Args().First()
+			var err error
+
+			if nftAssetToken == "" {
+				nftAssetToken, err = app.Prompt("Enter nft asset token", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			metadata, err := app.Prompt("Set new metadata", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "SetMetadata", []rpc.Argument{
+				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
+			}, true)
+
 			if err != nil {
 				fmt.Println(txId)
 				return nil
@@ -347,7 +298,8 @@ func CommandDeployCollection() *cli.Command {
 		Aliases: []string{"dc"},
 		Usage:   "Deploy G45-NFT-COLLECTION Smart Contract",
 		Action: func(ctx *cli.Context) error {
-			installSmartContractProcess([]byte(utils.G45_NFT_COLLECTION), true)
+			walletInstance := app.Context.WalletInstance
+			walletInstance.InstallSmartContract([]byte(utils.G45_NFT_COLLECTION), true)
 			return nil
 		},
 	}
@@ -369,7 +321,8 @@ func CommandCollectionAddNFT() *cli.Command {
 				return nil
 			}
 
-			txId, err := callSmartContractProcess(2, scid, "Add", []rpc.Argument{
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, scid, "Add", []rpc.Argument{
 				{Name: "nft", DataType: rpc.DataString, Value: nftAssetToken},
 			}, true)
 
@@ -384,11 +337,12 @@ func CommandCollectionAddNFT() *cli.Command {
 	}
 }
 
-func CommandDeployEntireCollection() *cli.Command {
+func CommandSetupWizard() *cli.Command {
 	return &cli.Command{
-		Name:  "deploy-entire-collection",
+		Name:  "setup-wizard",
 		Usage: "Script to deploy entire collection from metadata.json",
 		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
 			metadata_path, err := app.Prompt("Enter metadata file path", "")
 			if app.HandlePromptErr(err) {
 				return nil
@@ -436,7 +390,7 @@ func CommandDeployEntireCollection() *cli.Command {
 			var collectionSCID string
 			if installCollection {
 				fmt.Println("Install NFT Collection")
-				collectionSCID, err = installSmartContractProcess([]byte(utils.G45_NFT_COLLECTION), false)
+				collectionSCID, err = walletInstance.InstallSmartContract([]byte(utils.G45_NFT_COLLECTION), false)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -461,7 +415,7 @@ func CommandDeployEntireCollection() *cli.Command {
 			for index, nft := range metadataCollection.Collection {
 				if int64(index) >= startIndex {
 					fmt.Println("Install NFT")
-					nftSCID, err := installSmartContractProcess([]byte(nftCode), false)
+					nftSCID, err := walletInstance.InstallSmartContract([]byte(nftCode), false)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -469,7 +423,7 @@ func CommandDeployEntireCollection() *cli.Command {
 					time.Sleep(250 * time.Millisecond)
 
 					fmt.Println("Add to collection: " + nftSCID)
-					_, err = callSmartContractProcess(2, collectionSCID, "Add", []rpc.Argument{
+					_, err = walletInstance.CallSmartContract(2, collectionSCID, "Add", []rpc.Argument{
 						{Name: "nft", DataType: rpc.DataString, Value: nftSCID},
 					}, false)
 
@@ -484,7 +438,7 @@ func CommandDeployEntireCollection() *cli.Command {
 					}
 
 					fmt.Println("InitStore: " + sMetadata)
-					_, err = callSmartContractProcess(2, nftSCID, "InitStore", []rpc.Argument{
+					_, err = walletInstance.CallSmartContract(2, nftSCID, "InitStore", []rpc.Argument{
 						{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
 						{Name: "supply", DataType: rpc.DataUint64, Value: 1},
 						{Name: "metadata", DataType: rpc.DataString, Value: sMetadata},
@@ -515,11 +469,12 @@ func App() *cli.App {
 			CommandDeployCollection(),
 			CommandInitNFT(),
 			CommandAddSupply(),
+			CommandSetMetadata(),
 			CommandFreezeMetadata(),
 			CommandFreezeSupply(),
 			CommandCheckValidNFT(),
 			CommandCollectionAddNFT(),
-			CommandDeployEntireCollection(),
+			CommandSetupWizard(),
 		},
 		Authors: []*cli.Author{
 			{Name: "g45t345rt"},

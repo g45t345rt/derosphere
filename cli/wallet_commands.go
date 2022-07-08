@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"runtime"
@@ -349,48 +348,16 @@ func CommandUpdateSC() *cli.Command {
 			}
 
 			codeString := string(code)
-			ringsize := uint64(2)
-			sc_rpc := rpc.Arguments{
-				{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL},
-				{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid},
-				{Name: "entrypoint", DataType: rpc.DataString, Value: "UpdateCode"},
+			txId, err := walletInstance.CallSmartContract(2, scid, "UpdateCode", []rpc.Argument{
 				{Name: "code", DataType: rpc.DataString, Value: codeString},
-			}
-
-			estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
-				Ringsize: ringsize,
-				SC_RPC:   sc_rpc,
-				Signer:   walletInstance.GetAddress(),
-			})
+			}, true)
 
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			fees := estimate.GasStorage
-			yes, err := app.PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if !yes {
-				return nil
-			}
-
-			txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
-				SC_RPC:   sc_rpc,
-				Ringsize: ringsize,
-				Fees:     fees,
-			})
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			fmt.Println(txid)
-
+			fmt.Println(txId)
 			return nil
 		},
 	}
@@ -399,7 +366,7 @@ func CommandUpdateSC() *cli.Command {
 func CommandWalletTransactions() *cli.Command {
 	return &cli.Command{
 		Name:    "transactions",
-		Aliases: []string{"tx"},
+		Aliases: []string{"txs"},
 		Usage:   "Show transaction history",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
@@ -451,48 +418,13 @@ func CommandInstallSC() *cli.Command {
 				return nil
 			}
 
-			codeBase64 := base64.StdEncoding.EncodeToString(code)
-			ringsize := uint64(2)
-
-			estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
-				SC_Code: codeBase64,
-				SC_RPC: rpc.Arguments{
-					{Name: "entrypoint", DataType: rpc.DataString, Value: codeBase64},
-				},
-				Signer: walletInstance.GetAddress(),
-			})
-
+			txId, err := walletInstance.InstallSmartContract(code, true)
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			fees := estimate.GasStorage
-			yes, err := app.PromptYesNo(fmt.Sprintf("Fees are %s", rpc.FormatMoney(fees)), false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if !yes {
-				return nil
-			}
-
-			txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
-				SC_Code: codeBase64,
-				/*SC_RPC: rpc.Arguments{
-					{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_INSTALL},
-					{Name: rpc.SCCODE, DataType: rpc.DataString, Value: codeString},
-				},*/
-				Ringsize: ringsize,
-				Fees:     fees,
-			})
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			fmt.Println(txid)
+			fmt.Println(txId)
 			return nil
 		},
 	}

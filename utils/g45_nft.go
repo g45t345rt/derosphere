@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/hex"
+	"fmt"
 	"log"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
@@ -167,6 +168,17 @@ type G45NFT struct {
 	Collection     string
 }
 
+func (nft *G45NFT) Print() {
+	fmt.Println("Asset ID: ", nft.Id)
+	fmt.Println("Collection ID: ", nft.Collection)
+	fmt.Println("Init: ", nft.Init)
+	fmt.Println("Minter: ", nft.Minter)
+	fmt.Println("Frozen Metadata: ", nft.FrozenMetadata)
+	fmt.Println("Frozen Supply: ", nft.FrozenSupply)
+	fmt.Println("Metadata: ", nft.Metadata)
+	fmt.Println("Supply: ", nft.Supply)
+}
+
 func decodeString(value string) string {
 	bytes, err := hex.DecodeString(value)
 	if err != nil {
@@ -176,9 +188,17 @@ func decodeString(value string) string {
 	return string(bytes)
 }
 
-func ParseG45NFT(id string, result *rpc.GetSC_Result) G45NFT {
+func ParseG45NFT(id string, result *rpc.GetSC_Result) (*G45NFT, error) {
 	values := result.VariableStringKeys
-	nft := G45NFT{}
+	nft := &G45NFT{}
+
+	switch result.Code {
+	case G45_NFT_PUBLIC:
+	case G45_NFT_PRIVATE:
+	case G45_NFT_COLLECTION:
+	default:
+		return nil, fmt.Errorf("not a valid G45-NFT")
+	}
 
 	nft.Id = id
 	nft.Init = values["init"].(float64) != 0
@@ -190,16 +210,16 @@ func ParseG45NFT(id string, result *rpc.GetSC_Result) G45NFT {
 	p := new(crypto.Point)
 	key, err := hex.DecodeString(values["minter"].(string))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	err = p.DecodeCompressed(key)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	nft.Minter = rpc.NewAddressFromKeys(p).String()
 	nft.Supply = uint64(values["supply"].(float64))
 
-	return nft
+	return nft, nil
 }
