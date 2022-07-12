@@ -522,8 +522,16 @@ func Commands() []*cli.Command {
 
 func RootApp() *cli.App {
 	return &cli.App{
-		Name:                  "DeroSphere",
-		Commands:              Commands(),
+		Name:     "DeroSphere",
+		Commands: Commands(),
+		Before: func(c *cli.Context) error {
+			app.Context.StopPromptRefresh = true
+			return nil
+		},
+		After: func(c *cli.Context) error {
+			app.Context.StopPromptRefresh = false
+			return nil
+		},
 		CustomAppHelpTemplate: utils.AppTemplate,
 		Action: func(ctx *cli.Context) error {
 			fmt.Println("Command not found. Type 'help' for a list of commands.")

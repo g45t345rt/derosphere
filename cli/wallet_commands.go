@@ -656,19 +656,27 @@ func CommandClearCommitCount() *cli.Command {
 	}
 }
 
-func DAppApp(app *cli.App) *cli.App {
+func DAppApp(dapp *cli.App) *cli.App {
 	return &cli.App{
-		Name:                  app.Name,
-		Description:           app.Description,
+		Name:                  dapp.Name,
+		Description:           dapp.Description,
 		CustomAppHelpTemplate: utils.AppTemplate,
-		Authors:               app.Authors,
-		Commands: append(app.Commands,
+		Authors:               dapp.Authors,
+		Before: func(c *cli.Context) error {
+			app.Context.StopPromptRefresh = true
+			return nil
+		},
+		After: func(c *cli.Context) error {
+			app.Context.StopPromptRefresh = false
+			return nil
+		},
+		Commands: append(dapp.Commands,
 			CommandDAppInfo(),
 			CommandDAppBack(),
 			DAppWalletCommands(),
 			CommandClearCommitCount(),
 			//CommandSwitchWallet(),
-			CommandVersion(app.Name, semver.MustParse(app.Version)),
+			CommandVersion(dapp.Name, semver.MustParse(dapp.Version)),
 			CommandExit(),
 		),
 		Action: func(ctx *cli.Context) error {
@@ -704,6 +712,14 @@ func WalletApp() *cli.App {
 	return &cli.App{
 		Name:                  "",
 		CustomAppHelpTemplate: utils.AppTemplate,
+		Before: func(c *cli.Context) error {
+			app.Context.StopPromptRefresh = true
+			return nil
+		},
+		After: func(c *cli.Context) error {
+			app.Context.StopPromptRefresh = false
+			return nil
+		},
 		Commands: []*cli.Command{
 			CommandWalletInfo(),
 			CommandDApp(),

@@ -125,7 +125,7 @@ func (w *WalletInstance) Open() error {
 }
 
 func (w *WalletInstance) Close() {
-	Context.StopPromptRefresh = true
+	// Context.StopPromptRefresh = true
 	w.Daemon = nil
 	w.WalletRPC = nil
 
@@ -134,7 +134,7 @@ func (w *WalletInstance) Close() {
 		w.WalletDisk = nil
 	}
 
-	Context.StopPromptRefresh = false
+	// Context.StopPromptRefresh = false
 }
 
 func (w *WalletInstance) Save() {

@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/chzyer/readline"
@@ -29,17 +30,16 @@ type Config struct {
 }
 
 type AppContext struct {
-	Config              Config
-	UseApp              string
-	rootApp             *cli.App
-	walletApp           *cli.App
-	DAppApp             *cli.App
-	WalletInstance      *WalletInstance
-	walletInstances     []*WalletInstance
-	readlineInstance    *readline.Instance
-	DB                  *sql.DB
-	StopPromptRefresh   bool // prompt auto refresh every second to display block height - use this arg to disable and show other prompt
-	StopInactivityTimer bool
+	Config            Config
+	UseApp            string
+	rootApp           *cli.App
+	walletApp         *cli.App
+	DAppApp           *cli.App
+	WalletInstance    *WalletInstance
+	walletInstances   []*WalletInstance
+	readlineInstance  *readline.Instance
+	DB                *sql.DB
+	StopPromptRefresh bool // prompt auto refresh every second to display block height - use this arg to disable and show other prompt
 }
 
 var Context *AppContext
@@ -64,10 +64,16 @@ func InitAppContext(rootApp *cli.App, walletApp *cli.App) {
 }
 
 func (app *AppContext) Run() {
+	var m sync.Mutex
 	// auto refresh block height
 	go func() {
 		for {
-			app.RefreshPrompt()
+			m.Lock()
+			if !app.StopPromptRefresh {
+				app.RefreshPrompt()
+			}
+			m.Unlock()
+
 			time.Sleep(1 * time.Second)
 		}
 	}()
@@ -82,14 +88,16 @@ func (app *AppContext) Run() {
 	// close wallet after certain amount of time
 	go func() {
 		for {
-			if !app.StopInactivityTimer {
+			if !app.StopPromptRefresh {
 				closeWalletAfter := time.Duration(app.Config.CloseWalletAfter) * time.Second
 				if closeWalletAfter > 0 && app.WalletInstance != nil && time.Now().After(lastActivity.Add(closeWalletAfter)) {
+					m.Lock()
 					app.WalletInstance.Close()
 					app.WalletInstance = nil
 					app.UseApp = "rootApp"
 					app.DAppApp = nil
 					fmt.Printf("\nWallet close after %ds of inactivity.\n", app.Config.CloseWalletAfter)
+					m.Unlock()
 				}
 			}
 
@@ -106,7 +114,9 @@ out:
 		case io.EOF:
 			break out
 		case readline.ErrInterrupt:
+			app.StopPromptRefresh = true
 			yes, _ := PromptYesNo("Are you sure you want to quit?", false)
+			app.StopPromptRefresh = false
 			if !yes {
 				continue
 			}
@@ -198,10 +208,6 @@ func (app *AppContext) GetWalletInstances() []*WalletInstance {
 }
 
 func (app *AppContext) RefreshPrompt() {
-	if app.StopPromptRefresh {
-		return
-	}
-
 	prompt := fmt.Sprintf("[%s] > ", app.Config.Env)
 
 	if app.WalletInstance != nil {

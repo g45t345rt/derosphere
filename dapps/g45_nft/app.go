@@ -414,9 +414,6 @@ func CommandDeployEntireCollection() *cli.Command {
 		Name:  "deploy-entire-collection",
 		Usage: "Script to deploy entire NFT collection",
 		Action: func(ctx *cli.Context) error {
-			app.Context.StopInactivityTimer = true
-			app.Context.StopPromptRefresh = true
-
 			walletInstance := app.Context.WalletInstance
 
 			assetType, err := app.PromptChoose("NFT type", []string{"public", "private"}, "private")
@@ -485,8 +482,6 @@ func CommandDeployEntireCollection() *cli.Command {
 				time.Sleep(sleep)
 			}
 
-			app.Context.StopInactivityTimer = false
-			app.Context.StopPromptRefresh = false
 			return nil
 		},
 	}
@@ -497,9 +492,6 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 		Name:  "init-collection-nfts",
 		Usage: "Script to deploy collection NFTs from metadata.json",
 		Action: func(ctx *cli.Context) error {
-			app.Context.StopInactivityTimer = true
-			app.Context.StopPromptRefresh = true
-
 			walletInstance := app.Context.WalletInstance
 			metadata_path, err := app.Prompt("Enter metadata file path", "")
 			if app.HandlePromptErr(err) {
@@ -616,8 +608,6 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 				}
 			}
 
-			app.Context.StopInactivityTimer = false
-			app.Context.StopPromptRefresh = false
 			return nil
 		},
 	}
