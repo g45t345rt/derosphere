@@ -155,8 +155,7 @@ func CommandAttachWallet() *cli.Command {
 			}
 
 			walletInstance.Add()
-
-			fmt.Println("New wallet attached and saved.")
+			fmt.Printf("New wallet %s attached and saved.", name)
 			return nil
 		},
 	}
@@ -185,8 +184,7 @@ func CommandDetachWallet() *cli.Command {
 			}
 
 			walletInstance.Del(listIndex)
-			//app.Context.RemoveWalletInstance(walletIndex)
-
+			fmt.Printf("Wallet %s detached.\n", name)
 			return nil
 		},
 	}

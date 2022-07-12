@@ -26,6 +26,7 @@ List of Derosphere features
 - ✔ Mint G45-NFT (collection) with all available functions
 - ✔ List/Table pagination (load more data...)
 - ✔ Call unknown smart contract function (scan code and display funcs and params)
+- ☐ Filesign and verify (wallet disk only - need pull request for rpc server)
 
 ## DApps
 
@@ -44,6 +45,24 @@ Register a single username used by other dApps.
 - ✔ Unregister your current username
 - ✔ View list of usernames
 - ✔ View your current username
+
+### G45-NFT
+
+Tools to deploy G45-NFT Standard
+<https://github.com/g45t345rt/DERO-NFT-Standards/tree/master/g45-nft>  
+
+- ✔ Deploy G45-NFT and G45-NFT-Collection | public and private
+- ✔ Edit G45-NFT (InitStore, AddSupply, SetMetadata, FreezeMetadata, FreezeSupply)
+- ✔ Check if SCID is a valid G45-NFT or G45-NFT-Collection
+- ✔ Edit G45-NFT-Collection (Set,Del,Lock)
+- ✔ Setup wizard to deploy from metadata.json (deploy-entire-collection, init-collection-nfts)
+
+### T345-NFT
+
+Tools to deploy T345-NFT Standard
+<https://github.com/g45t345rt/DERO-NFT-Standards/tree/master/t345-nft>  
+
+TODO  
 
 ### Lotto
 
@@ -65,11 +84,13 @@ Dero Seals NFT project. NFTs by MERU!
 <https://twitter.com/deroseals>  
 
 - ✔ List entire NFT collection
-- ✔ Open specific NFT image in the browser from fileNumber or NFT token id
+- ✔ Open specific NFT image in the browser from fileNumber or NFT asset token
 
 ### Dero And Dragons - dnd
 
 DeroAndDragons. Trading card fantasy world. NFTs by JoyRaptor!
+
+TODO  
 
 ### Exchange / auction Asset Token
 

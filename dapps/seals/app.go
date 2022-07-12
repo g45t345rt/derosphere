@@ -1,12 +1,16 @@
 package seals
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/url"
+	"regexp"
+	"strings"
 
 	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
+	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/pkg/browser"
 	"github.com/urfave/cli/v2"
@@ -17,7 +21,7 @@ var DAPP_NAME = "seals"
 var COLLECTION_SC_ID map[string]string = map[string]string{
 	"mainnet":   "",
 	"testnet":   "",
-	"simulator": "d8cc9975a9ba8db60623515d11547a28cf2974babe4b779d55153f2d5805d781",
+	"simulator": "cddf68d28bce581f7fdfcd3b50870c5cfa72c346d8d7e0bff58d2cad0d357199",
 }
 
 func getCollectionSCID() string {
@@ -25,29 +29,47 @@ func getCollectionSCID() string {
 }
 
 type SealNFT struct {
-	Id               string
-	FrozenMetadata   bool
-	FrozenSupply     bool
-	Supply           uint64
-	Metadata         string
-	FileNumber       int
-	Rarity           float64
-	TraitBackground  string
-	TraitBase        string
-	TraitEyes        string
-	TraitHairAndHats string
-	TraitShirts      string
-	TraitTattoo      string
+	Token            sql.NullString
+	FrozenMetadata   sql.NullBool
+	FrozenSupply     sql.NullBool
+	Supply           sql.NullInt64
+	Metadata         sql.NullString
+	FileNumber       sql.NullInt64
+	Rarity           sql.NullFloat64
+	TraitBackground  sql.NullString
+	TraitBase        sql.NullString
+	TraitEyes        sql.NullString
+	TraitHairAndHats sql.NullString
+	TraitShirts      sql.NullString
+	TraitTattoo      sql.NullString
+}
+
+func emptyStringToUnderscore(value string) string {
+	if value == "" {
+		return "_"
+	}
+
+	return value
 }
 
 func (sn *SealNFT) Traits() string {
-	return sn.TraitBackground + ", " + sn.TraitBase + ", " + sn.TraitEyes + ", " + sn.TraitHairAndHats + ", " + sn.TraitShirts + ", " + sn.TraitTattoo
+	var traits []string
+	traits = append(traits,
+		emptyStringToUnderscore(sn.TraitBackground.String),
+		emptyStringToUnderscore(sn.TraitBase.String),
+		emptyStringToUnderscore(sn.TraitEyes.String),
+		emptyStringToUnderscore(sn.TraitHairAndHats.String),
+		emptyStringToUnderscore(sn.TraitShirts.String),
+		emptyStringToUnderscore(sn.TraitTattoo.String),
+	)
+
+	return strings.Join(traits, ", ")
 }
 
 func initData() {
-	sqlQuery := `
+	query := `
 		create table if not exists dapps_seals_collection (
-			nft varchar primary key,
+			token varchar primary key,
 			frozen_metadata boolean,
 			frozen_supply boolean,
 			supply integer,
@@ -65,7 +87,20 @@ func initData() {
 
 	db := app.Context.DB
 
-	_, err := db.Exec(sqlQuery)
+	_, err := db.Exec(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func clearData() {
+	query := `
+		delete from dapps_seals_collection
+	`
+
+	db := app.Context.DB
+
+	_, err := db.Exec(query)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,10 +109,17 @@ func initData() {
 func sync() {
 	daemon := app.Context.WalletInstance.Daemon
 	scid := getCollectionSCID()
-	itemCount := daemon.GetSCItemCount(scid, "nft_count")
-	itemAt := uint64(0)
+	commitCount := daemon.GetSCCommitCount(scid)
+	counts := utils.GetCounts()
+	commitAt := counts[DAPP_NAME]
+
+	if commitAt == 0 {
+		clearData()
+	}
+
 	chunk := uint64(1000)
 	db := app.Context.DB
+	nftKey, _ := regexp.Compile(`state_nft_(.+)`)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -85,56 +127,71 @@ func sync() {
 	}
 	defer tx.Rollback()
 
-	var i uint64
-	for i = itemAt; i < itemCount; i += chunk {
-		var keyValues map[string]string
+	for i := commitAt; i < commitCount; i += chunk {
+		var commits []rpc_client.Commit
 		end := i + chunk
-		if end > itemCount {
-			itemAt = itemCount
-			keyValues = daemon.GetSCKeyValues(scid, "nft_", i, itemCount, []string{})
+		if end > commitCount {
+			commitAt = commitCount
+			commits = daemon.GetSCCommits(scid, i, commitCount)
 		} else {
-			itemAt = end
-			keyValues = daemon.GetSCKeyValues(scid, "nft_", i, itemAt, []string{})
+			commitAt = end
+			commits = daemon.GetSCCommits(scid, i, commitAt)
 		}
 
-		for _, value := range keyValues {
-			nftId := value
-			result, err := daemon.GetSC(&rpc.GetSC_Params{
-				SCID:      nftId,
-				Code:      true,
-				Variables: true,
-			})
+		for _, commit := range commits {
+			key := commit.Key
 
-			if err != nil {
-				log.Fatal(err)
-			}
+			if strings.HasPrefix(key, "state_nft_") {
+				assetTokenSCID := nftKey.ReplaceAllString(key, "$1")
 
-			nft, err := utils.ParseG45NFT(nftId, result)
-			if err != nil {
-				log.Fatal(err)
-			}
+				if commit.Action == "S" {
+					result, err := daemon.GetSC(&rpc.GetSC_Params{
+						SCID:      assetTokenSCID,
+						Code:      true,
+						Variables: true,
+					})
 
-			values, err := url.ParseQuery(nft.Metadata)
-			if err != nil {
-				log.Fatal(err)
-			}
+					if err != nil {
+						log.Fatal(err)
+					}
 
-			query := `
-				insert into dapps_seals_collection (nft, frozen_metadata,	frozen_supply, supply, metadata, file_number,
-					rarity, trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo)
-				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-				on conflict(nft) do update 
-				set nft = ?
-			`
+					nft, err := utils.ParseG45NFT(assetTokenSCID, result)
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
 
-			_, err = tx.Exec(query, nft.Id, nft.FrozenMetadata, nft.FrozenSupply, nft.Supply, nft.Metadata,
-				values.Get("fileNumber"), values.Get("rarity"), values.Get("trait_background"),
-				values.Get("trait_base"), values.Get("trait_eyes"), values.Get("trait_hairAndHats"),
-				values.Get("trait_shirts"), values.Get("trait_tattoo"), nft.Id,
-			)
+					values, err := url.ParseQuery(nft.Metadata)
+					if err != nil {
+						log.Fatal(err)
+					}
 
-			if err != nil {
-				log.Fatal(err)
+					query := `
+						insert into dapps_seals_collection (token, frozen_metadata,	frozen_supply, supply, metadata, file_number,
+							rarity, trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo)
+						values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+						on conflict(token) do update 
+						set token = ?
+					`
+
+					_, err = tx.Exec(query, nft.Token, nft.FrozenMetadata, nft.FrozenSupply, nft.Supply, nft.Metadata,
+						utils.NewNullString(values.Get("fileNumber")), utils.NewNullString(values.Get("rarity")), values.Get("trait_background"),
+						values.Get("trait_base"), values.Get("trait_eyes"), values.Get("trait_hairAndHats"),
+						values.Get("trait_shirts"), values.Get("trait_tattoo"), nft.Token,
+					)
+
+					if err != nil {
+						log.Fatal(err)
+					}
+				} else if commit.Action == "D" {
+					query := `delete from dapps_seals_collection where token = ?`
+
+					_, err = tx.Exec(query, assetTokenSCID)
+
+					if err != nil {
+						log.Fatal(err)
+					}
+				}
 			}
 		}
 
@@ -143,7 +200,7 @@ func sync() {
 			log.Fatal(err)
 		}
 
-		utils.SetCount(DAPP_NAME, itemAt)
+		utils.SetCount(DAPP_NAME, commitAt)
 	}
 }
 
@@ -156,7 +213,9 @@ func CommandList() *cli.Command {
 			sync()
 
 			db := app.Context.DB
-			query := `select * from dapps_seals_collection order by rarity desc`
+			query := `select token, frozen_metadata, frozen_supply, supply, metadata, file_number, rarity,
+			trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo
+			from dapps_seals_collection order by rarity desc`
 
 			rows, err := db.Query(query)
 			if err != nil {
@@ -166,7 +225,7 @@ func CommandList() *cli.Command {
 			var nfts []SealNFT
 			for rows.Next() {
 				var nft SealNFT
-				err = rows.Scan(&nft.Id, &nft.FrozenMetadata, &nft.FrozenSupply, &nft.Supply, &nft.Metadata,
+				err = rows.Scan(&nft.Token, &nft.FrozenMetadata, &nft.FrozenSupply, &nft.Supply, &nft.Metadata,
 					&nft.FileNumber, &nft.Rarity, &nft.TraitBackground, &nft.TraitBase, &nft.TraitEyes,
 					&nft.TraitHairAndHats, &nft.TraitShirts, &nft.TraitTattoo,
 				)
@@ -181,9 +240,34 @@ func CommandList() *cli.Command {
 			app.Context.DisplayTable(len(nfts), func(i int) []interface{} {
 				nft := nfts[i]
 				return []interface{}{
-					i, nft.Id, nft.FileNumber, nft.Rarity, nft.Traits(),
+					nft.Token.String, nft.Supply.Int64, nft.FrozenMetadata.Bool, nft.FrozenSupply.Bool, nft.FileNumber.Int64, nft.Rarity.Float64, nft.Traits(),
 				}
-			}, []interface{}{"", "NFT", "File Number", "Rarity", "Traits"}, 25)
+			}, []interface{}{"NFT", "Supply", "Frozen Metadata", "Frozen Supply", "File Number", "Rarity", "Traits"}, 25)
+			return nil
+		},
+	}
+}
+
+func CommandCount() *cli.Command {
+	return &cli.Command{
+		Name:    "count",
+		Aliases: []string{"c"},
+		Usage:   "Number of NFTs in the collection",
+		Action: func(c *cli.Context) error {
+			sync()
+
+			db := app.Context.DB
+			query := `select count(*) from dapps_seals_collection`
+
+			row := db.QueryRow(query)
+			var count int
+			err := row.Scan(&count)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(count)
 			return nil
 		},
 	}
@@ -208,7 +292,7 @@ func CommandViewNFT() *cli.Command {
 			}
 
 			db := app.Context.DB
-			query := `select file_number from dapps_seals_collection where nft = ?`
+			query := `select file_number from dapps_seals_collection where token = ?`
 
 			row := db.QueryRow(query, nft)
 			err = row.Err()
@@ -221,6 +305,7 @@ func CommandViewNFT() *cli.Command {
 			row.Scan(&fileNumber)
 
 			browser.OpenURL("https://imagedelivery.net/zAjZFa6f2RjCu5A0cXIeHA/dero-seals-" + fileNumber + "/default")
+			fmt.Println("NFT image opened in the browser.")
 			return nil
 		},
 	}
@@ -243,6 +328,7 @@ func CommandViewImage() *cli.Command {
 			}
 
 			browser.OpenURL("https://imagedelivery.net/zAjZFa6f2RjCu5A0cXIeHA/dero-seals-" + fileNumber + "/default")
+			fmt.Println("NFT image opened in the browser.")
 			return nil
 		},
 	}
@@ -259,6 +345,7 @@ func App() *cli.App {
 			CommandList(),
 			CommandViewNFT(),
 			CommandViewImage(),
+			CommandCount(),
 		},
 		Authors: []*cli.Author{
 			{Name: "billoetree"},

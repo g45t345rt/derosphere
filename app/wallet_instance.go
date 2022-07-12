@@ -360,7 +360,7 @@ func (walletInstance *WalletInstance) InstallSmartContract(code []byte, promptFe
 	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
 		SC_Code: codeBase64,
 		SC_RPC: rpc.Arguments{
-			{Name: "entrypoint", DataType: rpc.DataString, Value: codeBase64},
+			{Name: "entrypoint", DataType: rpc.DataString, Value: codeBase64}, // not needed but the fees are wrong without it
 		},
 		Signer: walletInstance.GetAddress(),
 	})
@@ -395,7 +395,7 @@ func (walletInstance *WalletInstance) InstallSmartContract(code []byte, promptFe
 	return txid, nil
 }
 
-func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid string, entrypoint string, args []rpc.Argument, promptFees bool) (string, error) {
+func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid string, entrypoint string, args []rpc.Argument, transfers []rpc.Transfer, promptFees bool) (string, error) {
 	sc_rpc := rpc.Arguments{
 		{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL},
 		{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid},
@@ -405,9 +405,10 @@ func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid st
 	sc_rpc = append(sc_rpc, args[:]...)
 
 	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
-		Ringsize: ringsize,
-		SC_RPC:   sc_rpc,
-		Signer:   walletInstance.GetAddress(),
+		Ringsize:  ringsize,
+		SC_RPC:    sc_rpc,
+		Transfers: transfers,
+		Signer:    walletInstance.GetAddress(),
 	})
 
 	if err != nil {
@@ -428,9 +429,10 @@ func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid st
 	}
 
 	txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
-		SC_RPC:   sc_rpc,
-		Ringsize: ringsize,
-		Fees:     fees,
+		SC_RPC:    sc_rpc,
+		Transfers: transfers,
+		Ringsize:  ringsize,
+		Fees:      fees,
 	})
 
 	if err != nil {

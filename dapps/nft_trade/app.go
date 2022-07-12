@@ -67,8 +67,7 @@ func sync() {
 	defer tx.Rollback()
 
 	columns := []string{"_amount", "_assetId", "_forAssetId", "_forAmount", "_seller"}
-	var i uint64
-	for i = itemAt; i < itemCount; i += chunk {
+	for i := itemAt; i < itemCount; i += chunk {
 		var keyValues map[string]string
 		end := i + chunk
 		if end > itemCount {

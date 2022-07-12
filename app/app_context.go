@@ -29,16 +29,17 @@ type Config struct {
 }
 
 type AppContext struct {
-	Config            Config
-	UseApp            string
-	rootApp           *cli.App
-	walletApp         *cli.App
-	DAppApp           *cli.App
-	WalletInstance    *WalletInstance
-	walletInstances   []*WalletInstance
-	readlineInstance  *readline.Instance
-	DB                *sql.DB
-	StopPromptRefresh bool // prompt auto refresh every second to display block height - use this arg to disable and show other prompt
+	Config              Config
+	UseApp              string
+	rootApp             *cli.App
+	walletApp           *cli.App
+	DAppApp             *cli.App
+	WalletInstance      *WalletInstance
+	walletInstances     []*WalletInstance
+	readlineInstance    *readline.Instance
+	DB                  *sql.DB
+	StopPromptRefresh   bool // prompt auto refresh every second to display block height - use this arg to disable and show other prompt
+	StopInactivityTimer bool
 }
 
 var Context *AppContext
@@ -81,13 +82,15 @@ func (app *AppContext) Run() {
 	// close wallet after certain amount of time
 	go func() {
 		for {
-			closeWalletAfter := time.Duration(app.Config.CloseWalletAfter) * time.Second
-			if closeWalletAfter > 0 && app.WalletInstance != nil && time.Now().After(lastActivity.Add(closeWalletAfter)) {
-				app.WalletInstance.Close()
-				app.WalletInstance = nil
-				app.UseApp = "rootApp"
-				app.DAppApp = nil
-				fmt.Printf("\nWallet close after %ds of inactivity.\n", app.Config.CloseWalletAfter)
+			if !app.StopInactivityTimer {
+				closeWalletAfter := time.Duration(app.Config.CloseWalletAfter) * time.Second
+				if closeWalletAfter > 0 && app.WalletInstance != nil && time.Now().After(lastActivity.Add(closeWalletAfter)) {
+					app.WalletInstance.Close()
+					app.WalletInstance = nil
+					app.UseApp = "rootApp"
+					app.DAppApp = nil
+					fmt.Printf("\nWallet close after %ds of inactivity.\n", app.Config.CloseWalletAfter)
+				}
 			}
 
 			time.Sleep(1 * time.Second)

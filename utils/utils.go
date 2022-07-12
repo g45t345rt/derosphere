@@ -43,3 +43,14 @@ func OpenDB(env string) *sql.DB {
 
 	return db
 }
+
+// https://stackoverflow.com/questions/40266633/golang-insert-null-into-sql-instead-of-empty-string
+func NewNullString(s string) sql.NullString {
+	if len(s) == 0 {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
+}

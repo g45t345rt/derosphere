@@ -285,8 +285,14 @@ func CommandWalletTransfer() *cli.Command {
 				return nil
 			}
 
-			amount, err := app.PromptInt("Enter amount", 0)
+			sAmount, err := app.Prompt("Enter amount", "")
 			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			amount, err := globals.ParseAmount(sAmount)
+			if err != nil {
+				fmt.Println(err)
 				return nil
 			}
 
@@ -295,7 +301,7 @@ func CommandWalletTransfer() *cli.Command {
 				return nil
 			}
 
-			transfer := rpc.Transfer{SCID: crypto.HashHexToHash(assetToken), Destination: addressOrName, Amount: uint64(amount)}
+			transfer := rpc.Transfer{SCID: crypto.HashHexToHash(assetToken), Destination: addressOrName, Amount: amount}
 
 			yes, err := app.PromptYesNo(fmt.Sprintf("Are you sure you want to send %s to %s", globals.FormatMoney(transfer.Amount), addressOrName), false)
 			if app.HandlePromptErr(err) {
@@ -419,7 +425,7 @@ func CommandUpdateSC() *cli.Command {
 			codeString := string(code)
 			txId, err := walletInstance.CallSmartContract(2, scid, "UpdateCode", []rpc.Argument{
 				{Name: "code", DataType: rpc.DataString, Value: codeString},
-			}, true)
+			}, []rpc.Transfer{}, true)
 
 			if err != nil {
 				fmt.Println(err)
@@ -546,7 +552,44 @@ func CommandCallSC() *cli.Command {
 				return nil
 			}
 
-			txId, err := walletInstance.CallSmartContract(uint64(ringSize), scid, function.Name, args, true)
+			burnAssetOrDero, err := app.PromptYesNo("Burn asset or dero?", false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			var transfer []rpc.Transfer
+
+			if burnAssetOrDero {
+				assetToken, err := app.Prompt("Enter asset token (empty for sending DERO)", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+
+				sAmount, err := app.Prompt("Enter amount", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+
+				amount, err := globals.ParseAmount(sAmount)
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+
+				randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+
+				transfer = append(transfer, rpc.Transfer{
+					SCID:        crypto.HashHexToHash(assetToken),
+					Burn:        amount,
+					Destination: randomAddresses.Address[0],
+				})
+			}
+
+			txId, err := walletInstance.CallSmartContract(uint64(ringSize), scid, function.Name, args, transfer, true)
 			if err != nil {
 				fmt.Println(err)
 				return nil
@@ -600,6 +643,19 @@ func CommandAssetBalance() *cli.Command {
 	}
 }
 
+func CommandClearCommitCount() *cli.Command {
+	return &cli.Command{
+		Name:    "clear-commit",
+		Aliases: []string{"cc"},
+		Usage:   "Clear commit count to resync values",
+		Action: func(ctx *cli.Context) error {
+			name := app.Context.DAppApp.Name
+			utils.SetCount(name, 0)
+			return nil
+		},
+	}
+}
+
 func DAppApp(app *cli.App) *cli.App {
 	return &cli.App{
 		Name:                  app.Name,
@@ -610,6 +666,7 @@ func DAppApp(app *cli.App) *cli.App {
 			CommandDAppInfo(),
 			CommandDAppBack(),
 			DAppWalletCommands(),
+			CommandClearCommitCount(),
 			//CommandSwitchWallet(),
 			CommandVersion(app.Name, semver.MustParse(app.Version)),
 			CommandExit(),
@@ -631,6 +688,7 @@ func DAppWalletCommands() *cli.Command {
 			CommandWalletInfo(),
 			CommandWalletTransfer(),
 			CommandWalletBalance(),
+			CommandAssetBalance(),
 			CommandWalletAddress(),
 			CommandWalletTransactions(),
 			CommandSwitchWallet(),

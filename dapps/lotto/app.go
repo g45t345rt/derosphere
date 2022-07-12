@@ -196,8 +196,7 @@ func sync() {
 	}
 	defer tx.Rollback()
 
-	var i uint64
-	for i = commitAt; i < commitCount; i += chunk {
+	for i := commitAt; i < commitCount; i += chunk {
 		var commits []rpc_client.Commit
 		end := i + chunk
 		if end > commitCount {

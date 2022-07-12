@@ -9,9 +9,9 @@ prefix = sys.argv[4]
 
 
 def upload_image(file, fileIndex):
-    url = 'https://api.cloudflare.com/client/v4/accounts/' + \
-        account_id + '/images/v1'
-    headers = {'Authorization': 'Bearer ' + api_token}
+    url = "https://api.cloudflare.com/client/v4/accounts/" + \
+        account_id + "/images/v1"
+    headers = {"Authorization": "Bearer " + api_token}
     response = requests.post(url, headers=headers, files={
                              "id": prefix + fileIndex, "file": file})
     return response
@@ -28,6 +28,7 @@ def main():
                 print(res.status_code, res.text)
             else:
                 print(res.status_code, filename + " uploaded")
+            file.close()
 
 
 if __name__ == "__main__":

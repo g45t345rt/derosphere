@@ -104,8 +104,7 @@ func sync() {
 
 	defer setTx.Close()
 
-	var i uint64
-	for i = commitAt; i < commitCount; i += chunk {
+	for i := commitAt; i < commitCount; i += chunk {
 		var commits []rpc_client.Commit
 		end := i + chunk
 		if end > commitCount {
