@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
+	"github.com/deroproject/derohe/globals"
 )
 
 func Prompt(prompt string, defaultValue string) (string, error) {
@@ -50,6 +51,20 @@ func PromptUInt(prompt string, defaultValue uint64) (uint64, error) {
 	}
 
 	value, err := strconv.ParseUint(valueString, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return value, nil
+}
+
+func PromptDero(prompt string, defaultValue uint64) (uint64, error) {
+	valueString, err := Prompt(prompt, fmt.Sprintf("%d", defaultValue))
+	if err != nil {
+		return 0, err
+	}
+
+	value, err := globals.ParseAmount(valueString)
 	if err != nil {
 		return 0, err
 	}

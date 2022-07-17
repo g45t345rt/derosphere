@@ -470,17 +470,17 @@ func CommandCreateLotto() *cli.Command {
 			walletInstance := app.Context.WalletInstance
 			scid := getSCID()
 
-			maxTickets, err := app.PromptInt("Max tickets", 0)
+			maxTickets, err := app.PromptUInt("Max tickets", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			ticketPrice, err := app.PromptInt("Ticket price", 0)
+			ticketPrice, err := app.PromptDero("Ticket price (in Dero)", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			duration, err := app.PromptInt("Duration (in seconds)", 0)
+			duration, err := app.PromptUInt("Duration (in seconds)", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -505,7 +505,7 @@ func CommandCreateLotto() *cli.Command {
 				return nil
 			}
 
-			baseReward, err := app.PromptInt("Base reward", 0)
+			baseReward, err := app.PromptDero("Base reward", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -518,7 +518,7 @@ func CommandCreateLotto() *cli.Command {
 				passwordHash = hex.EncodeToString(hasher.Sum(nil))
 			}
 
-			antiSpamFee := int64(100000)
+			antiSpamFee := uint64(100000)
 			arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
 			arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
 			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Create"}

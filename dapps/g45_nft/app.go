@@ -67,7 +67,7 @@ func CommandInitStoreNFT() *cli.Command {
 				return nil
 			}
 
-			supply, err := app.PromptInt("Enter supply", 1)
+			supply, err := app.PromptUInt("Enter supply", 1)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -133,7 +133,7 @@ func CommandAddSupply() *cli.Command {
 				}
 			}
 
-			supply, err := app.PromptInt("Enter supply", 1)
+			supply, err := app.PromptUInt("Enter supply", 1)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -330,7 +330,7 @@ func CommandCollectionSetNFT() *cli.Command {
 				return nil
 			}
 
-			index, err := app.PromptInt("Enter index", 0)
+			index, err := app.PromptUInt("Enter index", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -441,12 +441,12 @@ func CommandDeployEntireCollection() *cli.Command {
 				}
 			}
 
-			startIndex, err := app.PromptInt("NFT start index", 0)
+			startIndex, err := app.PromptUInt("NFT start index", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			endIndex, err := app.PromptInt("NFT end index", 99)
+			endIndex, err := app.PromptUInt("NFT end index", 99)
 			if app.HandlePromptErr(err) {
 				return nil
 			}

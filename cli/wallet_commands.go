@@ -285,18 +285,12 @@ func CommandWalletTransfer() *cli.Command {
 				return nil
 			}
 
-			sAmount, err := app.Prompt("Enter amount", "")
+			amount, err := app.PromptDero("Enter amount (in Dero)", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			amount, err := globals.ParseAmount(sAmount)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			ringsize, err := app.PromptInt("Set ringsize", 2)
+			ringsize, err := app.PromptUInt("Set ringsize", 2)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -313,7 +307,7 @@ func CommandWalletTransfer() *cli.Command {
 			}
 
 			txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
-				Ringsize: uint64(ringsize),
+				Ringsize: ringsize,
 				Transfers: []rpc.Transfer{
 					transfer,
 				},
@@ -520,7 +514,7 @@ func CommandCallSC() *cli.Command {
 			for _, arg := range function.Args {
 				switch arg.Type {
 				case "Uint64":
-					valueInt, err := app.PromptInt(arg.Name, 0)
+					valueUInt, err := app.PromptUInt(arg.Name, 0)
 					if app.HandlePromptErr(err) {
 						return nil
 					}
@@ -528,7 +522,7 @@ func CommandCallSC() *cli.Command {
 					args = append(args, rpc.Argument{
 						Name:     arg.Name,
 						DataType: rpc.DataUint64,
-						Value:    valueInt,
+						Value:    valueUInt,
 					})
 				case "String":
 					sArg := rpc.Argument{}
@@ -564,7 +558,7 @@ func CommandCallSC() *cli.Command {
 				}
 			}
 
-			ringSize, err := app.PromptInt("Ringsize", 2)
+			ringSize, err := app.PromptUInt("Ringsize", 2)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -582,14 +576,8 @@ func CommandCallSC() *cli.Command {
 					return nil
 				}
 
-				sAmount, err := app.Prompt("Enter amount", "")
+				amount, err := app.PromptDero("Enter amount (in Dero)", 0)
 				if app.HandlePromptErr(err) {
-					return nil
-				}
-
-				amount, err := globals.ParseAmount(sAmount)
-				if err != nil {
-					fmt.Println(err)
 					return nil
 				}
 
@@ -606,7 +594,7 @@ func CommandCallSC() *cli.Command {
 				})
 			}
 
-			txId, err := walletInstance.CallSmartContract(uint64(ringSize), scid, function.Name, args, transfer, true)
+			txId, err := walletInstance.CallSmartContract(ringSize, scid, function.Name, args, transfer, true)
 			if err != nil {
 				fmt.Println(err)
 				return nil

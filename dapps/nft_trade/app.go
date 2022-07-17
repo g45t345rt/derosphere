@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
-	"github.com/deroproject/derohe/globals"
 	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/rpc_client"
@@ -231,7 +230,7 @@ func CommandCreateAuction() *cli.Command {
 				}
 			}
 
-			amount, err := app.PromptInt("Enter asset amount", 1)
+			amount, err := app.PromptUInt("Enter asset amount", 1)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -245,25 +244,13 @@ func CommandCreateAuction() *cli.Command {
 			minBidAmount := uint64(0)
 			if buyAssetId == "" {
 				buyAssetId = "0000000000000000000000000000000000000000000000000000000000000000"
-				sForAmount, err := app.Prompt("Enter start amount in Dero", "")
+				startAmount, err = app.PromptDero("Enter start amount (in Dero)", 0)
 				if app.HandlePromptErr(err) {
 					return nil
 				}
 
-				startAmount, err = globals.ParseAmount(sForAmount)
-				if err != nil {
-					fmt.Println(err)
-					return nil
-				}
-
-				sMinBidAmount, err := app.Prompt("Enter min bid amount in Dero", "")
+				minBidAmount, err = app.PromptDero("Enter min bid amount (in Dero)", 0)
 				if app.HandlePromptErr(err) {
-					return nil
-				}
-
-				minBidAmount, err = globals.ParseAmount(sMinBidAmount)
-				if err != nil {
-					fmt.Println(err)
 					return nil
 				}
 			} else {
@@ -383,7 +370,7 @@ func CommandCreateExchange() *cli.Command {
 				}
 			}
 
-			amount, err := app.PromptInt("Enter asset amount", 1)
+			amount, err := app.PromptUInt("Enter asset amount", 1)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -396,18 +383,12 @@ func CommandCreateExchange() *cli.Command {
 			buyAmount := uint64(0)
 			if buyAssetId == "" {
 				buyAssetId = "0000000000000000000000000000000000000000000000000000000000000000"
-				sForAmount, err := app.Prompt("Enter how much Dero you want", "")
+				buyAmount, err = app.PromptDero("Enter how much you want (in Dero)", 0)
 				if app.HandlePromptErr(err) {
 					return nil
 				}
-
-				buyAmount, err = globals.ParseAmount(sForAmount)
-				if err != nil {
-					fmt.Println(err)
-					return nil
-				}
 			} else {
-				iAmount, err := app.PromptInt("Enter amount of the asset", 1)
+				iAmount, err := app.PromptUInt("Enter amount of the asset", 1)
 				if app.HandlePromptErr(err) {
 					return nil
 				}
