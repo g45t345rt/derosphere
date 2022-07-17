@@ -108,9 +108,11 @@ Function Unregister() Uint64
 End Function
 
 Function Initialize() Uint64
-10 STORE("sc_owner", SIGNER())
-20 initCommit()
-30 RETURN 0
+10 IF EXISTS("sc_owner") == 0 THEN GOTO 30
+20 RETURN 1
+30 STORE("sc_owner", SIGNER())
+40 initCommit()
+50 RETURN 0
 End Function
 
 Function ClaimOwnership() Uint64

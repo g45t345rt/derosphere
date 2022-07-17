@@ -26,7 +26,7 @@ import (
 
 type Config struct {
 	Env              string
-	CloseWalletAfter int64
+	CloseWalletAfter uint64
 }
 
 type AppContext struct {
@@ -188,7 +188,7 @@ func (app *AppContext) SetEnv(env string) {
 	app.LoadWalletInstances()
 }
 
-func (app *AppContext) SetWalletInactivity(timeout int64) {
+func (app *AppContext) SetWalletInactivity(timeout uint64) {
 	app.Config.CloseWalletAfter = timeout
 	app.SaveConfig()
 }

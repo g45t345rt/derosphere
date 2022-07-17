@@ -484,9 +484,9 @@ func CommandCallSC() *cli.Command {
 			values := matchFunctions.FindAllStringSubmatch(result.Code, -1)
 			for _, value := range values {
 				funcName := value[1]
-				if funcName == "Initialize" || funcName == "PrivateInitialize" || funcName == "UpdateCode" {
+				/*if funcName == "Initialize" || funcName == "PrivateInitialize" || funcName == "UpdateCode" {
 					continue
-				}
+				}*/
 
 				scFunc := SCFunc{
 					Name: funcName,
@@ -531,16 +531,33 @@ func CommandCallSC() *cli.Command {
 						Value:    valueInt,
 					})
 				case "String":
+					sArg := rpc.Argument{}
+
 					valueString, err := app.Prompt(arg.Name, "")
 					if app.HandlePromptErr(err) {
 						return nil
 					}
 
-					args = append(args, rpc.Argument{
-						Name:     arg.Name,
-						DataType: rpc.DataString,
-						Value:    valueString,
-					})
+					isHashString, err := app.PromptYesNo(fmt.Sprintf("Is arg %s hash string?", arg.Name), false)
+					if app.HandlePromptErr(err) {
+						return nil
+					}
+
+					if isHashString {
+						sArg = rpc.Argument{
+							Name:     arg.Name,
+							DataType: rpc.DataHash,
+							Value:    crypto.HashHexToHash(valueString),
+						}
+					} else {
+						sArg = rpc.Argument{
+							Name:     arg.Name,
+							DataType: rpc.DataString,
+							Value:    valueString,
+						}
+					}
+
+					args = append(args, sArg)
 				default:
 					fmt.Println("Unknown arg type")
 					return nil

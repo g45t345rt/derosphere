@@ -58,7 +58,7 @@ func (l *Lotto) DisplayDrawTimestamp() string {
 		return time.Unix(l.DrawTimestamp.Int64, 0).Local().String()
 	}
 
-	return "Unkown"
+	return ""
 }
 
 func (l *Lotto) DisplayStartTimestamp() string {
@@ -216,8 +216,6 @@ func sync() {
 				columnName := ticketKey.ReplaceAllString(key, "$3")
 
 				if commit.Action == "S" {
-					// fmt.Println("set-ticket", txId, columnName, commit.Value)
-
 					query := fmt.Sprintf(`
 						insert into lotto_tickets (lotto_tx_id, ticket_number, %s)
 						values (?, ?, ?)
@@ -239,8 +237,6 @@ func sync() {
 				}
 
 				if commit.Action == "S" {
-					// fmt.Println("set-lotto", txId, columnName, commit.Value)
-
 					query := fmt.Sprintf(`
 						insert into lotto (tx_id, %s)
 						values (?, ?)
@@ -253,8 +249,6 @@ func sync() {
 						log.Fatal(err)
 					}
 				} else if commit.Action == "D" {
-					fmt.Println("del-lotto", txId, columnName)
-
 					query := fmt.Sprintf(`
 					  update lotto
 						set %s = null
@@ -486,7 +480,7 @@ func CommandCreateLotto() *cli.Command {
 				return nil
 			}
 
-			duration, err := app.PromptInt("Duration", 0)
+			duration, err := app.PromptInt("Duration (in seconds)", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -506,7 +500,7 @@ func CommandCreateLotto() *cli.Command {
 				return nil
 			}
 
-			startTimestamp, err := app.PromptInt("Start timestamp (unix)", 0)
+			startTimestamp, err := app.PromptUInt("Start timestamp (unix)", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}

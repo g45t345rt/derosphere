@@ -26,6 +26,7 @@ List of Derosphere features
 - ✔ Mint G45-NFT (collection) with all available functions
 - ✔ List/Table pagination (load more data...)
 - ✔ Call unknown smart contract function (scan code and display funcs and params)
+- ☐ Smart contract transaction successful checker
 - ☐ Filesign and verify (wallet disk only - need pull request for rpc server)
 
 ## DApps

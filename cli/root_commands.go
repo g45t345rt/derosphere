@@ -488,16 +488,16 @@ func CommandSetWalletInactivity() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			timeoutString := ctx.Args().First()
 			var err error = nil
-			var timeout int64
+			var timeout uint64
 
 			if timeoutString != "" {
-				timeout, err = strconv.ParseInt(timeoutString, 10, 64)
+				timeout, err = strconv.ParseUint(timeoutString, 10, 64)
 				if err != nil {
 					fmt.Println(err)
 					return nil
 				}
 			} else {
-				timeout, err = app.PromptInt("Enter timeout in second", 300)
+				timeout, err = app.PromptUInt("Enter timeout in second", 300)
 				if app.HandlePromptErr(err) {
 					return nil
 				}

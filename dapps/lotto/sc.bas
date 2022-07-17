@@ -1,4 +1,3 @@
-/** COMMIT & STATE LIB CODE **/
 Function storeCommitString(action String, key String, value String)
 10 DIM commit_count as Uint64
 20 LET commit_count = MAPGET("commit_count")
@@ -38,13 +37,13 @@ End Function
 
 Function ssi(key String, value Uint64)
 10 STORE("state_" + key, value)
-20 storeCommitInt("S", "state_" + key, value) // S - store
+20 storeCommitInt("S", "state_" + key, value)
 30 RETURN
 End Function
 
 Function ds(key String)
 10 DELETE("state_" + key)
-20 storeCommitInt("D", "state_" + key, 0) // D - delete
+20 storeCommitInt("D", "state_" + key, 0)
 30 RETURN
 End Function
 
@@ -61,11 +60,9 @@ Function se(key String) Uint64
 End Function
 
 Function storeTX()
-10 ssi("txid_" + HEX(TXID()), 1) // verify transaction within the smart contract 
+10 ssi("txid_" + HEX(TXID()), 1)
 20 RETURN
 End Function
-
-/** LOTTO CODE **/
 
 Function lk(txId String, suffix String) String
 10 RETURN "lotto_" + txId + "_" + suffix
@@ -107,7 +104,7 @@ Function Play(txId String, userPasswordHash String) Uint64
 240 IF unique_wallet == 0 THEN GOTO 280
 250 IF se(lk(txId, "unique_ticket_" + signer_string)) == 0 THEN GOTO 270
 260 RETURN 1
-270 ssi(lk(txId, "unique_ticket_" + signer_string), ticket_number) // this should be skip if unique wallet is 0
+270 ssi(lk(txId, "unique_ticket_" + signer_string), ticket_number)
 280 sss(ltk(txId, ticket_number, "owner"), signer_string)
 290 ssi(ltk(txId, ticket_number, "timestamp"), timestamp)
 300 sss(ltk(txId, ticket_number, "play_tx_id"), HEX(TXID()))
@@ -228,9 +225,9 @@ Function ClaimReward(txId String, password String, comment String) Uint64
 10 DIM ticket_price, ticket_count, reward, sc_cut, base_reward, comment_length as Uint64
 20 DIM winner_string, password_hash, owner, winner_raw as String
 30 beginCommit()
-31 IF se(lk(txId, "password_hash")) == 0 THEN GOTO 40
-32 LET password_hash = lss(lk(txId, "password_hash"))
-33 LET ticket_price = lsi(lk(txId, "ticket_price"))
+31 LET ticket_price = lsi(lk(txId, "ticket_price"))
+32 IF se(lk(txId, "password_hash")) == 0 THEN GOTO 40
+33 LET password_hash = lss(lk(txId, "password_hash"))
 34 LET owner = lss(lk(txId, "owner"))
 35 IF password_hash == HEX(SHA3256(txId + "." + HEX(SHA3256(owner + "." + ticket_price + "." + password)))) THEN GOTO 40
 36 RETURN 1
@@ -258,13 +255,13 @@ Function ClaimReward(txId String, password String, comment String) Uint64
 260 RETURN 0
 End Function
 
-/** SC OWNER CODE **/
-
 Function Initialize() Uint64
-10 STORE("sc_owner", SIGNER())
-20 initCommit()
-30 STORE("anti_spam_fee", 100000)
-40 RETURN 0
+10 IF EXISTS("sc_owner") == 0 THEN GOTO 30
+20 RETURN 1
+30 STORE("sc_owner", SIGNER())
+40 initCommit()
+50 STORE("anti_spam_fee", 100000)
+60 RETURN 0
 End Function
 
 Function SetAntiSpamFee(fee Uint64) Uint64
@@ -285,6 +282,13 @@ Function TransferOwnership(newOwner String) Uint64
 10 IF LOAD("sc_owner") == SIGNER() THEN GOTO 30
 20 RETURN 1
 30 STORE("sc_owner_temp", ADDRESS_RAW(newOwner))
+40 RETURN 0
+End Function
+
+Function Withdraw(amount Uint64) Uint64
+10 IF LOAD("sc_owner") == SIGNER() THEN GOTO 30
+20 RETURN 1
+30 SEND_DERO_TO_ADDRESS(SIGNER(), amount)
 40 RETURN 0
 End Function
 

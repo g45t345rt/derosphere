@@ -43,6 +43,20 @@ func PromptInt(prompt string, defaultValue int64) (int64, error) {
 	return value, nil
 }
 
+func PromptUInt(prompt string, defaultValue uint64) (uint64, error) {
+	valueString, err := Prompt(prompt, fmt.Sprintf("%d", defaultValue))
+	if err != nil {
+		return 0, err
+	}
+
+	value, err := strconv.ParseUint(valueString, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return value, nil
+}
+
 func PromptYesNo(prompt string, defaultAnswer bool) (bool, error) {
 	defaultString := "y"
 	if !defaultAnswer {
