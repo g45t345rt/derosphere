@@ -78,7 +78,7 @@ Function Initialize() Uint64
 70 RETURN 0
 End Function
 
-Function CreateExchange(sellAssetId String, buyAssetId String, buyAmount Uint64) Uint64
+Function CreateExchange(sellAssetId String, buyAssetId String, buyAmount Uint64, expireTimestamp Uint64) Uint64
 10 DIM exId, sellAmount as Uint64
 20 LET exId = LOAD("ex_ctr")
 30 LET sellAmount = ASSETVALUE(HEXDECODE(sellAssetId))
@@ -92,63 +92,71 @@ Function CreateExchange(sellAssetId String, buyAssetId String, buyAmount Uint64)
 110 storeStateString(exKey(exId, "seller"), ADDRESS_STRING(SIGNER()))
 120 storeStateInt(exKey(exId, "complete"), 0)
 130 storeStateInt(exKey(exId, "timestamp"), BLOCK_TIMESTAMP())
-140 endCommit()
-150 STORE("ex_ctr", exId + 1)
-160 storeTX()
-170 RETURN 0
+140 storeStateInt(exKey(exId, "expireTimestamp"), expireTimestamp)
+150 endCommit()
+160 STORE("ex_ctr", exId + 1)
+170 storeTX()
+180 RETURN 0
 End Function
 
 Function CancelExchange(exId Uint64) Uint64
 10 DIM signer as String
 20 LET signer = SIGNER()
-30 IF loadStateString(exKey(exId, "seller")) == ADDRESS_STRING(signer) THEN GOTO 50
-40 RETURN 1
-50 IF loadStateInt(exKey(exId, "complete")) == 0 THEN GOTO 70
-60 RETURN 1
-70 beginCommit()
-80 SEND_ASSET_TO_ADDRESS(signer, loadStateInt(exKey(exId, "sellAmount")), HEXDECODE(loadStateString(exKey(exId, "sellAssetId"))))
-90 deleteState(exKey(exId, "sellAmount"))
-100 deleteState(exKey(exId, "sellAssetId"))
-110 deleteState(exKey(exId, "buyAssetId"))
-120 deleteState(exKey(exId, "buyAmount"))
-130 deleteState(exKey(exId, "seller"))
-140 deleteState(exKey(exId, "complete"))
-150 deleteState(exKey(exId, "timestamp"))
-160 endCommit()
-170 storeTX()
-180 RETURN 0
+30 IF LOAD("owner") == signer THEN GOTO 60
+40 IF loadStateString(exKey(exId, "seller")) == ADDRESS_STRING(signer) THEN GOTO 60
+50 RETURN 1
+60 IF loadStateInt(exKey(exId, "complete")) == 0 THEN GOTO 80
+70 RETURN 1
+80 beginCommit()
+90 SEND_ASSET_TO_ADDRESS(signer, loadStateInt(exKey(exId, "sellAmount")), HEXDECODE(loadStateString(exKey(exId, "sellAssetId"))))
+100 deleteState(exKey(exId, "sellAmount"))
+110 deleteState(exKey(exId, "sellAssetId"))
+120 deleteState(exKey(exId, "buyAssetId"))
+130 deleteState(exKey(exId, "buyAmount"))
+140 deleteState(exKey(exId, "seller"))
+150 deleteState(exKey(exId, "complete"))
+160 deleteState(exKey(exId, "timestamp"))
+170 deleteState(exKey(exId, "expireTimestamp"))
+180 endCommit()
+190 storeTX()
+200 RETURN 0
 End Function
 
 Function Buy(exId Uint64) Uint64
 10 DIM sellAssetId, buyAssetId, seller, signer as String
-20 DIM sellAmount, buyAmount, deroCut, complete as Uint64
+20 DIM sellAmount, buyAmount, deroCut, complete, timestamp, expireTimestamp as Uint64
 30 IF loadStateInt(exKey(exId, "complete")) == 0 THEN GOTO 50
 40 RETURN 1
-50 LET sellAssetId = loadStateString(exKey(exId, "sellAssetId"))
-60 LET sellAmount = loadStateInt(exKey(exId, "sellAmount"))
-70 LET buyAssetId = loadStateString(exKey(exId, "buyAssetId"))
-80 LET buyAmount = loadStateInt(exKey(exId, "buyAmount"))
-90 LET seller = loadStateString(exKey(exId, "seller"))
-95 LET signer = SIGNER()
-100 LET deroCut = 0
-110 IF ASSETVALUE(HEXDECODE(buyAssetId)) == buyAmount THEN GOTO 130
-120 RETURN 1
-130 IF sellAssetId != "0000000000000000000000000000000000000000000000000000000000000000" THEN GOTO 160
-140 LET deroCut = sellAmount * LOAD("dero_fee") / 100
-150 LET sellAmount = sellAmount - deroCut
-160 IF buyAssetId != "0000000000000000000000000000000000000000000000000000000000000000" THEN GOTO 190
-170 LET deroCut = buyAmount * LOAD("dero_fee") / 100
-180 LET buyAmount = buyAmount - deroCut
-190 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(seller), buyAmount, HEXDECODE(buyAssetId))
-200 SEND_ASSET_TO_ADDRESS(signer, sellAmount, HEXDECODE(sellAssetId))
-210 SEND_DERO_TO_ADDRESS(LOAD("owner"), deroCut)
-220 beginCommit()
-230 storeStateString(exKey(exId, "buyer"), ADDRESS_STRING(signer))
-240 storeStateInt(exKey(exId, "complete"), 1)
-250 storeStateInt(exKey(exId, "completeTimestamp"), BLOCK_TIMESTAMP())
-260 endCommit()
-270 storeTX()
-280 RETURN 0
+50 LET timestamp = BLOCK_TIMESTAMP()
+60 LET expireTimestamp = loadStateInt(exKey(exId, "expireTimestamp"))
+70 IF expireTimestamp == 0 THEN GOTO 100
+80 IF timestamp < expireTimestamp THEN GOTO 100
+90 RETURN 1
+100 LET sellAssetId = loadStateString(exKey(exId, "sellAssetId"))
+110 LET sellAmount = loadStateInt(exKey(exId, "sellAmount"))
+120 LET buyAssetId = loadStateString(exKey(exId, "buyAssetId"))
+130 LET buyAmount = loadStateInt(exKey(exId, "buyAmount"))
+140 LET seller = loadStateString(exKey(exId, "seller"))
+150 LET signer = SIGNER()
+160 LET deroCut = 0
+170 IF ASSETVALUE(HEXDECODE(buyAssetId)) == buyAmount THEN GOTO 190
+180 RETURN 1
+190 IF sellAssetId != "0000000000000000000000000000000000000000000000000000000000000000" THEN GOTO 220
+200 LET deroCut = sellAmount * LOAD("dero_fee") / 100
+210 LET sellAmount = sellAmount - deroCut
+220 IF buyAssetId != "0000000000000000000000000000000000000000000000000000000000000000" THEN GOTO 250
+230 LET deroCut = buyAmount * LOAD("dero_fee") / 100
+240 LET buyAmount = buyAmount - deroCut
+250 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(seller), buyAmount, HEXDECODE(buyAssetId))
+260 SEND_ASSET_TO_ADDRESS(signer, sellAmount, HEXDECODE(sellAssetId))
+270 SEND_DERO_TO_ADDRESS(LOAD("owner"), deroCut)
+280 beginCommit()
+290 storeStateString(exKey(exId, "buyer"), ADDRESS_STRING(signer))
+300 storeStateInt(exKey(exId, "complete"), 1)
+310 storeStateInt(exKey(exId, "completeTimestamp"), timestamp)
+320 endCommit()
+330 storeTX()
+340 RETURN 0
 End Function
 
 Function SetDeroFee(fee Uint64) Uint64

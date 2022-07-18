@@ -489,8 +489,8 @@ func CommandDeployEntireCollection() *cli.Command {
 
 func CommandInitStoreCollectionNFTs() *cli.Command {
 	return &cli.Command{
-		Name:  "init-collection-nfts",
-		Usage: "Script to deploy collection NFTs from metadata.json",
+		Name:  "init-store-nfts",
+		Usage: "Script to initialize store of NFTs from metadata.json",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 			metadata_path, err := app.Prompt("Enter metadata file path", "")
@@ -512,6 +512,11 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 			}
 
 			collectionSCID, err := app.Prompt("G45-NFT-COLLECTION asset token?", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			supply, err := app.PromptUInt("Supply", 1)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -591,7 +596,7 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 						fmt.Println("InitStore: " + sMetadata)
 						storeTxId, err := walletInstance.CallSmartContract(2, nftAssetToken, "InitStore", []rpc.Argument{
 							{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
-							{Name: "supply", DataType: rpc.DataUint64, Value: 1},
+							{Name: "supply", DataType: rpc.DataUint64, Value: supply},
 							{Name: "metadata", DataType: rpc.DataString, Value: sMetadata},
 							{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
 							{Name: "freezeSupply", DataType: rpc.DataUint64, Value: uFreezeSupply},

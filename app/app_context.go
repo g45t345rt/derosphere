@@ -167,6 +167,7 @@ func (app *AppContext) LoadDB() {
 
 func (app *AppContext) setEnvGlobals() {
 	// we need this if want to use wallet SetOnlineMode() and sync wallet with daemon
+	globals.Arguments["--simulator"] = false
 	switch app.Config.Env {
 	case "mainnet":
 		globals.Config = deroConfig.Mainnet

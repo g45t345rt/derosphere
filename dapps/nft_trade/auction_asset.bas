@@ -138,17 +138,18 @@ Function Bid(auId Uint64) Uint64
 70 LET startTimestamp = loadStateInt(auKey(auId, "startTimestamp"))
 80 LET duration = loadStateInt(auKey(auId, "duration"))
 90 LET bidAmount = ASSETVALUE(HEXDECODE(bidAssetId))
-100 LET lockedAmount = 0
+100 LET timestamp = BLOCK_TIMESTAMP()
+110 LET lockedAmount = 0
 120 IF stateExists(aubey(auId, "bid_" + signerString + "_lockedAmount")) == 0 THEN GOTO 140
 130 LET lockedAmount = loadStateInt(aubey(auId, "bid_" + signerString + "_lockedAmount"))
 140 IF lockedAmount + bidAmount >= minBidAmount + startAmount THEN GOTO 160
 150 RETURN 1
-160 IF BLOCK_TIMESTAMP() <= startTimestamp + duration THEN GOTO 180
+160 IF timestamp <= startTimestamp + duration THEN GOTO 180
 170 RETURN 1
 180 beginCommit()
 190 LET lockedAmount = lockedAmount + bidAmount
 200 storeStateInt(auKey(auId, "bid_" + signerString + "_lockedAmount"), lockedAmount)
-210 storeStateInt(auKey(auId, "bid_" + signerString + "_timestamp"), BLOCK_TIMESTAMP())
+210 storeStateInt(auKey(auId, "bid_" + signerString + "_timestamp"), timestamp)
 220 storeStateInt(auKey(auId, "bidSum"), lockedAmount)
 230 storeStateInt(auKey(auId, "bidCount"), bidCount + 1)
 240 endCommit()

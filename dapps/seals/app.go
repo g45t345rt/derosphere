@@ -21,7 +21,7 @@ var DAPP_NAME = "seals"
 var COLLECTION_SC_ID map[string]string = map[string]string{
 	"mainnet":   "",
 	"testnet":   "",
-	"simulator": "cddf68d28bce581f7fdfcd3b50870c5cfa72c346d8d7e0bff58d2cad0d357199",
+	"simulator": "d4562ece5c43d35c05d14c7b5744e194f230ca13c776674e490facc5b52c58ce",
 }
 
 func getCollectionSCID() string {
@@ -72,7 +72,7 @@ func initData() {
 			token varchar primary key,
 			frozen_metadata boolean,
 			frozen_supply boolean,
-			supply integer,
+			supply bigint,
 			metadata string,
 			file_number integer,
 			rarity real,

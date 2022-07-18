@@ -56,14 +56,7 @@ Tools to deploy G45-NFT Standard
 - ✔ Edit G45-NFT (InitStore, AddSupply, SetMetadata, FreezeMetadata, FreezeSupply)
 - ✔ Check if SCID is a valid G45-NFT or G45-NFT-Collection
 - ✔ Edit G45-NFT-Collection (Set,Del,Lock)
-- ✔ Setup wizard to deploy from metadata.json (deploy-entire-collection, init-collection-nfts)
-
-### T345-NFT
-
-Tools to deploy T345-NFT Standard
-<https://github.com/g45t345rt/DERO-NFT-Standards/tree/master/t345-nft>  
-
-TODO  
+- ✔ Setup wizard to deploy from metadata.json (deploy-entire-collection, init-store-nfts)
 
 ### Lotto
 
@@ -87,25 +80,31 @@ Dero Seals NFT project. NFTs by MERU!
 - ✔ List entire NFT collection
 - ✔ Open specific NFT image in the browser from fileNumber or NFT asset token
 
+### NFT Trade - Exchange / auction for Asset Tokens
+
+Exchange any type of asset token for DERO or other Asset Token
+
+- ✔ List asset tokens available to buy
+- ✔ Create an exchange
+- ✔ Cancel/remove exchange
+- ✔ Buy item from exchange
+- ☐ List available auctions / items to bids on
+- ✔ Create an auction
+- ✔ Cancel/remove auction
+- ☐ Bid on auction
+- ☐ Checkout/complete auction (for winner)
+- ✔ Set min bid
+- ☐ Retrieve locked funds (for unsuccessful bidders)
+
+### T345-NFT
+
+Tools to deploy T345-NFT Standard
+<https://github.com/g45t345rt/DERO-NFT-Standards/tree/master/t345-nft>  
+
+TODO  
+
 ### Dero And Dragons - dnd
 
 DeroAndDragons. Trading card fantasy world. NFTs by JoyRaptor!
 
 TODO  
-
-### Exchange / auction Asset Token
-
-Exchange any type of asset token for DERO or other Asset Token
-
-- ☐ List asset tokens available to buy
-- ☐ Start sell
-- ☐ Cancel sell
-- ☐ Buy sell item
-- ☐ Exchange NFTs / NFT auction
-
-### dDice
-
-<https://github.com/newvcas8372/dDice>  
-<https://explorer.dero.io/tx/ae55db1581b79f02f86b70fc338a7b91b14ded071a31972d9cfdb0eca6e302af>  
-
-TODO
