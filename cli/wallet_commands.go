@@ -295,7 +295,46 @@ func CommandWalletTransfer() *cli.Command {
 				return nil
 			}
 
-			transfer := rpc.Transfer{SCID: crypto.HashHexToHash(assetToken), Destination: addressOrName, Amount: amount}
+			transfer := rpc.Transfer{
+				SCID:        crypto.HashHexToHash(assetToken),
+				Destination: addressOrName,
+				Amount:      amount,
+			}
+
+			arguments := rpc.Arguments{}
+
+			comment, err := app.Prompt("Comment", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if comment != "" {
+				arguments = append(arguments, rpc.Argument{
+					Name:     rpc.RPC_COMMENT,
+					DataType: rpc.DataString,
+					Value:    comment,
+				})
+			}
+
+			sPortNumber, err := app.Prompt("Destination port number", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if sPortNumber != "" {
+				portNumber, err := strconv.ParseUint(sPortNumber, 10, 64)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				arguments = append(arguments, rpc.Argument{
+					Name:     rpc.RPC_DESTINATION_PORT,
+					DataType: rpc.DataUint64,
+					Value:    portNumber,
+				})
+			}
+
+			transfer.Payload_RPC = arguments
 
 			yes, err := app.PromptYesNo(fmt.Sprintf("Are you sure you want to send %s to %s", globals.FormatMoney(transfer.Amount), addressOrName), false)
 			if app.HandlePromptErr(err) {
