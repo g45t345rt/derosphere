@@ -12,7 +12,7 @@ List of Derosphere features
 - ✔ Create new wallet
 - ✔ Install/update smart contract from file
 - ✔ View transactions - filter list by outgoing, incoming or coinbase
-- ✔ Transfer DERO/ASSET_TOKEN to another wallet
+- ✔ Transfer DERO/ASSET_TOKEN to another wallet with address or nameservice
 - ✔ View balance, address & seed
 - ✔ Quicky switch between wallets
 - ✔ List available dapps

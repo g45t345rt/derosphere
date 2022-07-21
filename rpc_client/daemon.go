@@ -92,28 +92,12 @@ func (d *Daemon) GetTransaction(params *rpc.GetTransaction_Params) (*rpc.GetTran
 	return result, nil
 }
 
-func (d *Daemon) SCTXExists(scid string, txid string) (bool, error) {
-	keysString := []string{}
-	code := true
-
-	if txid != "" {
-		keysString = append(keysString, fmt.Sprintf("txid_%s", txid))
-		code = false
-	}
-
-	result, err := d.GetSC(&rpc.GetSC_Params{
-		SCID:       scid,
-		Code:       code,
-		KeysString: keysString,
-	})
-
+func (d *Daemon) NameToAddress(params *rpc.NameToAddress_Params) (*rpc.NameToAddress_Result, error) {
+	var result *rpc.NameToAddress_Result
+	err := d.client.CallFor(&result, "DERO.NameToAddress", params)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	if txid != "" {
-		return result.ValuesString[0] == "1", nil
-	} else {
-		return result.Code != "", err
-	}
+	return result, nil
 }

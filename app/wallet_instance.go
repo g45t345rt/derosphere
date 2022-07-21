@@ -481,42 +481,6 @@ func (walletInstance *WalletInstance) RunTxChecker(txid string) {
 	}
 }
 
-/*
-func (walletInstance *WalletInstance) RunSmartContractTxChecker(scid string, txid string) {
-	tries := 25
-	valid := false
-	var err error
-
-	fmt.Println("Checking transaction...")
-
-	for i := 0; i < tries; i++ {
-		valid, err = walletInstance.Daemon.SCTXExists(scid, txid)
-
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		if valid {
-			break
-		}
-
-		time.Sleep(2 * time.Second)
-	}
-
-	if valid {
-		fmt.Println("Your transaction was successful and confirmed in smart contract.")
-	} else {
-		fmt.Println("Unable to confirm transaction. Timeout exceeded and block confirmation is maybe taken mor time than usual.")
-	}
-
-	if txid != "" {
-		fmt.Println("TXID: " + txid)
-	} else {
-		fmt.Println("SCID: " + scid)
-	}
-}*/
-
 func (walletInstance *WalletInstance) WaitTransaction(txid string) error {
 	fmt.Printf("Waiting for transaction... %s\n", txid)
 

@@ -323,6 +323,21 @@ func CommandWalletTransfer() *cli.Command {
 				return nil
 			}
 
+			_, err = globals.ParseValidateAddress(addressOrName)
+			if err != nil {
+				result, err := walletInstance.Daemon.NameToAddress(&rpc.NameToAddress_Params{
+					Name: addressOrName,
+				})
+
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+
+				addressOrName = result.Address
+				fmt.Printf("Address found: %s\n", addressOrName)
+			}
+
 			amount, err := app.PromptDero("Enter amount (in Dero)", 0)
 			if app.HandlePromptErr(err) {
 				return nil
