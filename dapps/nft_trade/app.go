@@ -22,7 +22,7 @@ var DAPP_NAME = "nft-trade"
 var EXCHANGE_SCID map[string]string = map[string]string{
 	"mainnet":   "",
 	"testnet":   "",
-	"simulator": "bb9a0e49f9c5161218e19d6aba1b683dc8c7fb8f9e2e92179026b252a5d901d0",
+	"simulator": "b92b0fb2f68486011987aa6ea6722ba584929127cc37aa5f2ff4a3b622dcd8ab",
 }
 
 var AUCTION_SCID map[string]string = map[string]string{

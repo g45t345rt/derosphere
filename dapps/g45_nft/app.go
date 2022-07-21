@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/rpc_client"
@@ -235,6 +236,92 @@ func CommandSetMetadata() *cli.Command {
 			walletInstance := app.Context.WalletInstance
 			txId, err := walletInstance.CallSmartContract(2, nftSCID, "SetMetadata", []rpc.Argument{
 				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandDisplayToken() *cli.Command {
+	return &cli.Command{
+		Name:    "display-token",
+		Aliases: []string{"dt"},
+		Usage:   "Display token in SC",
+		Action: func(ctx *cli.Context) error {
+			nftSCID := ctx.Args().First()
+			walletInstance := app.Context.WalletInstance
+			var err error
+
+			if nftSCID == "" {
+				nftSCID, err = app.Prompt("Enter nft asset token", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			amount, err := app.PromptUInt("Amount", 1)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			transfer := rpc.Transfer{
+				SCID:        crypto.HashHexToHash(nftSCID),
+				Destination: randomAddresses.Address[0],
+				Burn:        amount,
+			}
+
+			txId, err := walletInstance.CallSmartContract(2, nftSCID, "DisplayToken", []rpc.Argument{}, []rpc.Transfer{
+				transfer,
+			}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandRetrieveToken() *cli.Command {
+	return &cli.Command{
+		Name:    "retrieve-token",
+		Aliases: []string{"dt"},
+		Usage:   "Retrieve token from SC",
+		Action: func(ctx *cli.Context) error {
+			nftSCID := ctx.Args().First()
+			walletInstance := app.Context.WalletInstance
+			var err error
+
+			if nftSCID == "" {
+				nftSCID, err = app.Prompt("Enter nft asset token", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			amount, err := app.PromptUInt("Amount", 1)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			txId, err := walletInstance.CallSmartContract(2, nftSCID, "RetrieveToken", []rpc.Argument{
+				{Name: "amount", DataType: rpc.DataUint64, Value: amount},
 			}, []rpc.Transfer{}, true)
 
 			if err != nil {
@@ -712,6 +799,8 @@ func App() *cli.App {
 			CommandInitStoreNFT(),
 			CommandAddSupply(),
 			CommandSetMetadata(),
+			CommandDisplayToken(),
+			CommandRetrieveToken(),
 			CommandFreezeMetadata(),
 			CommandFreezeSupply(),
 			CommandCheckValidNFT(),

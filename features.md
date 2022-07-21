@@ -55,7 +55,7 @@ Tools to deploy G45-NFT Standard
 <https://github.com/g45t345rt/DERO-NFT-Standards/tree/master/g45-nft>  
 
 - ✔ Deploy G45-NFT and G45-NFT-Collection | public and private
-- ✔ Edit G45-NFT (InitStore, AddSupply, SetMetadata, FreezeMetadata, FreezeSupply)
+- ✔ Edit G45-NFT (InitStore, AddSupply, SetMetadata, FreezeMetadata, FreezeSupply, DisplayToken, RetrieveToken)
 - ✔ Check if SCID is a valid G45-NFT or G45-NFT-Collection
 - ✔ Edit G45-NFT-Collection (SetNft,DelNft,Freeze,SetData,DelData)
 - ✔ Setup wizard to deploy from metadata.json (deploy-entire-collection, init-store-nfts)
@@ -111,3 +111,7 @@ TODO
 DeroAndDragons. Trading card fantasy world. NFTs by JoyRaptor!
 
 TODO  
+
+### Dero Swap / Pieswap
+
+TODO
