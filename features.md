@@ -27,7 +27,6 @@ List of Derosphere features
 - ✔ List/Table pagination (load more data...)
 - ✔ Call unknown smart contract function (scan code and display funcs and params)
 - ✔ Successful transaction checker
-- ✔ Smart contract transaction/sc install successful checker
 - ☐ Display transaction data from txid (pretty print)
 - ☐ Block out of sync/in sync colors
 - ☐ Filesign and verify (wallet disk only - need pull request for rpc server)
@@ -58,7 +57,7 @@ Tools to deploy G45-NFT Standard
 - ✔ Deploy G45-NFT and G45-NFT-Collection | public and private
 - ✔ Edit G45-NFT (InitStore, AddSupply, SetMetadata, FreezeMetadata, FreezeSupply)
 - ✔ Check if SCID is a valid G45-NFT or G45-NFT-Collection
-- ✔ Edit G45-NFT-Collection (Set,Del,Lock)
+- ✔ Edit G45-NFT-Collection (SetNft,DelNft,Freeze,SetData,DelData)
 - ✔ Setup wizard to deploy from metadata.json (deploy-entire-collection, init-store-nfts)
 
 ### Lotto
