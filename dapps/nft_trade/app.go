@@ -468,7 +468,7 @@ func CommandCreateAuction() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -508,7 +508,7 @@ func CommandCancelAuction() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -565,8 +565,7 @@ func CommandSetMinBidAuction() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
-
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -690,7 +689,7 @@ func CommandCreateExchange() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -730,7 +729,7 @@ func CommandCancelExchange() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -804,7 +803,7 @@ func CommandBuyExchange() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}

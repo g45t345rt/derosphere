@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -266,6 +267,43 @@ func CommandWalletBalance() *cli.Command {
 	}
 }
 
+func CommandDisplayTransaction() *cli.Command {
+	return &cli.Command{
+		Name:    "view-transaction",
+		Aliases: []string{"vtx"},
+		Usage:   "Display transaction information",
+		Action: func(ctx *cli.Context) error {
+			txId := ctx.Args().First()
+			var err error
+			walletInstance := app.Context.WalletInstance
+
+			if txId == "" {
+				txId, err = app.Prompt("Enter txid", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			result, err := walletInstance.Daemon.GetTransaction(&rpc.GetTransaction_Params{
+				Tx_Hashes: []string{txId},
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			var tx transaction.Transaction
+			tx_bin, _ := hex.DecodeString(result.Txs_as_hex[0])
+			tx.Deserialize(tx_bin)
+
+			fmt.Println(tx.Height)
+			fmt.Println(tx)
+			return nil
+		},
+	}
+}
+
 func CommandWalletTransfer() *cli.Command {
 	return &cli.Command{
 		Name:    "transfer",
@@ -357,8 +395,7 @@ func CommandWalletTransfer() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txid)
-
+			walletInstance.RunTxChecker(txid)
 			return nil
 		},
 	}
@@ -425,7 +462,7 @@ func CommandInstallSC() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -465,7 +502,7 @@ func CommandUpdateSC() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -639,7 +676,7 @@ func CommandCallSC() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -771,6 +808,7 @@ func WalletApp() *cli.App {
 			CommandWalletBalance(),
 			CommandAssetBalance(),
 			CommandWalletAddress(),
+			CommandDisplayTransaction(),
 			CommandWalletTransactions(),
 			CommandWalletSeed(),
 			CommandRegisterWallet(),

@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
@@ -40,7 +39,7 @@ func CommandDeployNFT() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -52,11 +51,11 @@ func CommandInitStoreNFT() *cli.Command {
 		Aliases: []string{"in"},
 		Usage:   "Init store NFT (one time thing)",
 		Action: func(ctx *cli.Context) error {
-			nftAssetToken := ctx.Args().First()
+			nftSCID := ctx.Args().First()
 			var err error
 
-			if nftAssetToken == "" {
-				nftAssetToken, err = app.Prompt("Enter nft asset token", "")
+			if nftSCID == "" {
+				nftSCID, err = app.Prompt("Enter nft asset token", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}
@@ -98,7 +97,7 @@ func CommandInitStoreNFT() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "InitStore", []rpc.Argument{
+			txId, err := walletInstance.CallSmartContract(2, nftSCID, "InitStore", []rpc.Argument{
 				{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
 				{Name: "supply", DataType: rpc.DataUint64, Value: supply},
 				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
@@ -111,7 +110,7 @@ func CommandInitStoreNFT() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -123,11 +122,11 @@ func CommandAddSupply() *cli.Command {
 		Aliases: []string{"as"},
 		Usage:   "Add supply to NFT",
 		Action: func(ctx *cli.Context) error {
-			nftAssetToken := ctx.Args().First()
+			nftSCID := ctx.Args().First()
 			var err error
 
-			if nftAssetToken == "" {
-				nftAssetToken, err = app.Prompt("Enter nft asset token", "")
+			if nftSCID == "" {
+				nftSCID, err = app.Prompt("Enter nft asset token", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}
@@ -139,7 +138,7 @@ func CommandAddSupply() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "AddSupply", []rpc.Argument{
+			txId, err := walletInstance.CallSmartContract(2, nftSCID, "AddSupply", []rpc.Argument{
 				{Name: "supply", DataType: rpc.DataUint64, Value: supply},
 			}, []rpc.Transfer{}, true)
 
@@ -148,7 +147,7 @@ func CommandAddSupply() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -160,24 +159,24 @@ func CommandFreezeSupply() *cli.Command {
 		Aliases: []string{"fs"},
 		Usage:   "Freeze supply of the NFT",
 		Action: func(ctx *cli.Context) error {
-			nftAssetToken := ctx.Args().First()
+			nftSCID := ctx.Args().First()
 			var err error
 
-			if nftAssetToken == "" {
-				nftAssetToken, err = app.Prompt("Enter nft asset token", "")
+			if nftSCID == "" {
+				nftSCID, err = app.Prompt("Enter nft asset token", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "FreezeSupply", []rpc.Argument{}, []rpc.Transfer{}, true)
+			txId, err := walletInstance.CallSmartContract(2, nftSCID, "FreezeSupply", []rpc.Argument{}, []rpc.Transfer{}, true)
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -189,24 +188,24 @@ func CommandFreezeMetadata() *cli.Command {
 		Aliases: []string{"fm"},
 		Usage:   "Freeze metadata of the NFT",
 		Action: func(ctx *cli.Context) error {
-			nftAssetToken := ctx.Args().First()
+			nftSCID := ctx.Args().First()
 			var err error
 
-			if nftAssetToken == "" {
-				nftAssetToken, err = app.Prompt("Enter nft asset token", "")
+			if nftSCID == "" {
+				nftSCID, err = app.Prompt("Enter nft asset token", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "FreezeMetadata", []rpc.Argument{}, []rpc.Transfer{}, true)
+			txId, err := walletInstance.CallSmartContract(2, nftSCID, "FreezeMetadata", []rpc.Argument{}, []rpc.Transfer{}, true)
 			if err != nil {
-				fmt.Println(txId)
+				fmt.Println(err)
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -218,11 +217,11 @@ func CommandSetMetadata() *cli.Command {
 		Aliases: []string{"sm"},
 		Usage:   "Set/edit metadata of the NFT",
 		Action: func(ctx *cli.Context) error {
-			nftAssetToken := ctx.Args().First()
+			nftSCID := ctx.Args().First()
 			var err error
 
-			if nftAssetToken == "" {
-				nftAssetToken, err = app.Prompt("Enter nft asset token", "")
+			if nftSCID == "" {
+				nftSCID, err = app.Prompt("Enter nft asset token", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}
@@ -234,7 +233,7 @@ func CommandSetMetadata() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, nftAssetToken, "SetMetadata", []rpc.Argument{
+			txId, err := walletInstance.CallSmartContract(2, nftSCID, "SetMetadata", []rpc.Argument{
 				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
 			}, []rpc.Transfer{}, true)
 
@@ -243,7 +242,7 @@ func CommandSetMetadata() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -308,7 +307,7 @@ func CommandDeployCollection() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -325,7 +324,7 @@ func CommandCollectionSetNFT() *cli.Command {
 				return nil
 			}
 
-			nftAssetToken, err := app.Prompt("Enter nft asset token", "")
+			nftSCID, err := app.Prompt("Enter nft asset token", "")
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -336,8 +335,8 @@ func CommandCollectionSetNFT() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "Set", []rpc.Argument{
-				{Name: "nft", DataType: rpc.DataString, Value: nftAssetToken},
+			txId, err := walletInstance.CallSmartContract(2, scid, "SetNft", []rpc.Argument{
+				{Name: "nft", DataType: rpc.DataString, Value: nftSCID},
 				{Name: "index", DataType: rpc.DataUint64, Value: index},
 			}, []rpc.Transfer{}, true)
 
@@ -346,7 +345,7 @@ func CommandCollectionSetNFT() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -363,14 +362,14 @@ func CommandCollectionDelNFT() *cli.Command {
 				return nil
 			}
 
-			nftAssetToken, err := app.Prompt("Enter nft asset token", "")
+			nftSCID, err := app.Prompt("Enter nft asset token", "")
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, collectionSCID, "Del", []rpc.Argument{
-				{Name: "nft", DataType: rpc.DataString, Value: nftAssetToken},
+			txId, err := walletInstance.CallSmartContract(2, collectionSCID, "DelNft", []rpc.Argument{
+				{Name: "nft", DataType: rpc.DataString, Value: nftSCID},
 			}, []rpc.Transfer{}, true)
 
 			if err != nil {
@@ -378,17 +377,87 @@ func CommandCollectionDelNFT() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
 }
 
-func CommandCollectionLock() *cli.Command {
+func CommandCollectionSetData() *cli.Command {
 	return &cli.Command{
-		Name:    "collection-lock",
-		Aliases: []string{"cl"},
-		Usage:   "Lock G45-NFT-COLLECTION - can't add or delete nfts",
+		Name:    "collection-set-data",
+		Aliases: []string{"csd"},
+		Usage:   "Set key/value to G45-NFT-COLLECTION",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			key, err := app.Prompt("Enter key", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			value, err := app.Prompt("Enter value", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, scid, "SetData", []rpc.Argument{
+				{Name: "key", DataType: rpc.DataString, Value: key},
+				{Name: "value", DataType: rpc.DataString, Value: value},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandCollectionDelData() *cli.Command {
+	return &cli.Command{
+		Name:    "collection-del-data",
+		Aliases: []string{"cdd"},
+		Usage:   "Delete key from G45-NFT-COLLECTION",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			key, err := app.Prompt("Enter key", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, scid, "DelData", []rpc.Argument{
+				{Name: "key", DataType: rpc.DataString, Value: key},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandFreezeCollection() *cli.Command {
+	return &cli.Command{
+		Name:    "freeze-collection",
+		Aliases: []string{"fc"},
+		Usage:   "Freeze G45-NFT-COLLECTION - can't set or delete nfts",
 		Action: func(ctx *cli.Context) error {
 			scid, err := app.Prompt("Enter scid", "")
 			if app.HandlePromptErr(err) {
@@ -396,14 +465,14 @@ func CommandCollectionLock() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "Lock", []rpc.Argument{}, []rpc.Transfer{}, true)
+			txId, err := walletInstance.CallSmartContract(2, scid, "Freeze", []rpc.Argument{}, []rpc.Transfer{}, true)
 
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			fmt.Println(txId)
+			walletInstance.RunTxChecker(txId)
 			return nil
 		},
 	}
@@ -431,9 +500,11 @@ func CommandDeployEntireCollection() *cli.Command {
 				fmt.Println("Install NFT Collection")
 				collectionSCID, err = walletInstance.InstallSmartContract([]byte(utils.G45_NFT_COLLECTION), false)
 				if err != nil {
-					log.Fatal(err)
+					fmt.Println(err)
+					return nil
 				}
-				fmt.Println(collectionSCID)
+
+				walletInstance.RunTxChecker(collectionSCID)
 			} else {
 				collectionSCID, err = app.Prompt("G45-NFT-COLLECTION asset token?", "")
 				if app.HandlePromptErr(err) {
@@ -456,30 +527,39 @@ func CommandDeployEntireCollection() *cli.Command {
 				nftCode = utils.G45_NFT_PRIVATE
 			}
 
-			sleep := 1000 * time.Millisecond
-
+			//sleep := 1000 * time.Millisecond
 			for i := startIndex; i <= endIndex; i++ {
+			install_nft:
 				fmt.Printf("Install NFT - %d\n", i)
 				nftSCID, err := walletInstance.InstallSmartContract([]byte(nftCode), false)
 				if err != nil {
-					log.Fatal(err)
+					fmt.Println(err)
+					goto install_nft
 				}
 
-				fmt.Println(nftSCID)
-				time.Sleep(sleep)
+				err = walletInstance.WaitTransaction(nftSCID)
+				if err != nil {
+					fmt.Println(err)
+					goto install_nft
+				}
 
+			set_collection:
 				fmt.Println("Set to collection: " + nftSCID)
-				setTxId, err := walletInstance.CallSmartContract(2, collectionSCID, "Set", []rpc.Argument{
+				setTxId, err := walletInstance.CallSmartContract(2, collectionSCID, "SetNft", []rpc.Argument{
 					{Name: "nft", DataType: rpc.DataString, Value: nftSCID},
 					{Name: "index", DataType: rpc.DataUint64, Value: i},
 				}, []rpc.Transfer{}, false)
 
 				if err != nil {
-					log.Fatal(err)
+					fmt.Println(err)
+					goto set_collection
 				}
 
-				fmt.Println(setTxId)
-				time.Sleep(sleep)
+				err = walletInstance.WaitTransaction(setTxId)
+				if err != nil {
+					fmt.Println(err)
+					goto set_collection
+				}
 			}
 
 			return nil
@@ -540,8 +620,6 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 			if freezeSupply {
 				uFreezeSupply = 1
 			}
-
-			sleep := 1000 * time.Millisecond
 
 			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
 				Code:      true,
@@ -607,8 +685,13 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 							continue
 						}
 
+						err = walletInstance.WaitTransaction(storeTxId)
+						if err != nil {
+							fmt.Println(err)
+							break
+						}
+
 						fmt.Println(storeTxId)
-						time.Sleep(sleep)
 					}
 				}
 			}
@@ -634,7 +717,9 @@ func App() *cli.App {
 			CommandCheckValidNFT(),
 			CommandCollectionSetNFT(),
 			CommandCollectionDelNFT(),
-			CommandCollectionLock(),
+			CommandCollectionSetData(),
+			CommandCollectionDelData(),
+			CommandFreezeCollection(),
 			CommandDeployEntireCollection(),
 			CommandInitStoreCollectionNFTs(),
 		},

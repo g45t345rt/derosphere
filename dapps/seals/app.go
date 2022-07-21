@@ -20,8 +20,8 @@ var DAPP_NAME = "seals"
 
 var COLLECTION_SC_ID map[string]string = map[string]string{
 	"mainnet":   "",
-	"testnet":   "",
-	"simulator": "d4562ece5c43d35c05d14c7b5744e194f230ca13c776674e490facc5b52c58ce",
+	"testnet":   "9fdf71cc0a563cc616e849b902f0503f5253a430c975bc4e06ee91c2814d3a8c",
+	"simulator": "e43a6e0ad77917fd66ff00b685aeb6e95af7437b5f09b68d5c556e2fb54be0b7",
 }
 
 func getCollectionSCID() string {
@@ -34,7 +34,7 @@ type SealNFT struct {
 	FrozenSupply     sql.NullBool
 	Supply           sql.NullInt64
 	Metadata         sql.NullString
-	FileNumber       sql.NullInt64
+	Id               sql.NullInt64
 	Rarity           sql.NullFloat64
 	TraitBackground  sql.NullString
 	TraitBase        sql.NullString
@@ -175,7 +175,7 @@ func sync() {
 					`
 
 					_, err = tx.Exec(query, nft.Token, nft.FrozenMetadata, nft.FrozenSupply, nft.Supply, nft.Metadata,
-						utils.NewNullString(values.Get("fileNumber")), utils.NewNullString(values.Get("rarity")), values.Get("trait_background"),
+						utils.NewNullString(values.Get("id")), utils.NewNullString(values.Get("rarity")), values.Get("trait_background"),
 						values.Get("trait_base"), values.Get("trait_eyes"), values.Get("trait_hairAndHats"),
 						values.Get("trait_shirts"), values.Get("trait_tattoo"), nft.Token,
 					)
@@ -226,7 +226,7 @@ func CommandList() *cli.Command {
 			for rows.Next() {
 				var nft SealNFT
 				err = rows.Scan(&nft.Token, &nft.FrozenMetadata, &nft.FrozenSupply, &nft.Supply, &nft.Metadata,
-					&nft.FileNumber, &nft.Rarity, &nft.TraitBackground, &nft.TraitBase, &nft.TraitEyes,
+					&nft.Id, &nft.Rarity, &nft.TraitBackground, &nft.TraitBase, &nft.TraitEyes,
 					&nft.TraitHairAndHats, &nft.TraitShirts, &nft.TraitTattoo,
 				)
 
@@ -240,9 +240,9 @@ func CommandList() *cli.Command {
 			app.Context.DisplayTable(len(nfts), func(i int) []interface{} {
 				nft := nfts[i]
 				return []interface{}{
-					nft.Token.String, nft.Supply.Int64, nft.FrozenMetadata.Bool, nft.FrozenSupply.Bool, nft.FileNumber.Int64, nft.Rarity.Float64, nft.Traits(),
+					nft.Token.String, nft.Supply.Int64, nft.FrozenMetadata.Bool, nft.FrozenSupply.Bool, nft.Id.Int64, nft.Rarity.Float64, nft.Traits(),
 				}
-			}, []interface{}{"NFT", "Supply", "Frozen Metadata", "Frozen Supply", "File Number", "Rarity", "Traits"}, 25)
+			}, []interface{}{"NFT", "Supply", "Frozen Metadata", "Frozen Supply", "Id", "Rarity", "Traits"}, 25)
 			return nil
 		},
 	}
@@ -301,10 +301,10 @@ func CommandViewNFT() *cli.Command {
 				return nil
 			}
 
-			var fileNumber string
-			row.Scan(&fileNumber)
+			var id string
+			row.Scan(&id)
 
-			browser.OpenURL("https://imagedelivery.net/zAjZFa6f2RjCu5A0cXIeHA/dero-seals-" + fileNumber + "/default")
+			browser.OpenURL("https://imagedelivery.net/zAjZFa6f2RjCu5A0cXIeHA/dero-seals-" + id + "/default")
 			fmt.Println("NFT image opened in the browser.")
 			return nil
 		},
@@ -317,17 +317,17 @@ func CommandViewImage() *cli.Command {
 		Aliases: []string{"vi"},
 		Usage:   "Open NFT image with file number",
 		Action: func(ctx *cli.Context) error {
-			fileNumber := ctx.Args().First()
+			id := ctx.Args().First()
 			var err error
 
-			if fileNumber == "" {
-				fileNumber, err = app.Prompt("Enter file number", "")
+			if id == "" {
+				id, err = app.Prompt("Enter file number", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}
 			}
 
-			browser.OpenURL("https://imagedelivery.net/zAjZFa6f2RjCu5A0cXIeHA/dero-seals-" + fileNumber + "/default")
+			browser.OpenURL("https://imagedelivery.net/zAjZFa6f2RjCu5A0cXIeHA/dero-seals-" + id + "/default")
 			fmt.Println("NFT image opened in the browser.")
 			return nil
 		},

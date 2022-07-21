@@ -59,11 +59,6 @@ Function stateExists(key String) Uint64
 10 RETURN EXISTS("state_" + key)
 End Function
 
-Function storeTX()
-10 STORE("txid_" + HEX(TXID()), 1)
-20 RETURN
-End Function
-
 Function exKey(id Uint64, key String) String
 10 RETURN "ex_" + id + "_" + key
 End Function
@@ -95,8 +90,7 @@ Function CreateExchange(sellAssetId String, buyAssetId String, buyAmount Uint64,
 140 storeStateInt(exKey(exId, "expireTimestamp"), expireTimestamp)
 150 endCommit()
 160 STORE("ex_ctr", exId + 1)
-170 storeTX()
-180 RETURN 0
+170 RETURN 0
 End Function
 
 Function CancelExchange(exId Uint64) Uint64
@@ -118,8 +112,7 @@ Function CancelExchange(exId Uint64) Uint64
 160 deleteState(exKey(exId, "timestamp"))
 170 deleteState(exKey(exId, "expireTimestamp"))
 180 endCommit()
-190 storeTX()
-200 RETURN 0
+190 RETURN 0
 End Function
 
 Function Buy(exId Uint64) Uint64
@@ -155,8 +148,7 @@ Function Buy(exId Uint64) Uint64
 300 storeStateInt(exKey(exId, "complete"), 1)
 310 storeStateInt(exKey(exId, "completeTimestamp"), timestamp)
 320 endCommit()
-330 storeTX()
-340 RETURN 0
+330 RETURN 0
 End Function
 
 Function SetDeroFee(fee Uint64) Uint64

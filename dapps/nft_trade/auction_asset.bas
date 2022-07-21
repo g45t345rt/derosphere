@@ -59,11 +59,6 @@ Function stateExists(key String) Uint64
 10 RETURN EXISTS("state_" + key)
 End Function
 
-Function storeTX()
-10 STORE("txid_" + HEX(TXID()), 1)
-20 RETURN
-End Function
-
 Function auKey(id Uint64, key String) String
 10 RETURN "au_" + id + "_" + key
 End Function
@@ -95,8 +90,7 @@ Function CreateAuction(sellAssetId String, bidAssetId String, startAmount Uint64
 150 storeStateInt(auKey(auId, "timestamp"), BLOCK_TIMESTAMP())
 160 endCommit()
 170 STORE("au_ctr", auId + 1)
-180 storeTX()
-190 RETURN 0
+180 RETURN 0
 End Function
 
 Function SetAuctionMinBid(auId Uint64, amount Uint64) Uint64
@@ -124,8 +118,7 @@ Function CancelAuction(auId Uint64) Uint64
 150 deleteState(auKey(auId, "bidCount"))
 160 deleteState(auKey(auId, "timestamp"))
 170 endCommit()
-180 storeTX()
-190 RETURN 0
+180 RETURN 0
 End Function
 
 Function Bid(auId Uint64) Uint64
@@ -153,8 +146,7 @@ Function Bid(auId Uint64) Uint64
 220 storeStateInt(auKey(auId, "bidSum"), lockedAmount)
 230 storeStateInt(auKey(auId, "bidCount"), bidCount + 1)
 240 endCommit()
-250 storeTX()
-260 RETURN 0
+250 RETURN 0
 End Function
 
 Function CheckoutAuction(auId Uint64) Uint64
@@ -172,8 +164,7 @@ Function CheckoutAuction(auId Uint64) Uint64
 120 beginCommit()
 130 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(signer), amount, HEXDECODE(sellAssetId))
 140 endCommit()
-150 storeTX()
-160 RETURN 0
+150 RETURN 0
 End Function
 
 Function RetrieveLockedFunds(auId String, signer String)
@@ -192,8 +183,7 @@ Function RetrieveLockedFunds(auId String, signer String)
 130 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(signer), signerAmount, HEXDECODE(bidAssetId))
 140 storeStateInt(auKey(auId, "bid_" + signer + "_lockedAmount"), 0)
 150 endCommit()
-160 storeTX()
-170 RETURN 0
+160 RETURN 0
 End Function
 
 Function SetDeroFee(fee Uint64) Uint64

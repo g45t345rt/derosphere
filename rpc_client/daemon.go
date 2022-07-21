@@ -71,3 +71,49 @@ func (d *Daemon) GetHeight() (*rpc.Daemon_GetHeight_Result, error) {
 
 	return result, nil
 }
+
+func (d *Daemon) GetBlock(params *rpc.GetBlock_Params) (*rpc.GetBlock_Result, error) {
+	var result *rpc.GetBlock_Result
+	err := d.client.CallFor(&result, "DERO.GetBlock")
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (d *Daemon) GetTransaction(params *rpc.GetTransaction_Params) (*rpc.GetTransaction_Result, error) {
+	var result *rpc.GetTransaction_Result
+	err := d.client.CallFor(&result, "DERO.GetTransaction", params)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (d *Daemon) SCTXExists(scid string, txid string) (bool, error) {
+	keysString := []string{}
+	code := true
+
+	if txid != "" {
+		keysString = append(keysString, fmt.Sprintf("txid_%s", txid))
+		code = false
+	}
+
+	result, err := d.GetSC(&rpc.GetSC_Params{
+		SCID:       scid,
+		Code:       code,
+		KeysString: keysString,
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	if txid != "" {
+		return result.ValuesString[0] == "1", nil
+	} else {
+		return result.Code != "", err
+	}
+}

@@ -185,7 +185,7 @@ func CommandRegister() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txid)
+			walletInstance.RunTxChecker(txid)
 			return nil
 		},
 	}
@@ -225,7 +225,7 @@ func CommandUnRegister() *cli.Command {
 				return nil
 			}
 
-			fmt.Println(txid)
+			walletInstance.RunTxChecker(txid)
 			return nil
 		},
 	}

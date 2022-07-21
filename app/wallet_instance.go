@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/globals"
@@ -440,4 +441,118 @@ func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid st
 	}
 
 	return txid, nil
+}
+
+func (walletInstance *WalletInstance) RunTxChecker(txid string) {
+	tries := 25
+	waitInterval := 2 * time.Second
+	var i int
+
+	fmt.Printf("Checking transaction... TXID: %s\n", txid)
+	// TODO fmt.Println("Type anything to skip")
+	for i = 0; i < tries; i++ {
+		result, err := walletInstance.Daemon.GetTransaction(&rpc.GetTransaction_Params{
+			Tx_Hashes: []string{txid},
+		})
+
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		txInfo := result.Txs[0]
+		if !txInfo.In_pool && txInfo.ValidBlock == "" {
+			fmt.Println("Invalid transaction")
+			break
+		}
+
+		txBlockHeight := txInfo.Block_Height
+
+		if txBlockHeight != -1 {
+			fmt.Printf("Successful transaction at block %d\n", txBlockHeight)
+			break
+		}
+
+		time.Sleep(waitInterval)
+	}
+
+	if i == tries {
+		fmt.Println("Can't confirm transaction. Number of tries exceeded.")
+	}
+}
+
+/*
+func (walletInstance *WalletInstance) RunSmartContractTxChecker(scid string, txid string) {
+	tries := 25
+	valid := false
+	var err error
+
+	fmt.Println("Checking transaction...")
+
+	for i := 0; i < tries; i++ {
+		valid, err = walletInstance.Daemon.SCTXExists(scid, txid)
+
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		if valid {
+			break
+		}
+
+		time.Sleep(2 * time.Second)
+	}
+
+	if valid {
+		fmt.Println("Your transaction was successful and confirmed in smart contract.")
+	} else {
+		fmt.Println("Unable to confirm transaction. Timeout exceeded and block confirmation is maybe taken mor time than usual.")
+	}
+
+	if txid != "" {
+		fmt.Println("TXID: " + txid)
+	} else {
+		fmt.Println("SCID: " + scid)
+	}
+}*/
+
+func (walletInstance *WalletInstance) WaitTransaction(txid string) error {
+	fmt.Printf("Waiting for transaction... %s\n", txid)
+
+	startHeight := uint64(0)
+	for {
+		result, err := walletInstance.Daemon.GetTransaction(&rpc.GetTransaction_Params{
+			Tx_Hashes: []string{txid},
+		})
+
+		if err != nil {
+			return err
+		}
+
+		txInfo := result.Txs[0]
+		if !txInfo.In_pool && txInfo.ValidBlock == "" {
+			return fmt.Errorf("invalid transaction")
+		}
+
+		txBlockHeight := txInfo.Block_Height
+		currentHeight := walletInstance.GetHeight()
+		if startHeight == 0 {
+			startHeight = currentHeight
+		}
+
+		//fmt.Printf("%d %d %d\n", currentHeight, txBlockHeight, startHeight)
+
+		if txBlockHeight != -1 {
+			break
+		}
+
+		if currentHeight >= startHeight+2 {
+			return fmt.Errorf("stuck transaction")
+		}
+
+		time.Sleep(2 * time.Second)
+	}
+
+	return nil
 }

@@ -15,12 +15,12 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
-	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 
 	deroConfig "github.com/deroproject/derohe/config"
 	"github.com/deroproject/derohe/globals"
 	"github.com/g45t345rt/derosphere/config"
+	"github.com/g45t345rt/derosphere/table"
 	"github.com/g45t345rt/derosphere/utils"
 )
 
@@ -292,6 +292,7 @@ func (app *AppContext) DisplayTable(count int, rowFunc TableRowDef, headers []in
 
 	tbl := table.New(headers...)
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+	headerPrinted := false
 
 printTable:
 	if count == 0 {
@@ -310,7 +311,12 @@ printTable:
 		cursor++
 	}
 
-	tbl.Print()
+	if !headerPrinted {
+		tbl.PrintHeader()
+		headerPrinted = true
+	}
+
+	tbl.PrintRows()
 
 	if cursor < count {
 		fmt.Println("Press any key to load more or q to exit...")

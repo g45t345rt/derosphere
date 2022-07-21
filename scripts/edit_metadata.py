@@ -24,7 +24,7 @@ def main():
     for c in data["collection"]:
         fileNumber = c["name"].replace("#", "")
         c["attributes"].append(
-            {"trait_type": "fileNumber", "value": fileNumber})
+            {"trait_type": "id", "value": fileNumber})
         c["attributes"].append(
             {"trait_type": "rarity", "value": rarity[fileNumber]})
 

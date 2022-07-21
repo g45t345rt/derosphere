@@ -26,7 +26,10 @@ List of Derosphere features
 - ✔ Mint G45-NFT (collection) with all available functions
 - ✔ List/Table pagination (load more data...)
 - ✔ Call unknown smart contract function (scan code and display funcs and params)
-- ☐ Smart contract transaction successful checker
+- ✔ Successful transaction checker
+- ✔ Smart contract transaction/sc install successful checker
+- ☐ Display transaction data from txid (pretty print)
+- ☐ Block out of sync/in sync colors
 - ☐ Filesign and verify (wallet disk only - need pull request for rpc server)
 
 ## DApps
@@ -78,7 +81,8 @@ Dero Seals NFT project. NFTs by MERU!
 <https://twitter.com/deroseals>  
 
 - ✔ List entire NFT collection
-- ✔ Open specific NFT image in the browser from fileNumber or NFT asset token
+- ✔ Open specific NFT image in the browser from id or NFT asset token
+- ☐ Export seals metadata
 
 ### NFT Trade - Exchange / auction for Asset Tokens
 
