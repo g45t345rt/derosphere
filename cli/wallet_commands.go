@@ -338,9 +338,17 @@ func CommandWalletTransfer() *cli.Command {
 				fmt.Printf("Address found: %s\n", addressOrName)
 			}
 
-			amount, err := app.PromptDero("Enter amount (in Dero)", 0)
-			if app.HandlePromptErr(err) {
-				return nil
+			amount := uint64(0)
+			if assetToken == "" {
+				amount, err = app.PromptDero("Enter amount (in Dero)", 0)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			} else {
+				amount, err = app.PromptUInt("Enter amount", 0)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
 			}
 
 			ringsize, err := app.PromptUInt("Set ringsize", 2)
@@ -389,7 +397,14 @@ func CommandWalletTransfer() *cli.Command {
 
 			transfer.Payload_RPC = arguments
 
-			yes, err := app.PromptYesNo(fmt.Sprintf("Are you sure you want to send %s to %s", globals.FormatMoney(transfer.Amount), addressOrName), false)
+			prompt := ""
+			if assetToken == "" {
+				prompt = fmt.Sprintf("Are you sure you want to send %s DERO to %s", globals.FormatMoney(transfer.Amount), addressOrName)
+			} else {
+				prompt = fmt.Sprintf("Are you sure you want to send %d TOKEN to %s", transfer.Amount, addressOrName)
+			}
+
+			yes, err := app.PromptYesNo(prompt, false)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
