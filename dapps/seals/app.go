@@ -20,7 +20,7 @@ var DAPP_NAME = "seals"
 
 var COLLECTION_SC_ID map[string]string = map[string]string{
 	"mainnet":   "",
-	"testnet":   "9fdf71cc0a563cc616e849b902f0503f5253a430c975bc4e06ee91c2814d3a8c",
+	"testnet":   "84f3153f4cb0b56ee8560904a83f2859ec92c5c08aa3b6d2c3bf9cd962703fda",
 	"simulator": "e43a6e0ad77917fd66ff00b685aeb6e95af7437b5f09b68d5c556e2fb54be0b7",
 }
 
@@ -157,7 +157,7 @@ func sync() {
 
 					nft, err := utils.ParseG45NFT(assetTokenSCID, result)
 					if err != nil {
-						fmt.Println(err)
+						fmt.Printf("%s %s\n", assetTokenSCID, err.Error())
 						continue
 					}
 

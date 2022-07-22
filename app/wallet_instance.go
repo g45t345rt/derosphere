@@ -486,6 +486,8 @@ func (walletInstance *WalletInstance) WaitTransaction(txid string) error {
 
 	startHeight := uint64(0)
 	for {
+		time.Sleep(2 * time.Second)
+
 		result, err := walletInstance.Daemon.GetTransaction(&rpc.GetTransaction_Params{
 			Tx_Hashes: []string{txid},
 		})
@@ -514,8 +516,6 @@ func (walletInstance *WalletInstance) WaitTransaction(txid string) error {
 		if currentHeight >= startHeight+2 {
 			return fmt.Errorf("stuck transaction")
 		}
-
-		time.Sleep(2 * time.Second)
 	}
 
 	return nil
