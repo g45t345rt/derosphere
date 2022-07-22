@@ -228,7 +228,7 @@ func (app *AppContext) RefreshPrompt() {
 func (app *AppContext) LoadConfig() {
 	content, err := ioutil.ReadFile("./data/config.json")
 	if err != nil {
-		app.Config.Env = "mainnet"
+		app.Config.Env = config.START_ENV
 		app.Config.CloseWalletAfter = 180 // default 180s (3min)
 		return
 	}

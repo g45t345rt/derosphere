@@ -13,6 +13,7 @@ require (
 	github.com/caarlos0/env/v6 v6.9.3 // indirect
 	github.com/cenkalti/hub v1.0.1 // indirect
 	github.com/cenkalti/rpc2 v0.0.0-20210604223624-c1acbc6ec984 // indirect
+	github.com/crazy-max/xgo v0.19.0 // indirect
 	github.com/creachadair/jrpc2 v0.41.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deroproject/graviton v0.0.0-20220130070622-2c248a53b2e1 // indirect

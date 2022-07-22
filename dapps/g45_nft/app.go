@@ -788,12 +788,48 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 	}
 }
 
+func CommandViewNFT() *cli.Command {
+	return &cli.Command{
+		Name:    "view-nft",
+		Aliases: []string{"vn"},
+		Usage:   "Display nft metadata and more",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
+				SCID:      scid,
+				Code:      true,
+				Variables: true,
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			nft, err := utils.ParseG45NFT(scid, result)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			nft.Print()
+			return nil
+		},
+	}
+}
+
 func App() *cli.App {
 	return &cli.App{
 		Name:        "g45-nft",
 		Description: "Deploy & manage G45-NFT asset tokens.",
 		Version:     "0.0.1",
 		Commands: []*cli.Command{
+			CommandViewNFT(),
 			CommandDeployNFT(),
 			CommandDeployCollection(),
 			CommandInitStoreNFT(),
