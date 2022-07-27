@@ -29,7 +29,7 @@ List of Derosphere features
 - ✔ Successful transaction checker
 - ☐ Display transaction data from txid (pretty print)
 - ☐ Block out of sync/in sync colors
-- ☐ Filesign and verify (wallet disk only - need pull request for rpc server)
+- ☐ Filesign (wallet disk only - need pull request for rpc server)
 
 ## DApps
 
@@ -91,13 +91,13 @@ Exchange any type of asset token for DERO or other Asset Token
 - ✔ Create an exchange
 - ✔ Cancel/remove exchange
 - ✔ Buy item from exchange
-- ☐ List available auctions / items to bids on
+- ✔ List available auctions / items to bids on
 - ✔ Create an auction
 - ✔ Cancel/remove auction
-- ☐ Bid on auction
-- ☐ Checkout/complete auction (for winner)
+- ✔ Bid on auction
+- ✔ Checkout/complete auction (for winner)
 - ✔ Set min bid
-- ☐ Retrieve locked funds (for unsuccessful bidders)
+- ✔ Retrieve locked funds (for unsuccessful bidders)
 
 ### T345-NFT
 

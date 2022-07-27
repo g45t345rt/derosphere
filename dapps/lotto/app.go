@@ -114,7 +114,7 @@ func (l *Lotto) Print() {
 	fmt.Println("Base reward:", globals.FormatMoney(uint64(l.BaseReward.Int64)))
 	fmt.Println("Start timestamp:", l.DisplayStartTimestamp())
 	fmt.Println("Draw timestamp:", l.DisplayDrawTimestamp())
-	fmt.Println("Unique wallet:", l.UniqueWallet.Bool)
+	fmt.Println("One ticket per wallet:", l.UniqueWallet.Bool)
 	fmt.Println("Password lock:", l.PasswordHash.Valid)
 }
 
@@ -485,7 +485,7 @@ func CommandCreateLotto() *cli.Command {
 				return nil
 			}
 
-			uniqueWalletBool, err := app.PromptYesNo("Unique wallet ?", true)
+			uniqueWalletBool, err := app.PromptYesNo("One ticker per wallet ?", true)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -505,7 +505,7 @@ func CommandCreateLotto() *cli.Command {
 				return nil
 			}
 
-			baseReward, err := app.PromptDero("Base reward", 0)
+			baseReward, err := app.PromptDero("Base reward (in Dero)", 0)
 			if app.HandlePromptErr(err) {
 				return nil
 			}

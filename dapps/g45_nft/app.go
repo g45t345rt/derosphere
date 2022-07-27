@@ -301,7 +301,7 @@ func CommandDisplayToken() *cli.Command {
 func CommandRetrieveToken() *cli.Command {
 	return &cli.Command{
 		Name:    "retrieve-token",
-		Aliases: []string{"dt"},
+		Aliases: []string{"rt"},
 		Usage:   "Retrieve token from SC",
 		Action: func(ctx *cli.Context) error {
 			nftSCID := ctx.Args().First()
@@ -823,6 +823,42 @@ func CommandViewNFT() *cli.Command {
 	}
 }
 
+func CommandViewNFTCollection() *cli.Command {
+	return &cli.Command{
+		Name:    "view-nft-collection",
+		Aliases: []string{"vnc"},
+		Usage:   "Display nft collection metadata and more",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
+				SCID:       scid,
+				Code:       true,
+				Variables:  false,
+				KeysString: []string{"owner", "frozen", "nftCount"},
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			nftCollection, err := utils.ParseG45NFTCollection(scid, result)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			nftCollection.Print()
+			return nil
+		},
+	}
+}
+
 func App() *cli.App {
 	return &cli.App{
 		Name:        "g45-nft",
@@ -840,6 +876,7 @@ func App() *cli.App {
 			CommandFreezeMetadata(),
 			CommandFreezeSupply(),
 			CommandCheckValidNFT(),
+			CommandViewNFTCollection(),
 			CommandCollectionSetNFT(),
 			CommandCollectionDelNFT(),
 			CommandCollectionSetData(),

@@ -19,6 +19,19 @@ var G45_NFT_PRIVATE string
 //go:embed g45_nft_collection.bas
 var G45_NFT_COLLECTION string
 
+type G45NFTCollection struct {
+	Token    string
+	Frozen   bool
+	Owner    string
+	NFTCount uint64
+}
+
+func (nft *G45NFTCollection) Print() {
+	fmt.Println("Asset Token: ", nft.Token)
+	fmt.Println("Frozen: ", nft.Frozen)
+	fmt.Println("Owner: ", nft.Owner)
+}
+
 type G45NFT struct {
 	Token          string
 	Init           bool
@@ -50,6 +63,33 @@ func decodeString(value string) string {
 	}
 
 	return string(bytes)
+}
+
+func ParseG45NFTCollection(token string, result *rpc.GetSC_Result) (*G45NFTCollection, error) {
+	values := result.VariableStringKeys
+	nftCollection := &G45NFTCollection{}
+
+	if result.Code != G45_NFT_COLLECTION {
+		return nil, fmt.Errorf("not a valid G45-NFT-Collection")
+	}
+
+	nftCollection.Token = token
+	nftCollection.Frozen = values["frozen"].(float64) != 0
+	nftCollection.NFTCount = values["nftCount"].(uint64)
+
+	p := new(crypto.Point)
+	key, err := hex.DecodeString(values["owner"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	err = p.DecodeCompressed(key)
+	if err != nil {
+		return nil, err
+	}
+
+	nftCollection.Owner = rpc.NewAddressFromKeys(p).String()
+	return nftCollection, nil
 }
 
 func ParseG45NFT(token string, result *rpc.GetSC_Result) (*G45NFT, error) {

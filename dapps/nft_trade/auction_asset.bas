@@ -69,28 +69,34 @@ Function Initialize() Uint64
 30 STORE("owner", SIGNER())
 40 STORE("dero_fee", 5)
 50 STORE("au_ctr", 0)
-60 RETURN 0
+60 initCommit()
+70 RETURN 0
 End Function
 
 Function CreateAuction(sellAssetId String, bidAssetId String, startAmount Uint64, minBidAmount Uint64, startTimestamp Uint64, duration Uint64) Uint64
-10 DIM auId, start_timestamp as Uint64
+10 DIM auId, sellAmount as Uint64
 20 LET auId = LOAD("au_ctr")
-30 IF ASSETVALUE(HEXDECODE(sellAssetId)) == 1 THEN GOTO
-40 RETURN 1
-50 beginCommit()
-60 storeStateInt(auKey(auId, "startAmount"), startAmount)
-70 storeStateString(auKey(auId, "sellAssetId"), sellAssetId)
-80 storeStateInt(auKey(auId, "startTimestamp"), startTimestamp)
-90 storeStateInt(auKey(auId, "duration"), duration)
-100 storeStateString(auKey(auId, "seller"), ADDRESS_STRING(SIGNER()))
-110 storeStateInt(auKey(auId, "bidAssetId"), bidAssetId)
-120 storeStateInt(auKey(auId, "minBidAmount"), minBidAmount)
-130 storeStateInt(auKey(auId, "bidSum"), 0)
-140 storeStateInt(auKey(auId, "bidCount"), 0)
-150 storeStateInt(auKey(auId, "timestamp"), BLOCK_TIMESTAMP())
-160 endCommit()
-170 STORE("au_ctr", auId + 1)
-180 RETURN 0
+30 LET sellAmount = ASSETVALUE(HEXDECODE(sellAssetId))
+40 IF sellAmount >= 1 THEN GOTO 60
+50 RETURN 1
+60 IF startTimestamp > 0 THEN GOTO 80
+70 LET startTimestamp = BLOCK_TIMESTAMP()
+80 beginCommit()
+90 storeStateInt(auKey(auId, "startAmount"), startAmount)
+100 storeStateString(auKey(auId, "sellAssetId"), sellAssetId)
+110 storeStateInt(auKey(auId, "sellAmount"), sellAmount)
+120 storeStateInt(auKey(auId, "startTimestamp"), startTimestamp)
+130 storeStateInt(auKey(auId, "duration"), duration)
+140 storeStateString(auKey(auId, "seller"), ADDRESS_STRING(SIGNER()))
+150 storeStateString(auKey(auId, "bidAssetId"), bidAssetId)
+160 storeStateInt(auKey(auId, "minBidAmount"), minBidAmount)
+170 storeStateInt(auKey(auId, "bidSum"), 0)
+180 storeStateInt(auKey(auId, "bidCount"), 0)
+190 storeStateInt(auKey(auId, "timestamp"), BLOCK_TIMESTAMP())
+200 storeStateInt(auKey(auId, "complete"), 0)
+210 endCommit()
+220 STORE("au_ctr", auId + 1)
+230 RETURN 0
 End Function
 
 Function SetAuctionMinBid(auId Uint64, amount Uint64) Uint64
@@ -101,11 +107,11 @@ Function SetAuctionMinBid(auId Uint64, amount Uint64) Uint64
 End Function
 
 Function CancelAuction(auId Uint64) Uint64
-10 IF loadStateString(auKey(id, "seller")) == ADDRESS_STRING(SIGNER()) THEN GOTO 30
+10 IF loadStateString(auKey(auId, "seller")) == ADDRESS_STRING(SIGNER()) THEN GOTO 30
 20 RETURN 1
 30 IF loadStateInt(auKey(auId, "bidCount")) == 0 THEN GOTO 50
 40 RETURN 1
-50 SEND_ASSET_TO_ADDRESS(SIGNER(), 1, HEXDECODE(loadStateString(auKey(id, "assetId"))))
+50 SEND_ASSET_TO_ADDRESS(SIGNER(), loadStateInt(auKey(auId, "sellAmount")), HEXDECODE(loadStateString(auKey(auId, "sellAssetId"))))
 60 beginCommit()
 70 deleteState(auKey(auId, "startAmount"))
 80 deleteState(auKey(auId, "sellAssetId"))
@@ -117,73 +123,88 @@ Function CancelAuction(auId Uint64) Uint64
 140 deleteState(auKey(auId, "bidSum"))
 150 deleteState(auKey(auId, "bidCount"))
 160 deleteState(auKey(auId, "timestamp"))
-170 endCommit()
-180 RETURN 0
+170 deleteState(auKey(auId, "sellAmount"))
+180 endCommit()
+190 RETURN 0
 End Function
 
 Function Bid(auId Uint64) Uint64
-10 DIM minBidAmount, bidAmount, bidCount, lockedAmount as Uint64
+10 DIM minBidAmount, bidAmount, bidCount, lockedAmount, startAmount, bidSum, startTimestamp, duration, timestamp as Uint64
 20 DIM bidAssetId, signerString as String
-30 LET signerString = ADDRESS_RAW(SIGNER())
+30 LET signerString = ADDRESS_STRING(SIGNER())
 40 LET minBidAmount = loadStateInt(auKey(auId, "minBidAmount"))
 50 LET bidAssetId = loadStateString(auKey(auId, "bidAssetId"))
 60 LET bidCount = loadStateInt(auKey(auId, "bidCount"))
 70 LET startTimestamp = loadStateInt(auKey(auId, "startTimestamp"))
 80 LET duration = loadStateInt(auKey(auId, "duration"))
 90 LET bidAmount = ASSETVALUE(HEXDECODE(bidAssetId))
-100 LET timestamp = BLOCK_TIMESTAMP()
-110 LET lockedAmount = 0
-120 IF stateExists(aubey(auId, "bid_" + signerString + "_lockedAmount")) == 0 THEN GOTO 140
-130 LET lockedAmount = loadStateInt(aubey(auId, "bid_" + signerString + "_lockedAmount"))
-140 IF lockedAmount + bidAmount >= minBidAmount + startAmount THEN GOTO 160
-150 RETURN 1
+100 LET startAmount = loadStateInt(auKey(auId, "startAmount"))
+110 LET bidSum = loadStateInt(auKey(auId, "bidSum"))
+120 LET timestamp = BLOCK_TIMESTAMP()
+130 LET lockedAmount = 0
+140 IF stateExists(auKey(auId, "bid_" + signerString + "_lockedAmount")) == 0 THEN GOTO 160
+150 LET lockedAmount = loadStateInt(auKey(auId, "bid_" + signerString + "_lockedAmount"))
 160 IF timestamp <= startTimestamp + duration THEN GOTO 180
 170 RETURN 1
-180 beginCommit()
-190 LET lockedAmount = lockedAmount + bidAmount
-200 storeStateInt(auKey(auId, "bid_" + signerString + "_lockedAmount"), lockedAmount)
-210 storeStateInt(auKey(auId, "bid_" + signerString + "_timestamp"), timestamp)
-220 storeStateInt(auKey(auId, "bidSum"), lockedAmount)
-230 storeStateInt(auKey(auId, "bidCount"), bidCount + 1)
-240 endCommit()
-250 RETURN 0
+180 IF bidAmount >= minBidAmount THEN GOTO 200
+190 RETURN 1
+200 IF bidSum > 0 THEN GOTO 230
+210 IF bidAmount >= startAmount + minBidAmount THEN GOTO 230
+220 RETURN 1
+230 IF lockedAmount + bidAmount > bidSum THEN GOTO 250
+240 RETURN 1
+250 beginCommit()
+260 storeStateInt(auKey(auId, "bid_" + signerString + "_lockedAmount"), lockedAmount + bidAmount)
+270 storeStateInt(auKey(auId, "bid_" + signerString + "_timestamp"), timestamp)
+280 storeStateInt(auKey(auId, "bidSum"), bidSum + bidAmount)
+290 storeStateInt(auKey(auId, "bidCount"), bidCount + 1)
+300 storeStateString(auKey(auId, "lastBidder"), signerString)
+310 endCommit()
+320 RETURN 0
 End Function
 
 Function CheckoutAuction(auId Uint64) Uint64
-10 DIM sellAssetId, bidAssetId, seller as String
-20 DIM bidSum, amount, startTimestamp, duration as Uint64
+10 DIM sellAssetId, bidAssetId, seller, winner as String
+20 DIM bidSum, amount, startTimestamp, duration, sellAmount as Uint64
 30 LET sellAssetId = loadStateString(auKey(auId, "sellAssetId"))
-40 LET amount = loadStateInt(auKey(auId, "amount"))
+40 LET sellAmount = loadStateInt(auKey(auId, "sellAmount"))
 50 LET bidSum = loadStateInt(auKey(auId, "bidSum"))
 60 LET bidAssetId = loadStateString(auKey(auId, "bidAssetId"))
 70 LET seller = loadStateString(auKey(auId, "seller"))
-80 LET startTimestamp = loadStateInt(auKey(auId, "startTimestamp"))
-90 LET duration = loadStateInt(auKey(auId, "duration"))
-100 IF BLOCK_TIMESTAMP() > startTimestamp + duration THEN GOTO
-110 RETURN 1
-120 beginCommit()
-130 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(signer), amount, HEXDECODE(sellAssetId))
-140 endCommit()
-150 RETURN 0
+80 LET winner = loadStateString(auKey(auId, "lastBidder"))
+90 LET startTimestamp = loadStateInt(auKey(auId, "startTimestamp"))
+100 LET duration = loadStateInt(auKey(auId, "duration"))
+110 IF loadStateInt(auKey(auId, "complete")) == 0 THEN GOTO 130
+120 RETURN 1
+130 IF BLOCK_TIMESTAMP() > startTimestamp + duration THEN GOTO 150
+140 RETURN 1
+150 beginCommit()
+160 storeStateInt(auKey(auId, "complete"), 1)
+170 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(winner), sellAmount, HEXDECODE(sellAssetId))
+180 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(seller), bidSum, HEXDECODE(bidAssetId))
+190 endCommit()
+200 RETURN 0
 End Function
 
-Function RetrieveLockedFunds(auId String, signer String)
-10 DIM startTimestamp, duration, signerAmount, bidSum as Uint64
-20 DIM bidAssetId as String
+Function RetrieveLockedFunds(auId Uint64) Uint64
+10 DIM startTimestamp, duration, lockedAmount, bidSum as Uint64
+20 DIM bidAssetId, signerString, winner as String
 30 LET startTimestamp = loadStateInt(auKey(auId, "startTimestamp"))
 40 LET duration = loadStateInt(auKey(auId, "duration"))
 50 LET bidAssetId = loadStateString(auKey(auId, "bidAssetId"))
 60 LET bidSum = loadStateInt(auKey(auId, "bidSum"))
-70 IF BLOCK_TIMESTAMP() > startTimestamp + duration THEN GOTO 90
-80 RETURN 1
-90 LET signerAmount = loadStateInt(auKey(auId, "bid_" + signer + "_lockedAmount"))
-100 IF signerAmount < bidSum THEN GOTO 120
-110 RETURN 1
-120 beginCommit()
-130 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(signer), signerAmount, HEXDECODE(bidAssetId))
-140 storeStateInt(auKey(auId, "bid_" + signer + "_lockedAmount"), 0)
-150 endCommit()
-160 RETURN 0
+70 LET signerString = ADDRESS_STRING(SIGNER())
+80 LET winner = loadStateString(auKey(auId, "lastBidder"))
+90 IF loadStateInt(auKey(auId, "complete")) == 1 THEN GOTO 110
+100 RETURN 1
+110 IF winner != signerString THEN GOTO 130
+120 RETURN 1
+130 LET lockedAmount = loadStateInt(auKey(auId, "bid_" + signerString + "_lockedAmount"))
+140 beginCommit()
+150 SEND_ASSET_TO_ADDRESS(SIGNER(), lockedAmount, HEXDECODE(bidAssetId))
+160 storeStateInt(auKey(auId, "bid_" + signerString + "_lockedAmount"), 0)
+170 endCommit()
+180 RETURN 0
 End Function
 
 Function SetDeroFee(fee Uint64) Uint64

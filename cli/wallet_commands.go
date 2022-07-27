@@ -345,7 +345,7 @@ func CommandWalletTransfer() *cli.Command {
 					return nil
 				}
 			} else {
-				amount, err = app.PromptUInt("Enter amount", 0)
+				amount, err = app.PromptUInt("Enter amount (atomic value)", 0)
 				if app.HandlePromptErr(err) {
 					return nil
 				}
@@ -610,6 +610,7 @@ func CommandCallSC() *cli.Command {
 			}
 
 			funcName, err := app.PromptChoose("Function to excute", funcNames, "")
+			//funcName, err := app.Prompt("Function to excute", "")
 			if app.HandlePromptErr(err) {
 				return nil
 			}

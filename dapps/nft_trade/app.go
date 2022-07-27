@@ -28,7 +28,7 @@ var EXCHANGE_SCID map[string]string = map[string]string{
 var AUCTION_SCID map[string]string = map[string]string{
 	"mainnet":   "",
 	"testnet":   "",
-	"simulator": "",
+	"simulator": "c2df620aba02d348af32188feca3b82282303436be2895b4cd62ed143f09c7a7",
 }
 
 func getExchangeSCID() string {
@@ -77,6 +77,7 @@ type Auction struct {
 	Id             sql.NullInt64
 	StartAmount    sql.NullInt64
 	SellAssetId    sql.NullString
+	SellAmount     sql.NullInt64
 	StartTimestamp sql.NullInt64
 	Duration       sql.NullInt64
 	Seller         sql.NullString
@@ -85,6 +86,8 @@ type Auction struct {
 	BidSum         sql.NullInt64
 	BidCount       sql.NullInt64
 	Timestamp      sql.NullInt64
+	Complete       sql.NullBool
+	LastBidder     sql.NullString
 }
 
 func (a *Auction) DisplayStartTimestamp() string {
@@ -101,6 +104,13 @@ func (a *Auction) DisplayTimestamp() string {
 	}
 
 	return ""
+}
+
+type Bid struct {
+	AuId         sql.NullInt64
+	Bidder       sql.NullString
+	LockedAmount sql.NullInt64
+	Timestamp    sql.NullString
 }
 
 func initData() {
@@ -122,6 +132,7 @@ func initData() {
 		create table if not exists dapps_nft_trade_auctions (
 			id bigint primary key,
 			sellAssetId varchar,
+			sellAmount bigint,
 			startAmount bigint,
 			startTimestamp bigint,
 			duration bigint,
@@ -130,15 +141,17 @@ func initData() {
 			minBidAmount bigint,
 			bidSum bigint,
 			bidCount bigint,
-			timestamp bigint
+			timestamp bigint,
+			complete boolean,
+			lastBidder varchar
 		);
 
 		create table if not exists dapps_nft_trade_auctions_bids (
+			auId bigint,
 			bidder varchar,
-			bidId bigint,
 			lockedAmount bigint,
 			timestamp bigint,
-			primary key (bidder, bidId)
+			primary key (bidder, auId)
 		);
 	`
 
@@ -167,7 +180,7 @@ func clearData() {
 
 func syncAuction() {
 	daemon := app.Context.WalletInstance.Daemon
-	scid := getExchangeSCID()
+	scid := getAuctionSCID()
 	commitCount := daemon.GetSCCommitCount(scid)
 	counts := utils.GetCounts()
 	name := DAPP_NAME + "-auction"
@@ -180,6 +193,7 @@ func syncAuction() {
 	chunk := uint64(1000)
 	db := app.Context.DB
 	auKey, _ := regexp.Compile(`state_au_(\d+)_(.+)`)
+	bidKey, _ := regexp.Compile(`state_au_(\d+)_bid_(.+)_(.+)`)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -201,7 +215,25 @@ func syncAuction() {
 		for _, commit := range commits {
 			key := commit.Key
 
-			if strings.HasPrefix(key, "state_au_") {
+			if bidKey.Match([]byte(key)) {
+				auId := bidKey.ReplaceAllString(key, "$1")
+				signer := bidKey.ReplaceAllString(key, "$2")
+				columnName := bidKey.ReplaceAllString(key, "$3")
+
+				switch commit.Action {
+				case "S":
+					query := fmt.Sprintf(`insert into dapps_nft_trade_auctions_bids (auId, bidder, %s)
+					values (?, ?, ?)
+					on conflict(auId, bidder) do update
+					set %s = ?`, columnName, columnName)
+
+					_, err = tx.Exec(query, auId, signer, commit.Value, commit.Value)
+
+					if err != nil {
+						log.Fatal(err)
+					}
+				}
+			} else if auKey.Match([]byte(key)) {
 				auId := auKey.ReplaceAllString(key, "$1")
 				columnName := auKey.ReplaceAllString(key, "$2")
 
@@ -209,7 +241,7 @@ func syncAuction() {
 				case "S":
 					query := fmt.Sprintf(`insert into dapps_nft_trade_auctions (id, %s)
 						values (?, ?)
-						on conflic(id) do update
+						on conflict(id) do update
 						set %s = ?`, columnName, columnName)
 
 					_, err = tx.Exec(query, auId, commit.Value, commit.Value)
@@ -337,7 +369,7 @@ func syncExchange() {
 
 func CommandListAuction() *cli.Command {
 	return &cli.Command{
-		Name:    "auction",
+		Name:    "list-auction",
 		Aliases: []string{"la"},
 		Usage:   "NFTs in auction",
 		Action: func(c *cli.Context) error {
@@ -346,7 +378,7 @@ func CommandListAuction() *cli.Command {
 			db := app.Context.DB
 
 			query := `
-				select id, startAmount, sellAssetId, startTimestamp, duration, seller, bidAssetId, minBidAmount, bidSum, bidCount, timestamp
+				select id, startAmount, sellAssetId, sellAmount, startTimestamp, duration, seller, bidAssetId, minBidAmount, bidSum, bidCount, timestamp
 				from dapps_nft_trade_auctions
 			`
 
@@ -358,7 +390,7 @@ func CommandListAuction() *cli.Command {
 			var auctions []Auction
 			for rows.Next() {
 				var auction Auction
-				err = rows.Scan(&auction.Id, &auction.StartAmount, &auction.SellAssetId, &auction.StartTimestamp,
+				err = rows.Scan(&auction.Id, &auction.StartAmount, &auction.SellAssetId, &auction.SellAmount, &auction.StartTimestamp,
 					&auction.Duration, &auction.Seller, &auction.BidAssetId, &auction.MinBidAmount,
 					&auction.BidSum, &auction.BidCount, &auction.Timestamp)
 
@@ -373,7 +405,7 @@ func CommandListAuction() *cli.Command {
 				a := auctions[i]
 				return []interface{}{
 					a.Id.Int64, a.StartAmount.Int64, a.SellAssetId.String, a.DisplayStartTimestamp(), a.Duration.Int64,
-					a.Seller.String, a.BidAssetId.String, a.MinBidAmount.Int64, a.BidSum.Int64, a.BidCount, a.DisplayTimestamp(),
+					a.Seller.String, a.BidAssetId.String, a.MinBidAmount.Int64, a.BidSum.Int64, a.BidCount.Int64, a.DisplayTimestamp(),
 				}
 			}, []interface{}{"Id", "Start Amount", "Sell Asset ID", "Start Timestamp", "Duration",
 				"Seller", "Bid Asset ID", "Min Bid Amount", "Bid Sum", "Bid count", "Timestamp"}, 5)
@@ -403,15 +435,15 @@ func CommandCreateAuction() *cli.Command {
 				return nil
 			}
 
-			buyAssetId, err := app.Prompt("Enter asset id you want to auction for (empty for Dero)", "")
+			bidAssetId, err := app.Prompt("Enter asset id you want to auction for (empty for Dero)", "")
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
 			startAmount := uint64(0)
 			minBidAmount := uint64(0)
-			if buyAssetId == "" {
-				buyAssetId = "0000000000000000000000000000000000000000000000000000000000000000"
+			if bidAssetId == "" {
+				bidAssetId = crypto.ZEROHASH.String() //"0000000000000000000000000000000000000000000000000000000000000000"
 				startAmount, err = app.PromptDero("Enter start amount (in Dero)", 0)
 				if app.HandlePromptErr(err) {
 					return nil
@@ -444,7 +476,7 @@ func CommandCreateAuction() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			scid := getExchangeSCID()
+			scid := getAuctionSCID()
 
 			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
 			if err != nil {
@@ -452,15 +484,21 @@ func CommandCreateAuction() *cli.Command {
 				return nil
 			}
 
+			transfer := rpc.Transfer{
+				SCID:        crypto.HashHexToHash(sellAssetId),
+				Burn:        amount,
+				Destination: randomAddresses.Address[0],
+			}
+
 			txId, err := walletInstance.CallSmartContract(2, scid, "CreateAuction", []rpc.Argument{
 				{Name: "sellAssetId", DataType: rpc.DataString, Value: sellAssetId},
-				{Name: "buyAssetId", DataType: rpc.DataString, Value: buyAssetId},
+				{Name: "bidAssetId", DataType: rpc.DataString, Value: bidAssetId},
 				{Name: "startAmount", DataType: rpc.DataUint64, Value: startAmount},
 				{Name: "minBidAmount", DataType: rpc.DataUint64, Value: minBidAmount},
 				{Name: "startTimestamp", DataType: rpc.DataUint64, Value: startTimestamp},
 				{Name: "duration", DataType: rpc.DataUint64, Value: duration},
 			}, []rpc.Transfer{
-				{SCID: crypto.HashHexToHash(sellAssetId), Burn: uint64(amount), Destination: randomAddresses.Address[0]},
+				transfer,
 			}, true)
 
 			if err != nil {
@@ -476,22 +514,22 @@ func CommandCreateAuction() *cli.Command {
 
 func CommandCancelAuction() *cli.Command {
 	return &cli.Command{
-		Name:    "cancel-exchange",
+		Name:    "cancel-auction",
 		Aliases: []string{"ce"},
-		Usage:   "Cancel exchange",
+		Usage:   "Cancel auction",
 		Action: func(ctx *cli.Context) error {
 			sAuId := ctx.Args().First()
 			var err error
 
 			if sAuId == "" {
-				sAuId, err = app.Prompt("Enter exchange id", "")
+				sAuId, err = app.Prompt("Enter auction id", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}
 			}
 
 			walletInstance := app.Context.WalletInstance
-			scid := getExchangeSCID()
+			scid := getAuctionSCID()
 
 			auId, err := strconv.ParseUint(sAuId, 10, 64)
 			if err != nil {
@@ -519,7 +557,144 @@ func CommandBidAuction() *cli.Command {
 		Name:    "bid",
 		Aliases: []string{"bi"},
 		Usage:   "Bid on the auction",
-		Action: func(c *cli.Context) error {
+		Action: func(ctx *cli.Context) error {
+			syncAuction()
+			sAuId := ctx.Args().First()
+			walletInstance := app.Context.WalletInstance
+			db := app.Context.DB
+
+			var err error
+
+			if sAuId == "" {
+				sAuId, err = app.Prompt("Enter auction id", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			auId, err := strconv.ParseUint(sAuId, 10, 64)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			scid := getAuctionSCID()
+
+			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			query := `
+				select id, startAmount, sellAssetId, sellAmount, startTimestamp, duration, seller, bidAssetId, minBidAmount, bidSum, bidCount, timestamp
+				from dapps_nft_trade_auctions
+				where id = ?
+			`
+
+			row := db.QueryRow(query, auId)
+
+			var auction Auction
+			err = row.Scan(&auction.Id, &auction.StartAmount, &auction.SellAssetId, &auction.SellAmount,
+				&auction.StartTimestamp, &auction.Duration, &auction.Seller, &auction.BidAssetId, &auction.MinBidAmount,
+				&auction.BidSum, &auction.BidCount, &auction.Timestamp,
+			)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			bidAmount := uint64(0)
+			if auction.BidAssetId.String == crypto.ZEROHASH.String() {
+				bidAmount, err = app.PromptDero("Bid amount (in Dero)", 0)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			} else {
+				bidAmount, err = app.PromptUInt("Bid amount", 0)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			transfer := rpc.Transfer{
+				SCID:        crypto.HashHexToHash(auction.BidAssetId.String),
+				Burn:        bidAmount,
+				Destination: randomAddresses.Address[0],
+			}
+
+			txId, err := walletInstance.CallSmartContract(2, scid, "Bid", []rpc.Argument{
+				{Name: "auId", DataType: rpc.DataUint64, Value: auId},
+			}, []rpc.Transfer{
+				transfer,
+			}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandListAuctionBids() *cli.Command {
+	return &cli.Command{
+		Name:    "list-auction-bids",
+		Aliases: []string{"lab"},
+		Usage:   "List auction bids",
+		Action: func(ctx *cli.Context) error {
+			syncAuction()
+			sAuId := ctx.Args().First()
+			db := app.Context.DB
+
+			var err error
+
+			if sAuId == "" {
+				sAuId, err = app.Prompt("Enter auction id", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			auId, err := strconv.ParseUint(sAuId, 10, 64)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			query := `
+				select auId, bidder, lockedAmount, timestamp
+				from dapps_nft_trade_auctions_bids
+				where auId = ?
+			`
+
+			rows, err := db.Query(query, auId)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			var bids []Bid
+			for rows.Next() {
+				var bid Bid
+				err = rows.Scan(&bid.AuId, &bid.Bidder, &bid.LockedAmount, &bid.Timestamp)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				bids = append(bids, bid)
+			}
+
+			app.Context.DisplayTable(len(bids), func(i int) []interface{} {
+				b := bids[i]
+				return []interface{}{
+					b.Bidder.String, b.LockedAmount.Int64, b.Timestamp.String,
+				}
+			}, []interface{}{"Bidder", "Locked Ammount", "Timestamp"}, 5)
 			return nil
 		},
 	}
@@ -554,10 +729,90 @@ func CommandSetMinBidAuction() *cli.Command {
 				return nil
 			}
 
-			scid := getExchangeSCID()
-			txId, err := walletInstance.CallSmartContract(2, scid, "CancelAuction", []rpc.Argument{
+			scid := getAuctionSCID()
+			txId, err := walletInstance.CallSmartContract(2, scid, "SetAuctionMinBid", []rpc.Argument{
 				{Name: "auId", DataType: rpc.DataUint64, Value: auId},
 				{Name: "amount", DataType: rpc.DataUint64, Value: amount},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandCheckoutAuction() *cli.Command {
+	return &cli.Command{
+		Name:    "checkout-auction",
+		Aliases: []string{"ca"},
+		Usage:   "Checkout finished auction",
+		Action: func(ctx *cli.Context) error {
+			sAuId := ctx.Args().First()
+			walletInstance := app.Context.WalletInstance
+
+			var err error
+
+			if sAuId == "" {
+				sAuId, err = app.Prompt("Enter auction id", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			auId, err := strconv.ParseUint(sAuId, 10, 64)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			scid := getAuctionSCID()
+			txId, err := walletInstance.CallSmartContract(2, scid, "CheckoutAuction", []rpc.Argument{
+				{Name: "auId", DataType: rpc.DataUint64, Value: auId},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandRetrieveLockedFundsAuction() *cli.Command {
+	return &cli.Command{
+		Name:    "get-lockedfunds",
+		Aliases: []string{"gl"},
+		Usage:   "Checkout finished auction",
+		Action: func(ctx *cli.Context) error {
+			sAuId := ctx.Args().First()
+			walletInstance := app.Context.WalletInstance
+
+			var err error
+
+			if sAuId == "" {
+				sAuId, err = app.Prompt("Enter auction id", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			auId, err := strconv.ParseUint(sAuId, 10, 64)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			scid := getAuctionSCID()
+			txId, err := walletInstance.CallSmartContract(2, scid, "RetrieveLockedFunds", []rpc.Argument{
+				{Name: "auId", DataType: rpc.DataUint64, Value: auId},
 			}, []rpc.Transfer{}, true)
 
 			if err != nil {
@@ -647,13 +902,13 @@ func CommandCreateExchange() *cli.Command {
 
 			buyAmount := uint64(0)
 			if buyAssetId == "" {
-				buyAssetId = "0000000000000000000000000000000000000000000000000000000000000000"
+				buyAssetId = crypto.ZEROHASH.String() //"0000000000000000000000000000000000000000000000000000000000000000"
 				buyAmount, err = app.PromptDero("Enter how much you want (in Dero)", 0)
 				if app.HandlePromptErr(err) {
 					return nil
 				}
 			} else {
-				iAmount, err := app.PromptUInt("Enter amount of the asset", 1)
+				iAmount, err := app.PromptUInt("Enter amount (atomic value)", 1)
 				if app.HandlePromptErr(err) {
 					return nil
 				}
@@ -675,13 +930,19 @@ func CommandCreateExchange() *cli.Command {
 				return nil
 			}
 
+			transfer := rpc.Transfer{
+				SCID:        crypto.HashHexToHash(sellAssetId),
+				Burn:        amount,
+				Destination: randomAddresses.Address[0],
+			}
+
 			txId, err := walletInstance.CallSmartContract(2, scid, "CreateExchange", []rpc.Argument{
 				{Name: "sellAssetId", DataType: rpc.DataString, Value: sellAssetId},
 				{Name: "buyAssetId", DataType: rpc.DataString, Value: buyAssetId},
 				{Name: "buyAmount", DataType: rpc.DataUint64, Value: buyAmount},
 				{Name: "expireTimestamp", DataType: rpc.DataUint64, Value: expireTimestamp},
 			}, []rpc.Transfer{
-				{SCID: crypto.HashHexToHash(sellAssetId), Burn: amount, Destination: randomAddresses.Address[0]},
+				transfer,
 			}, true)
 
 			if err != nil {
@@ -867,6 +1128,9 @@ func App() *cli.App {
 			CommandCancelAuction(),
 			CommandSetMinBidAuction(),
 			CommandBidAuction(),
+			CommandListAuctionBids(),
+			CommandCheckoutAuction(),
+			CommandRetrieveLockedFundsAuction(),
 			CommandViewNFT(),
 		},
 		Authors: []*cli.Author{

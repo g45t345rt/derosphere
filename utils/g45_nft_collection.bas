@@ -65,8 +65,9 @@ Function Initialize() Uint64
 30 STORE("owner", SIGNER())
 40 STORE("type", "G45-NFT-COLLECTION")
 50 STORE("frozen", 0)
-60 initCommit()
-70 RETURN 0
+60 STORE("nftCount", 0)
+70 initCommit()
+80 RETURN 0
 End Function
 
 Function Freeze() Uint64
@@ -83,8 +84,10 @@ Function SetNft(nft String, index Uint64) Uint64
 40 RETURN 1
 50 beginCommit()
 60 storeStateInt("nft_" + nft, index)
-70 endCommit()
-80 RETURN 0
+70 IF stateExists("nft_" + nft) == 1 THEN GOTO 90
+80 STORE("nftCount", LOAD("nftCount") + 1)
+90 endCommit()
+100 RETURN 0
 End Function
 
 Function DelNft(nft String) Uint64
@@ -94,8 +97,9 @@ Function DelNft(nft String) Uint64
 40 RETURN 1
 50 beginCommit()
 60 deleteState("nft_" + nft)
-70 endCommit()
-80 RETURN 0
+70 STORE("nftCount", LOAD("nftCount") - 1)
+80 endCommit()
+90 RETURN 0
 End Function
 
 Function SetData(key String, value String) Uint64
