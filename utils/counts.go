@@ -4,42 +4,57 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
 	"os"
-
-	"github.com/g45t345rt/derosphere/config"
 )
 
-func GetCounts() map[string]uint64 {
-	content, err := ioutil.ReadFile(config.DATA_FOLDER + "/counts.json")
-	var counts = make(map[string]uint64)
+type Count struct {
+	Filename string
+	data     map[string]uint64
+}
+
+func (c *Count) Load() error {
+	content, err := ioutil.ReadFile(c.Filename)
+	c.data = make(map[string]uint64)
 
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return counts
+			return nil
 		}
 
-		log.Fatal(err)
+		return err
 	}
 
-	err = json.Unmarshal(content, &counts)
+	err = json.Unmarshal(content, &c.data)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	return counts
+	return nil
 }
 
-func SetCount(name string, count uint64) {
-	counts := GetCounts()
-	counts[name] = count
-	countsString, err := json.Marshal(counts)
-	if err != nil {
-		log.Fatal(err)
+func (c *Count) Get(key string) uint64 {
+	value, ok := c.data[key]
+	if ok {
+		return value
 	}
 
-	err = ioutil.WriteFile(config.DATA_FOLDER+"/counts.json", countsString, os.ModePerm)
+	return 0
+}
+
+func (c *Count) Set(key string, value uint64) {
+	c.data[key] = value
+}
+
+func (c *Count) Save() error {
+	counts, err := json.Marshal(c.data)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	err = ioutil.WriteFile(c.Filename, counts, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/deroproject/derohe/rpc"
 	"github.com/deroproject/derohe/transaction"
 	"github.com/g45t345rt/derosphere/app"
+	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/dapps"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/urfave/cli/v2"
@@ -762,7 +763,19 @@ func CommandClearCommitCount() *cli.Command {
 		Usage:   "Clear commit count to resync values",
 		Action: func(ctx *cli.Context) error {
 			name := app.Context.DAppApp.Name
-			utils.SetCount(name, 0)
+			count := utils.Count{Filename: config.GetCountFilename(app.Context.Config.Env)}
+			err := count.Load()
+			if err != nil {
+				return err
+			}
+
+			count.Set(name, 0)
+			err = count.Save()
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("dapps [%s] count reset\n", name)
 			return nil
 		},
 	}

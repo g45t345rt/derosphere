@@ -63,11 +63,12 @@ Function Initialize() Uint64
 10 IF EXISTS("owner") == 0 THEN GOTO 30
 20 RETURN 1
 30 STORE("owner", SIGNER())
-40 STORE("type", "G45-NFT-COLLECTION")
-50 STORE("frozen", 0)
-60 STORE("nftCount", 0)
-70 initCommit()
-80 RETURN 0
+40 STORE("originalOwner", SIGNER())
+50 STORE("type", "G45-NFT-COLLECTION")
+60 STORE("frozen", 0)
+70 STORE("nftCount", 0)
+80 initCommit()
+90 RETURN 0
 End Function
 
 Function Freeze() Uint64
@@ -118,4 +119,19 @@ Function DelData(key String) Uint64
 40 deleteState("data_" + key)
 50 endCommit()
 60 RETURN 0
+End Function
+
+Function TransferOwnership(newOwner string) Uint64
+10 IF LOAD("owner") == SIGNER() THEN GOTO 30
+20 RETURN 1
+30 STORE("tempOwner", ADDRESS_RAW(newOwner))
+40 RETURN 0
+End Function
+
+Function ClaimOwnership() Uint64
+10 IF LOAD("tempOwner") == SIGNER() THEN GOTO 30
+20 RETURN 1
+30 STORE("owner", SIGNER())
+40 DELETE("tempOwner")
+50 RETURN 0
 End Function

@@ -10,6 +10,7 @@ import (
 
 	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
+	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/urfave/cli/v2"
@@ -46,9 +47,13 @@ func initData() {
 		log.Fatal(err)
 	}
 
-	// reset table
-	counts := utils.GetCounts()
-	commitAt := counts[DAPP_NAME]
+	count := utils.Count{Filename: config.GetCountFilename(app.Context.Config.Env)}
+	err = count.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	commitAt := count.Get(DAPP_NAME)
 	if commitAt == 0 {
 		sqlQuery = `
 			delete from dapps_username
@@ -65,8 +70,13 @@ func sync() {
 	daemon := app.Context.WalletInstance.Daemon
 	scid := getSCID()
 	commitCount := daemon.GetSCCommitCount(scid)
-	counts := utils.GetCounts()
-	commitAt := counts[DAPP_NAME]
+	count := utils.Count{Filename: config.GetCountFilename(app.Context.Config.Env)}
+	err := count.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	commitAt := count.Get(DAPP_NAME)
 	chunk := uint64(1000)
 	db := app.Context.DB
 	nameKey, err := regexp.Compile(`state_name_(.+)`)
@@ -145,7 +155,11 @@ func sync() {
 			log.Fatal(err)
 		}
 
-		utils.SetCount(DAPP_NAME, commitAt)
+		count.Set(DAPP_NAME, commitAt)
+		err = count.Save()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 

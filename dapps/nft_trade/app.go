@@ -12,6 +12,7 @@ import (
 	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
+	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/urfave/cli/v2"
@@ -182,9 +183,14 @@ func syncAuction() {
 	daemon := app.Context.WalletInstance.Daemon
 	scid := getAuctionSCID()
 	commitCount := daemon.GetSCCommitCount(scid)
-	counts := utils.GetCounts()
+	count := utils.Count{Filename: config.GetCountFilename(app.Context.Config.Env)}
+	err := count.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	name := DAPP_NAME + "-auction"
-	commitAt := counts[name]
+	commitAt := count.Get(name)
 
 	if commitAt == 0 {
 		clearData()
@@ -277,7 +283,11 @@ func syncAuction() {
 			log.Fatal(err)
 		}
 
-		utils.SetCount(name, commitAt)
+		count.Set(name, commitAt)
+		err = count.Save()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -285,9 +295,14 @@ func syncExchange() {
 	daemon := app.Context.WalletInstance.Daemon
 	scid := getExchangeSCID()
 	commitCount := daemon.GetSCCommitCount(scid)
-	counts := utils.GetCounts()
+	count := utils.Count{Filename: config.GetCountFilename(app.Context.Config.Env)}
+	err := count.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	name := DAPP_NAME + "-exchange"
-	commitAt := counts[name]
+	commitAt := count.Get(name)
 
 	if commitAt == 0 {
 		clearData()
@@ -363,7 +378,11 @@ func syncExchange() {
 			log.Fatal(err)
 		}
 
-		utils.SetCount(name, commitAt)
+		count.Set(name, commitAt)
+		err = count.Save()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 

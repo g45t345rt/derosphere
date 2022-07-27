@@ -20,16 +20,18 @@ var G45_NFT_PRIVATE string
 var G45_NFT_COLLECTION string
 
 type G45NFTCollection struct {
-	Token    string
-	Frozen   bool
-	Owner    string
-	NFTCount uint64
+	Token         string
+	Frozen        bool
+	Owner         string
+	OriginalOwner string
+	NFTCount      uint64
 }
 
 func (nft *G45NFTCollection) Print() {
 	fmt.Println("Asset Token: ", nft.Token)
 	fmt.Println("Frozen: ", nft.Frozen)
 	fmt.Println("Owner: ", nft.Owner)
+	fmt.Println("Original Owner: ", nft.OriginalOwner)
 }
 
 type G45NFT struct {
