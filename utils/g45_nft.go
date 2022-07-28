@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/rpc"
@@ -101,7 +102,9 @@ func GetG45NftCollection(scid string, daemon *rpc_client.Daemon) (*G45NFTCollect
 
 	nftCollection := &G45NFTCollection{}
 
-	if result.Code != G45_NFT_COLLECTION {
+	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
+	g45_nft_collection := strings.ReplaceAll(strings.ReplaceAll(G45_NFT_COLLECTION, "\r", ""), "\n", "")
+	if code != g45_nft_collection {
 		return nil, fmt.Errorf("not a valid G45-NFT-Collection")
 	}
 
@@ -139,10 +142,14 @@ func GetG45NFT(scid string, daemon *rpc_client.Daemon) (*G45NFT, error) {
 	values := result.VariableStringKeys
 	nft := &G45NFT{}
 
-	switch result.Code {
-	case G45_NFT_PUBLIC:
+	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
+	g45_nft_public := strings.ReplaceAll(strings.ReplaceAll(G45_NFT_PUBLIC, "\r", ""), "\n", "")
+	g45_nft_private := strings.ReplaceAll(strings.ReplaceAll(G45_NFT_PRIVATE, "\r", ""), "\n", "")
+
+	switch code {
+	case g45_nft_public:
 		nft.Private = false
-	case G45_NFT_PRIVATE:
+	case g45_nft_private:
 		nft.Private = true
 	default:
 		return nil, fmt.Errorf("not a valid G45-NFT")
