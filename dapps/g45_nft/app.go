@@ -4,15 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"regexp"
-	"strconv"
-	"strings"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
-	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/urfave/cli/v2"
 )
@@ -702,7 +698,7 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 
 			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
 				Code:      true,
-				Variables: false,
+				Variables: true,
 				SCID:      collectionSCID,
 			})
 
@@ -716,62 +712,40 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 				return nil
 			}
 
-			daemon := walletInstance.Daemon
-			commitCount := daemon.GetSCCommitCount(collectionSCID)
-			commitAt := uint64(0)
-			chunk := uint64(1000)
-			nftKey, _ := regexp.Compile(`state_nft_(.+)`)
+			nftKey, _ := regexp.Compile(`nft_(.+)`)
 
-			for i := commitAt; i < commitCount; i += chunk {
-				var commits []rpc_client.Commit
-				end := i + chunk
-				if end > commitCount {
-					commitAt = commitCount
-					commits = daemon.GetSCCommits(collectionSCID, i, commitCount)
-				} else {
-					commitAt = end
-					commits = daemon.GetSCCommits(collectionSCID, i, commitAt)
-				}
+			for key, value := range result.VariableStringKeys {
+				if nftKey.Match([]byte(key)) {
+					nftAssetToken := nftKey.ReplaceAllString(key, "$1")
+					index := uint64(value.(float64))
+					nft := metadataCollection.Collection[index]
 
-				for _, commit := range commits {
-					key := commit.Key
-
-					if strings.HasPrefix(key, "state_nft_") {
-						nftAssetToken := nftKey.ReplaceAllString(key, "$1")
-						index, err := strconv.ParseUint(commit.Value, 10, 64)
-						if err != nil {
-							log.Fatal(err)
-						}
-
-						nft := metadataCollection.Collection[index]
-
-						sMetadata := ""
-						for _, attr := range nft.Attributes {
-							sMetadata = sMetadata + "&" + attr.TraitType + "=" + attr.Value
-						}
-
-						fmt.Println("InitStore: " + sMetadata)
-						storeTxId, err := walletInstance.CallSmartContract(2, nftAssetToken, "InitStore", []rpc.Argument{
-							{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
-							{Name: "supply", DataType: rpc.DataUint64, Value: supply},
-							{Name: "metadata", DataType: rpc.DataString, Value: sMetadata},
-							{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
-							{Name: "freezeSupply", DataType: rpc.DataUint64, Value: uFreezeSupply},
-						}, []rpc.Transfer{}, false)
-
-						if err != nil {
-							fmt.Println(err)
-							continue
-						}
-
-						err = walletInstance.WaitTransaction(storeTxId)
-						if err != nil {
-							fmt.Println(err)
-							break
-						}
-
-						fmt.Println(storeTxId)
+					sMetadata := ""
+					for _, attr := range nft.Attributes {
+						sMetadata = sMetadata + "&" + attr.TraitType + "=" + attr.Value
 					}
+
+					fmt.Println("InitStore: " + sMetadata)
+					storeTxId, err := walletInstance.CallSmartContract(2, nftAssetToken, "InitStore", []rpc.Argument{
+						{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
+						{Name: "supply", DataType: rpc.DataUint64, Value: supply},
+						{Name: "metadata", DataType: rpc.DataString, Value: sMetadata},
+						{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
+						{Name: "freezeSupply", DataType: rpc.DataUint64, Value: uFreezeSupply},
+					}, []rpc.Transfer{}, false)
+
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+
+					err = walletInstance.WaitTransaction(storeTxId)
+					if err != nil {
+						fmt.Println(err)
+						break
+					}
+
+					fmt.Println(storeTxId)
 				}
 			}
 
