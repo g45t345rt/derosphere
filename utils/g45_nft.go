@@ -35,6 +35,7 @@ func (nft *G45NFTCollection) Print() {
 	fmt.Println("Asset Token: ", nft.Token)
 	fmt.Println("Frozen Collection: ", nft.FrozenCollection)
 	fmt.Println("Frozen Metadata: ", nft.FrozenMetadata)
+	fmt.Println("Metadata: ", nft.Metadata)
 	fmt.Println("Owner: ", nft.Owner)
 	fmt.Println("Original Owner: ", nft.OriginalOwner)
 }
@@ -113,7 +114,7 @@ func GetG45NftCollection(scid string, daemon *rpc_client.Daemon) (*G45NFTCollect
 	nftCollection.FrozenCollection = values["frozenCollection"].(float64) != 0
 	nftCollection.FrozenMetadata = values["frozenMetadata"].(float64) != 0
 	nftCollection.NFTCount = uint64(values["nftCount"].(float64))
-	nftCollection.Metadata = values["metadata"].(string)
+	nftCollection.Metadata = decodeString(values["metadata"].(string))
 
 	owner, err := decodeAddress(values["owner"].(string))
 	if err != nil {
