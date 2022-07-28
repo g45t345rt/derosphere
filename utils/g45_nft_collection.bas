@@ -84,9 +84,9 @@ Function SetNft(nft String, index Uint64) Uint64
 30 IF LOAD("frozen") == 0 THEN GOTO 50
 40 RETURN 1
 50 beginCommit()
-60 storeStateInt("nft_" + nft, index)
-70 IF stateExists("nft_" + nft) == 1 THEN GOTO 90
-80 STORE("nftCount", LOAD("nftCount") + 1)
+60 IF stateExists("nft_" + nft) == 1 THEN GOTO 80
+70 STORE("nftCount", LOAD("nftCount") + 1)
+80 storeStateInt("nft_" + nft, index)
 90 endCommit()
 100 RETURN 0
 End Function

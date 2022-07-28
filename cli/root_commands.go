@@ -17,6 +17,32 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+func getDaemonPort() int {
+	daemonPort := 0
+	switch app.Context.Config.Env {
+	case "mainnet":
+		daemonPort = deroConfig.Mainnet.RPC_Default_Port
+	case "testnet":
+		daemonPort = deroConfig.Testnet.RPC_Default_Port
+	case "simulator":
+		daemonPort = 20000
+	}
+	return daemonPort
+}
+
+func getWalletPort() int {
+	walletPort := 0
+	switch app.Context.Config.Env {
+	case "mainnet":
+		walletPort = deroConfig.Mainnet.Wallet_RPC_Default_Port
+	case "testnet":
+		walletPort = deroConfig.Testnet.Wallet_RPC_Default_Port
+	case "simulator":
+		walletPort = 30000
+	}
+	return walletPort
+}
+
 func editWalletInstanceDaemon(walletInstance *app.WalletInstance) error {
 setDaemon:
 	nodeType, err := app.PromptChoose("Set node from", []string{"local", "trustednode", "rpc"}, "local")
@@ -24,23 +50,21 @@ setDaemon:
 		return err
 	}
 
+	daemonPort := getDaemonPort()
 	switch nodeType {
 	case "local":
-		walletInstance.DaemonAddress = fmt.Sprintf("http://localhost:%d", deroConfig.Mainnet.RPC_Default_Port)
+		walletInstance.DaemonAddress = fmt.Sprintf("http://localhost:%d", daemonPort)
 	case "trustednode":
-		remoteNodeEnv, err := app.PromptChoose("Remote node environment?", []string{"mainnet", "testnet"}, "mainnet")
-		if err != nil {
-			return err
-		}
-
-		switch remoteNodeEnv {
+		switch app.Context.Config.Env {
 		case "mainnet":
 			walletInstance.DaemonAddress = fmt.Sprintf("http://%s", deroConfig.Mainnet_seed_nodes[0])
 		case "testnet":
 			walletInstance.DaemonAddress = fmt.Sprintf("http://%s", deroConfig.Testnet_seed_nodes[0])
+		case "simulator":
+			walletInstance.DaemonAddress = "http://localhost:20000"
 		}
 	case "rpc":
-		address, err := app.Prompt("Enter node rpc address", fmt.Sprintf("http://localhost:%d", deroConfig.Mainnet.RPC_Default_Port))
+		address, err := app.Prompt("Enter node rpc address", fmt.Sprintf("http://localhost:%d", daemonPort))
 		if err != nil {
 			return err
 		}
@@ -79,9 +103,10 @@ func editWalletInstanceWallet(walletInstance *app.WalletInstance) error {
 		return err
 	}
 
+	walletPort := getWalletPort()
 	switch walletType {
 	case "rpc":
-		address, err := app.Prompt("Enter wallet rpc address", fmt.Sprintf("http://localhost:%d", deroConfig.Mainnet.Wallet_RPC_Default_Port))
+		address, err := app.Prompt("Enter wallet rpc address", fmt.Sprintf("http://localhost:%d", walletPort))
 		if err != nil {
 			return err
 		}
