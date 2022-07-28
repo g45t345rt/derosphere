@@ -800,18 +800,8 @@ func CommandViewNFT() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
-				SCID:      scid,
-				Code:      true,
-				Variables: true,
-			})
 
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			nft, err := utils.ParseG45NFT(scid, result)
+			nft, err := utils.GetG45NFT(scid, walletInstance.Daemon)
 			if err != nil {
 				fmt.Println(err)
 				return nil
@@ -835,19 +825,7 @@ func CommandViewNFTCollection() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
-				SCID:       scid,
-				Code:       true,
-				Variables:  false,
-				KeysString: []string{"owner", "frozen", "nftCount"},
-			})
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			nftCollection, err := utils.ParseG45NFTCollection(scid, result)
+			nftCollection, err := utils.GetG45NftCollection(scid, walletInstance.Daemon)
 			if err != nil {
 				fmt.Println(err)
 				return nil

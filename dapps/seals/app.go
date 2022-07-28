@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/rpc_client"
@@ -151,17 +150,7 @@ func sync() {
 				assetTokenSCID := nftKey.ReplaceAllString(key, "$1")
 
 				if commit.Action == "S" {
-					result, err := daemon.GetSC(&rpc.GetSC_Params{
-						SCID:      assetTokenSCID,
-						Code:      true,
-						Variables: true,
-					})
-
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					nft, err := utils.ParseG45NFT(assetTokenSCID, result)
+					nft, err := utils.GetG45NFT(assetTokenSCID, daemon)
 					if err != nil {
 						fmt.Printf("%s %s\n", assetTokenSCID, err.Error())
 						continue

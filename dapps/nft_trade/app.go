@@ -1106,25 +1106,13 @@ func CommandViewNFT() *cli.Command {
 				}
 			}
 
-			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
-				Code:      true,
-				Variables: true,
-				SCID:      scid,
-			})
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			nft, err := utils.ParseG45NFT(scid, result)
+			nft, err := utils.GetG45NFT(scid, walletInstance.Daemon)
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
 			nft.Print()
-
 			return nil
 		},
 	}

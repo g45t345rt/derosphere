@@ -5,9 +5,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/rpc"
+	"github.com/g45t345rt/derosphere/rpc_client"
 )
 
 //go:embed g45_nft_public.bas
@@ -48,14 +50,16 @@ type G45NFT struct {
 
 func (nft *G45NFT) Print() {
 	fmt.Println("Asset Token: ", nft.Token)
-	fmt.Println("Collection Token: ", nft.Collection)
 	fmt.Println("Init: ", nft.Init)
 	fmt.Println("Private: ", nft.Private)
 	fmt.Println("Minter: ", nft.Minter)
-	fmt.Println("Frozen Metadata: ", nft.FrozenMetadata)
-	fmt.Println("Frozen Supply: ", nft.FrozenSupply)
-	fmt.Println("Metadata: ", nft.Metadata)
-	fmt.Println("Supply: ", nft.Supply)
+	if nft.Init {
+		fmt.Println("Collection Token: ", nft.Collection)
+		fmt.Println("Frozen Metadata: ", nft.FrozenMetadata)
+		fmt.Println("Frozen Supply: ", nft.FrozenSupply)
+		fmt.Println("Metadata: ", nft.Metadata)
+		fmt.Println("Supply: ", nft.Supply)
+	}
 }
 
 func decodeString(value string) string {
@@ -67,34 +71,71 @@ func decodeString(value string) string {
 	return string(bytes)
 }
 
-func ParseG45NFTCollection(token string, result *rpc.GetSC_Result) (*G45NFTCollection, error) {
-	values := result.VariableStringKeys
+func decodeAddress(value string) (string, error) {
+	p := new(crypto.Point)
+	key, err := hex.DecodeString(value)
+	if err != nil {
+		return "", err
+	}
+
+	err = p.DecodeCompressed(key)
+	if err != nil {
+		return "", err
+	}
+
+	return rpc.NewAddressFromKeys(p).String(), nil
+}
+
+func GetG45NftCollection(scid string, daemon *rpc_client.Daemon) (*G45NFTCollection, error) {
+	result, err := daemon.GetSC(&rpc.GetSC_Params{
+		SCID:       scid,
+		Code:       true,
+		Variables:  false,
+		KeysString: []string{"owner", "originalOwner"}, // {"frozen", "nftCount", "owner", "originalOwner"} can't do that frozen is missing don't know why so I use KeysBytes
+		KeysBytes:  [][]byte{[]byte("frozen"), []byte("nftCount")},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
 	nftCollection := &G45NFTCollection{}
 
 	if result.Code != G45_NFT_COLLECTION {
 		return nil, fmt.Errorf("not a valid G45-NFT-Collection")
 	}
 
-	nftCollection.Token = token
-	nftCollection.Frozen = values["frozen"].(float64) != 0
-	nftCollection.NFTCount = values["nftCount"].(uint64)
+	nftCollection.Token = scid
+	nftCollection.Frozen, _ = strconv.ParseBool(result.ValuesBytes[0])
+	nftCollection.NFTCount, _ = strconv.ParseUint(result.ValuesBytes[1], 10, 64)
 
-	p := new(crypto.Point)
-	key, err := hex.DecodeString(values["owner"].(string))
+	owner, err := decodeAddress(result.ValuesString[0])
 	if err != nil {
 		return nil, err
 	}
 
-	err = p.DecodeCompressed(key)
+	originalOwner, err := decodeAddress(result.ValuesString[1])
 	if err != nil {
 		return nil, err
 	}
 
-	nftCollection.Owner = rpc.NewAddressFromKeys(p).String()
+	nftCollection.Owner = owner
+	nftCollection.OriginalOwner = originalOwner
+
 	return nftCollection, nil
 }
 
-func ParseG45NFT(token string, result *rpc.GetSC_Result) (*G45NFT, error) {
+func GetG45NFT(scid string, daemon *rpc_client.Daemon) (*G45NFT, error) {
+	result, err := daemon.GetSC(&rpc.GetSC_Params{
+		SCID:      scid,
+		Code:      true,
+		Variables: true,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
 	values := result.VariableStringKeys
 	nft := &G45NFT{}
 
@@ -107,7 +148,7 @@ func ParseG45NFT(token string, result *rpc.GetSC_Result) (*G45NFT, error) {
 		return nil, fmt.Errorf("not a valid G45-NFT")
 	}
 
-	nft.Token = token
+	nft.Token = scid
 	nft.Init = values["init"].(float64) != 0
 	if nft.Init {
 		nft.Collection = decodeString(values["collection"].(string))
@@ -117,18 +158,11 @@ func ParseG45NFT(token string, result *rpc.GetSC_Result) (*G45NFT, error) {
 		nft.Supply = uint64(values["supply"].(float64))
 	}
 
-	p := new(crypto.Point)
-	key, err := hex.DecodeString(values["minter"].(string))
+	minter, err := decodeAddress(values["minter"].(string))
 	if err != nil {
 		return nil, err
 	}
 
-	err = p.DecodeCompressed(key)
-	if err != nil {
-		return nil, err
-	}
-
-	nft.Minter = rpc.NewAddressFromKeys(p).String()
-
+	nft.Minter = minter
 	return nft, nil
 }
