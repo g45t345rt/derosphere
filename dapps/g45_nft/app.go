@@ -470,76 +470,6 @@ func CommandCollectionDelNFT() *cli.Command {
 	}
 }
 
-func CommandCollectionSetData() *cli.Command {
-	return &cli.Command{
-		Name:    "collection-set-data",
-		Aliases: []string{"csd"},
-		Usage:   "Set key/value to G45-NFT-COLLECTION",
-		Action: func(ctx *cli.Context) error {
-			scid, err := app.Prompt("Enter scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			key, err := app.Prompt("Enter key", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			value, err := app.Prompt("Enter value", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "SetData", []rpc.Argument{
-				{Name: "key", DataType: rpc.DataString, Value: key},
-				{Name: "value", DataType: rpc.DataString, Value: value},
-			}, []rpc.Transfer{}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func CommandCollectionDelData() *cli.Command {
-	return &cli.Command{
-		Name:    "collection-del-data",
-		Aliases: []string{"cdd"},
-		Usage:   "Delete key from G45-NFT-COLLECTION",
-		Action: func(ctx *cli.Context) error {
-			scid, err := app.Prompt("Enter scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			key, err := app.Prompt("Enter key", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "DelData", []rpc.Argument{
-				{Name: "key", DataType: rpc.DataString, Value: key},
-			}, []rpc.Transfer{}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
 func CommandFreezeCollection() *cli.Command {
 	return &cli.Command{
 		Name:    "freeze-collection",
@@ -552,7 +482,69 @@ func CommandFreezeCollection() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "Freeze", []rpc.Argument{}, []rpc.Transfer{}, true)
+			txId, err := walletInstance.CallSmartContract(2, scid, "FreezeCollection", []rpc.Argument{}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandFreezeCollectionMetadata() *cli.Command {
+	return &cli.Command{
+		Name:    "freeze-collection-metadata",
+		Aliases: []string{"fcm"},
+		Usage:   "Freeze G45-NFT-COLLECTION metadata - can't set metadata",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, scid, "FreezeMetadata", []rpc.Argument{}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandSetCollectionMetadata() *cli.Command {
+	return &cli.Command{
+		Name:    "set-collection-metadata",
+		Aliases: []string{"scm"},
+		Usage:   "Set/edit metadata of the NFT Collection",
+		Action: func(ctx *cli.Context) error {
+			nftSCID := ctx.Args().First()
+			var err error
+
+			if nftSCID == "" {
+				nftSCID, err = app.Prompt("Enter nft asset token", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			metadata, err := app.Prompt("Set new metadata", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, nftSCID, "SetMetadata", []rpc.Argument{
+				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
+			}, []rpc.Transfer{}, true)
 
 			if err != nil {
 				fmt.Println(err)
@@ -855,11 +847,11 @@ func App() *cli.App {
 			CommandFreezeSupply(),
 			CommandCheckValidNFT(),
 			CommandViewNFTCollection(),
+			CommandSetCollectionMetadata(),
 			CommandCollectionSetNFT(),
 			CommandCollectionDelNFT(),
-			CommandCollectionSetData(),
-			CommandCollectionDelData(),
 			CommandFreezeCollection(),
+			CommandFreezeCollectionMetadata(),
 			CommandDeployEntireCollection(),
 			CommandInitStoreCollectionNFTs(),
 		},

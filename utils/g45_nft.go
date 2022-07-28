@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
@@ -23,16 +22,19 @@ var G45_NFT_PRIVATE string
 var G45_NFT_COLLECTION string
 
 type G45NFTCollection struct {
-	Token         string
-	Frozen        bool
-	Owner         string
-	OriginalOwner string
-	NFTCount      uint64
+	Token            string
+	FrozenCollection bool
+	FrozenMetadata   bool
+	Owner            string
+	OriginalOwner    string
+	NFTCount         uint64
+	Metadata         string
 }
 
 func (nft *G45NFTCollection) Print() {
 	fmt.Println("Asset Token: ", nft.Token)
-	fmt.Println("Frozen: ", nft.Frozen)
+	fmt.Println("Frozen Collection: ", nft.FrozenCollection)
+	fmt.Println("Frozen Metadata: ", nft.FrozenMetadata)
 	fmt.Println("Owner: ", nft.Owner)
 	fmt.Println("Original Owner: ", nft.OriginalOwner)
 }
@@ -89,11 +91,9 @@ func decodeAddress(value string) (string, error) {
 
 func GetG45NftCollection(scid string, daemon *rpc_client.Daemon) (*G45NFTCollection, error) {
 	result, err := daemon.GetSC(&rpc.GetSC_Params{
-		SCID:       scid,
-		Code:       true,
-		Variables:  false,
-		KeysString: []string{"owner", "originalOwner"}, // {"frozen", "nftCount", "owner", "originalOwner"} can't do that frozen is missing don't know why so I use KeysBytes
-		KeysBytes:  [][]byte{[]byte("frozen"), []byte("nftCount")},
+		SCID:      scid,
+		Code:      true,
+		Variables: true,
 	})
 
 	if err != nil {
@@ -102,6 +102,7 @@ func GetG45NftCollection(scid string, daemon *rpc_client.Daemon) (*G45NFTCollect
 
 	nftCollection := &G45NFTCollection{}
 
+	values := result.VariableStringKeys
 	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
 	g45_nft_collection := strings.ReplaceAll(strings.ReplaceAll(G45_NFT_COLLECTION, "\r", ""), "\n", "")
 	if code != g45_nft_collection {
@@ -109,15 +110,17 @@ func GetG45NftCollection(scid string, daemon *rpc_client.Daemon) (*G45NFTCollect
 	}
 
 	nftCollection.Token = scid
-	nftCollection.Frozen, _ = strconv.ParseBool(result.ValuesBytes[0])
-	nftCollection.NFTCount, _ = strconv.ParseUint(result.ValuesBytes[1], 10, 64)
+	nftCollection.FrozenCollection = values["frozenCollection"].(float64) != 0
+	nftCollection.FrozenMetadata = values["frozenMetadata"].(float64) != 0
+	nftCollection.NFTCount = uint64(values["nftCount"].(float64))
+	nftCollection.Metadata = values["metadata"].(string)
 
-	owner, err := decodeAddress(result.ValuesString[0])
+	owner, err := decodeAddress(values["owner"].(string))
 	if err != nil {
 		return nil, err
 	}
 
-	originalOwner, err := decodeAddress(result.ValuesString[1])
+	originalOwner, err := decodeAddress(values["originalOwner"].(string))
 	if err != nil {
 		return nil, err
 	}
