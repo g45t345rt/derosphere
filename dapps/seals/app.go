@@ -8,9 +8,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
-	"github.com/g45t345rt/derosphere/config"
-	"github.com/g45t345rt/derosphere/rpc_client"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/pkg/browser"
 	"github.com/urfave/cli/v2"
@@ -21,7 +20,7 @@ var DAPP_NAME = "seals"
 var COLLECTION_SC_ID map[string]string = map[string]string{
 	"mainnet":   "",
 	"testnet":   "84f3153f4cb0b56ee8560904a83f2859ec92c5c08aa3b6d2c3bf9cd962703fda",
-	"simulator": "e43a6e0ad77917fd66ff00b685aeb6e95af7437b5f09b68d5c556e2fb54be0b7",
+	"simulator": "e9e9f5f22a0798774fa070ec2f1ba8d5b8df93282d928f6042e787aa6b4ddde4",
 }
 
 func getCollectionSCID() string {
@@ -93,38 +92,12 @@ func initData() {
 	}
 }
 
-func clearData() {
-	query := `
-		delete from dapps_seals_collection
-	`
-
-	db := app.Context.DB
-
-	_, err := db.Exec(query)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func sync() {
+func update() error {
 	daemon := app.Context.WalletInstance.Daemon
 	scid := getCollectionSCID()
-	commitCount := daemon.GetSCCommitCount(scid)
-	count := utils.Count{Filename: config.GetCountFilename(app.Context.Config.Env)}
-	err := count.Load()
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	commitAt := count.Get(DAPP_NAME)
-
-	if commitAt == 0 {
-		clearData()
-	}
-
-	chunk := uint64(1000)
 	db := app.Context.DB
-	nftKey, _ := regexp.Compile(`state_nft_(.+)`)
+	nftKey, _ := regexp.Compile(`nft_(.+)`)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -132,74 +105,81 @@ func sync() {
 	}
 	defer tx.Rollback()
 
-	for i := commitAt; i < commitCount; i += chunk {
-		var commits []rpc_client.Commit
-		end := i + chunk
-		if end > commitCount {
-			commitAt = commitCount
-			commits = daemon.GetSCCommits(scid, i, commitCount)
-		} else {
-			commitAt = end
-			commits = daemon.GetSCCommits(scid, i, commitAt)
-		}
+	result, err := daemon.GetSC(&rpc.GetSC_Params{
+		SCID:      scid,
+		Code:      true,
+		Variables: true,
+	})
 
-		for _, commit := range commits {
-			key := commit.Key
+	if err != nil {
+		return err
+	}
 
-			if strings.HasPrefix(key, "state_nft_") {
-				assetTokenSCID := nftKey.ReplaceAllString(key, "$1")
+	_, err = tx.Exec(`delete from dapps_seals_collection;`)
+	if err != nil {
+		return err
+	}
 
-				if commit.Action == "S" {
-					nft, err := utils.GetG45NFT(assetTokenSCID, daemon)
-					if err != nil {
-						fmt.Printf("%s %s\n", assetTokenSCID, err.Error())
-						continue
-					}
+	for key := range result.VariableStringKeys {
+		if strings.HasPrefix(key, "nft_") {
+			assetTokenSCID := nftKey.ReplaceAllString(key, "$1")
 
-					values, err := url.ParseQuery(nft.Metadata)
-					if err != nil {
-						log.Fatal(err)
-					}
+			nft, err := utils.GetG45NFT(assetTokenSCID, daemon)
+			if err != nil {
+				fmt.Printf("%s %s\n", assetTokenSCID, err.Error())
+				continue
+			}
 
-					query := `
-						insert into dapps_seals_collection (token, frozen_metadata,	frozen_supply, supply, metadata, file_number,
-							rarity, trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo)
-						values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-						on conflict(token) do update 
-						set token = ?
-					`
+			values, err := url.ParseQuery(nft.Metadata)
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
 
-					_, err = tx.Exec(query, nft.Token, nft.FrozenMetadata, nft.FrozenSupply, nft.Supply, nft.Metadata,
-						utils.NewNullString(values.Get("id")), utils.NewNullString(values.Get("rarity")), values.Get("trait_background"),
-						values.Get("trait_base"), values.Get("trait_eyes"), values.Get("trait_hairAndHats"),
-						values.Get("trait_shirts"), values.Get("trait_tattoo"), nft.Token,
-					)
+			query := `
+				insert into dapps_seals_collection (token, frozen_metadata,	frozen_supply, supply, metadata, file_number,
+					rarity, trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo)
+				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			`
 
-					if err != nil {
-						log.Fatal(err)
-					}
-				} else if commit.Action == "D" {
-					query := `delete from dapps_seals_collection where token = ?`
+			_, err = tx.Exec(query, nft.Token, nft.FrozenMetadata, nft.FrozenSupply, nft.Supply, nft.Metadata,
+				utils.NewNullString(values.Get("id")), utils.NewNullString(values.Get("rarity")), values.Get("trait_background"),
+				values.Get("trait_base"), values.Get("trait_eyes"), values.Get("trait_hairAndHats"),
+				values.Get("trait_shirts"), values.Get("trait_tattoo"), nft.Token,
+			)
 
-					_, err = tx.Exec(query, assetTokenSCID)
-
-					if err != nil {
-						log.Fatal(err)
-					}
-				}
+			if err != nil {
+				return err
 			}
 		}
+	}
 
-		err = tx.Commit()
-		if err != nil {
-			log.Fatal(err)
-		}
+	if err != nil {
+		return err
+	}
 
-		count.Set(DAPP_NAME, commitAt)
-		err = count.Save()
-		if err != nil {
-			log.Fatal(err)
-		}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func CommandUpdate() *cli.Command {
+	return &cli.Command{
+		Name:    "update",
+		Aliases: []string{"u"},
+		Usage:   "Update collection and all nfts",
+		Action: func(ctx *cli.Context) error {
+			err := update()
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println("List updated.")
+			}
+			return nil
+		},
 	}
 }
 
@@ -209,8 +189,6 @@ func CommandList() *cli.Command {
 		Aliases: []string{"l"},
 		Usage:   "List NFT collection",
 		Action: func(c *cli.Context) error {
-			sync()
-
 			db := app.Context.DB
 			query := `select token, frozen_metadata, frozen_supply, supply, metadata, file_number, rarity,
 			trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo
@@ -253,8 +231,6 @@ func CommandCount() *cli.Command {
 		Aliases: []string{"c"},
 		Usage:   "Number of NFTs in the collection",
 		Action: func(c *cli.Context) error {
-			sync()
-
 			db := app.Context.DB
 			query := `select count(*) from dapps_seals_collection`
 
@@ -278,8 +254,6 @@ func CommandViewNFT() *cli.Command {
 		Aliases: []string{"vn"},
 		Usage:   "Open NFT image with asset token",
 		Action: func(ctx *cli.Context) error {
-			sync()
-
 			nft := ctx.Args().First()
 			var err error
 
@@ -341,6 +315,7 @@ func App() *cli.App {
 		Description: "Dero Seals NFT project.",
 		Version:     "0.0.1",
 		Commands: []*cli.Command{
+			CommandUpdate(),
 			CommandList(),
 			CommandViewNFT(),
 			CommandViewImage(),
