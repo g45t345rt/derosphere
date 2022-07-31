@@ -659,8 +659,8 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 				return nil
 			}
 
-			var metadataCollection utils.NFTMetadataCollection
-			err = json.Unmarshal(content, &metadataCollection)
+			var metadataList []interface{}
+			err = json.Unmarshal(content, &metadataList)
 			if err != nil {
 				fmt.Println(err)
 				return nil
@@ -718,13 +718,15 @@ func CommandInitStoreCollectionNFTs() *cli.Command {
 				if nftKey.Match([]byte(key)) {
 					nftAssetToken := nftKey.ReplaceAllString(key, "$1")
 					index := uint64(value.(float64))
-					nft := metadataCollection.Collection[index]
+					nft := metadataList[index]
 
-					sMetadata := ""
-					for _, attr := range nft.Attributes {
-						sMetadata = sMetadata + "&" + attr.TraitType + "=" + attr.Value
+					bMetadata, err := json.Marshal(nft)
+					if err != nil {
+						fmt.Println(err)
+						continue
 					}
 
+					sMetadata := string(bMetadata)
 					fmt.Println("InitStore: " + sMetadata)
 					storeTxId, err := walletInstance.CallSmartContract(2, nftAssetToken, "InitStore", []rpc.Argument{
 						{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},

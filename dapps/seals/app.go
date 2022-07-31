@@ -2,9 +2,9 @@ package seals
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -20,7 +20,7 @@ var DAPP_NAME = "seals"
 var COLLECTION_SC_ID map[string]string = map[string]string{
 	"mainnet":   "",
 	"testnet":   "84f3153f4cb0b56ee8560904a83f2859ec92c5c08aa3b6d2c3bf9cd962703fda",
-	"simulator": "e9e9f5f22a0798774fa070ec2f1ba8d5b8df93282d928f6042e787aa6b4ddde4",
+	"simulator": "bcda6eff38e9d8c91ab441459c47bcf20196b7431760ab871f53fd27175f059c",
 }
 
 func getCollectionSCID() string {
@@ -41,6 +41,13 @@ type SealNFT struct {
 	TraitHairAndHats sql.NullString
 	TraitShirts      sql.NullString
 	TraitTattoo      sql.NullString
+	TraitFacialHair  sql.NullString
+}
+
+type NFTMetadata struct {
+	Id         uint64            `json:"id"`
+	Rarity     float64           `json:"rarity"`
+	Attributes map[string]string `json:"attributes"`
 }
 
 func emptyStringToUnderscore(value string) string {
@@ -73,14 +80,15 @@ func initData() {
 			frozen_supply boolean,
 			supply bigint,
 			metadata string,
-			file_number integer,
+			id integer,
 			rarity real,
 			trait_background varchar,
 			trait_base varchar,
 			trait_eyes varchar,
 			trait_hairAndHats varchar,
 			trait_shirts varchar,
-			trait_tattoo varchar
+			trait_tattoo varchar,
+			trait_facialHair varchar
 		);
 	`
 
@@ -130,22 +138,23 @@ func update() error {
 				continue
 			}
 
-			values, err := url.ParseQuery(nft.Metadata)
+			var metadata NFTMetadata
+			err = json.Unmarshal([]byte(nft.Metadata), &metadata)
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
 
 			query := `
-				insert into dapps_seals_collection (token, frozen_metadata,	frozen_supply, supply, metadata, file_number,
-					rarity, trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo)
-				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				insert into dapps_seals_collection (token, frozen_metadata,	frozen_supply, supply, metadata, id,
+					rarity, trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo, trait_facialHair)
+				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			`
 
 			_, err = tx.Exec(query, nft.Token, nft.FrozenMetadata, nft.FrozenSupply, nft.Supply, nft.Metadata,
-				utils.NewNullString(values.Get("id")), utils.NewNullString(values.Get("rarity")), values.Get("trait_background"),
-				values.Get("trait_base"), values.Get("trait_eyes"), values.Get("trait_hairAndHats"),
-				values.Get("trait_shirts"), values.Get("trait_tattoo"), nft.Token,
+				metadata.Id, metadata.Rarity, metadata.Attributes["background"],
+				metadata.Attributes["base"], metadata.Attributes["eyes"], metadata.Attributes["hair_and_hats"],
+				metadata.Attributes["shirts"], metadata.Attributes["tattoo"], metadata.Attributes["facial_hair"],
 			)
 
 			if err != nil {
@@ -190,7 +199,7 @@ func CommandList() *cli.Command {
 		Usage:   "List NFT collection",
 		Action: func(c *cli.Context) error {
 			db := app.Context.DB
-			query := `select token, frozen_metadata, frozen_supply, supply, metadata, file_number, rarity,
+			query := `select token, frozen_metadata, frozen_supply, supply, metadata, id, rarity,
 			trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo
 			from dapps_seals_collection order by rarity desc`
 
@@ -265,7 +274,7 @@ func CommandViewNFT() *cli.Command {
 			}
 
 			db := app.Context.DB
-			query := `select file_number from dapps_seals_collection where token = ?`
+			query := `select id from dapps_seals_collection where token = ?`
 
 			row := db.QueryRow(query, nft)
 			err = row.Err()
@@ -288,13 +297,13 @@ func CommandViewImage() *cli.Command {
 	return &cli.Command{
 		Name:    "view-image",
 		Aliases: []string{"vi"},
-		Usage:   "Open NFT image with file number",
+		Usage:   "Open NFT image with ID",
 		Action: func(ctx *cli.Context) error {
 			id := ctx.Args().First()
 			var err error
 
 			if id == "" {
-				id, err = app.Prompt("Enter file number", "")
+				id, err = app.Prompt("Enter ID", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}

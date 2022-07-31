@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
@@ -29,6 +30,7 @@ type G45NFTCollection struct {
 	OriginalOwner    string
 	NFTCount         uint64
 	Metadata         string
+	NftList          []string
 }
 
 func (nft *G45NFTCollection) Print() {
@@ -50,6 +52,7 @@ type G45NFT struct {
 	Metadata       string
 	Supply         uint64
 	Collection     string
+	Owners         []string
 }
 
 func (nft *G45NFT) Print() {
@@ -129,6 +132,14 @@ func GetG45NftCollection(scid string, daemon *rpc_client.Daemon) (*G45NFTCollect
 	nftCollection.Owner = owner
 	nftCollection.OriginalOwner = originalOwner
 
+	nftKey, _ := regexp.Compile(`nft_(.+)`)
+	for key := range result.VariableStringKeys {
+		if nftKey.Match([]byte(key)) {
+			nftId := nftKey.ReplaceAllString(key, "$1")
+			nftCollection.NftList = append(nftCollection.NftList, nftId)
+		}
+	}
+
 	return nftCollection, nil
 }
 
@@ -175,5 +186,14 @@ func GetG45NFT(scid string, daemon *rpc_client.Daemon) (*G45NFT, error) {
 	}
 
 	nft.Minter = minter
+
+	ownerKey, _ := regexp.Compile(`owner_(.+)`)
+	for key := range result.VariableStringKeys {
+		if ownerKey.Match([]byte(key)) {
+			owner := ownerKey.ReplaceAllString(key, "$1")
+			nft.Owners = append(nft.Owners, owner)
+		}
+	}
+
 	return nft, nil
 }

@@ -23,13 +23,13 @@ var DAPP_NAME = "nft-trade"
 var EXCHANGE_SCID map[string]string = map[string]string{
 	"mainnet":   "",
 	"testnet":   "",
-	"simulator": "b92b0fb2f68486011987aa6ea6722ba584929127cc37aa5f2ff4a3b622dcd8ab",
+	"simulator": "fdfc4124b8f04b96d4444155900098141670fa6d0f79aa237fccda33dba1fb88",
 }
 
 var AUCTION_SCID map[string]string = map[string]string{
 	"mainnet":   "",
 	"testnet":   "",
-	"simulator": "c2df620aba02d348af32188feca3b82282303436be2895b4cd62ed143f09c7a7",
+	"simulator": "aefc3250775e77a9fef4b0e3eeff905654bc9f91e9283991a7fccc3de64bd0b6",
 }
 
 func getExchangeSCID() string {
@@ -454,7 +454,7 @@ func CommandCreateAuction() *cli.Command {
 				return nil
 			}
 
-			bidAssetId, err := app.Prompt("Enter asset id you want to auction for (empty for Dero)", "")
+			bidAssetId, err := app.Prompt("Enter asset id you want to auction for (empty for DERO)", "")
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -899,22 +899,28 @@ func CommandCreateExchange() *cli.Command {
 		Aliases: []string{"ce"},
 		Usage:   "Create exchange",
 		Action: func(ctx *cli.Context) error {
-			sellAssetId := ctx.Args().First()
-			var err error
-
-			if sellAssetId == "" {
-				sellAssetId, err = app.Prompt("Enter asset id to sell", "")
-				if app.HandlePromptErr(err) {
-					return nil
-				}
-			}
-
-			amount, err := app.PromptUInt("Enter asset amount", 1)
+			sellAssetId, err := app.Prompt("Enter asset id to sell (empty for DERO)", "")
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			buyAssetId, err := app.Prompt("Enter asset id you want in exchange (empty for Dero)", "")
+			sellAmount := uint64(0)
+			if sellAssetId == "" {
+				sellAssetId = crypto.ZEROHASH.String() //"0000000000000000000000000000000000000000000000000000000000000000"
+				sellAmount, err = app.PromptDero("Enter how much you want (in Dero)", 0)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			} else {
+				iAmount, err := app.PromptUInt("Enter amount (atomic value)", 1)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+
+				sellAmount = uint64(iAmount)
+			}
+
+			buyAssetId, err := app.Prompt("Enter asset id you want in exchange (empty for DERO)", "")
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -951,7 +957,7 @@ func CommandCreateExchange() *cli.Command {
 
 			transfer := rpc.Transfer{
 				SCID:        crypto.HashHexToHash(sellAssetId),
-				Burn:        amount,
+				Burn:        sellAmount,
 				Destination: randomAddresses.Address[0],
 			}
 
