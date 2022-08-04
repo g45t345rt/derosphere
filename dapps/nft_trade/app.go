@@ -22,14 +22,14 @@ var DAPP_NAME = "nft-trade"
 
 var EXCHANGE_SCID map[string]string = map[string]string{
 	"mainnet":   "",
-	"testnet":   "",
-	"simulator": "fdfc4124b8f04b96d4444155900098141670fa6d0f79aa237fccda33dba1fb88",
+	"testnet":   "d8301b171c1554c15a553f26dfd8754963c9201781fd46eb4c547685029afeb8",
+	"simulator": "caabd45f02847409f585ada62ee5ad5906f0a3b8f18108be794e9479fc7620f9",
 }
 
 var AUCTION_SCID map[string]string = map[string]string{
 	"mainnet":   "",
-	"testnet":   "",
-	"simulator": "aefc3250775e77a9fef4b0e3eeff905654bc9f91e9283991a7fccc3de64bd0b6",
+	"testnet":   "a8b7153181a9da75eed78bc523d9496025768569e3ecb8dff60966e7934bcbb1",
+	"simulator": "9185fc87f5b48e2a1f26c597a73018cfb405da5ce4a5a32d805249746c762898",
 }
 
 func getExchangeSCID() string {
@@ -1027,6 +1027,8 @@ func CommandBuyExchange() *cli.Command {
 		Aliases: []string{"ba"},
 		Usage:   "Buy asset",
 		Action: func(ctx *cli.Context) error {
+			syncExchange()
+
 			sExId := ctx.Args().First()
 			var err error
 
