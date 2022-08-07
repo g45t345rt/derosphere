@@ -179,7 +179,12 @@ func CommandAttachWallet() *cli.Command {
 				return nil
 			}
 
-			walletInstance.Add()
+			err = walletInstance.Add()
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
 			fmt.Printf("New wallet %s attached and saved.", name)
 			return nil
 		},
@@ -208,7 +213,12 @@ func CommandDetachWallet() *cli.Command {
 				return nil
 			}
 
-			walletInstance.Del(listIndex)
+			err = walletInstance.Del(listIndex)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
 			fmt.Printf("Wallet %s detached.\n", name)
 			return nil
 		},
@@ -240,14 +250,22 @@ func CommandEditWallet() *cli.Command {
 					return nil
 				}
 
-				walletInstance.Save()
+				err := walletInstance.Save()
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
 			case "wallet":
 				err = editWalletInstanceWallet(walletInstance)
 				if app.HandlePromptErr(err) {
 					return nil
 				}
 
-				walletInstance.Save()
+				err := walletInstance.Save()
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
 			}
 
 			return nil

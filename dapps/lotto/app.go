@@ -415,7 +415,12 @@ func CommandBuyTicket() *cli.Command {
 				}
 
 				if password != "" {
-					walletAddress := walletInstance.GetAddress()
+					walletAddress, err := walletInstance.GetAddress()
+					if err != nil {
+						fmt.Println(err)
+						return nil
+					}
+
 					owner := "" // TODO - get owner lotto address
 					hasher := crypto.SHA3_256.New()
 
@@ -522,7 +527,12 @@ func CommandCreateLotto() *cli.Command {
 
 			passwordHash := ""
 			if password != "" {
-				walletAddress := walletInstance.GetAddress()
+				walletAddress, err := walletInstance.GetAddress()
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+
 				hasher := crypto.SHA3_256.New()
 				hasher.Write([]byte(strings.Join([]string{walletAddress, fmt.Sprintf("%d", ticketPrice), password}, ".")))
 				passwordHash = hex.EncodeToString(hasher.Sum(nil))

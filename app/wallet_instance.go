@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -126,7 +125,6 @@ func (w *WalletInstance) Open() error {
 }
 
 func (w *WalletInstance) Close() {
-	// Context.StopPromptRefresh = true
 	w.Daemon = nil
 	w.WalletRPC = nil
 
@@ -134,22 +132,18 @@ func (w *WalletInstance) Close() {
 		w.WalletDisk.Close_Encrypted_Wallet()
 		w.WalletDisk = nil
 	}
-
-	// Context.StopPromptRefresh = false
 }
 
-func (w *WalletInstance) Save() {
+func (w *WalletInstance) Save() error {
 	sql := `
 		update app_wallets set name = ?, daemon_rpc = ?, wallet_rpc = ?, wallet_path = ? where id == ?
 	`
 
 	_, err := Context.DB.Exec(sql, w.Name, w.DaemonAddress, w.WalletAddress, w.WalletPath, w.Id)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return err
 }
 
-func (w *WalletInstance) Add() {
+func (w *WalletInstance) Add() error {
 	sql := `
 		insert into app_wallets(name, daemon_rpc, wallet_rpc, wallet_path)
 		values (?,?,?,?)
@@ -157,29 +151,31 @@ func (w *WalletInstance) Add() {
 
 	res, err := Context.DB.Exec(sql, w.Name, w.DaemonAddress, w.WalletAddress, w.WalletPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	w.Id = id
 	Context.walletInstances = append(Context.walletInstances, w)
+	return nil
 }
 
-func (w *WalletInstance) Del(listIndex int) {
+func (w *WalletInstance) Del(listIndex int) error {
 	sql := `
 		delete from app_wallets where id == ?
 	`
 
 	_, err := Context.DB.Exec(sql, w.Id)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	Context.walletInstances = append(Context.walletInstances[:listIndex], Context.walletInstances[listIndex+1:]...)
+	return nil
 }
 
 func (w *WalletInstance) GetConnectionAddress() string {
@@ -202,70 +198,70 @@ func (w *WalletInstance) IsRegistered() bool {
 	return registered
 }
 
-func (w *WalletInstance) GetAddress() string {
+func (w *WalletInstance) GetAddress() (string, error) {
 	if w.WalletRPC != nil {
 		result, err := w.WalletRPC.GetAddress()
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
-		return result
+		return result, nil
 	} else if w.WalletDisk != nil {
-		return w.WalletDisk.GetAddress().String()
+		return w.WalletDisk.GetAddress().String(), nil
 	}
 
-	return ""
+	return "", nil
 }
 
-func (w *WalletInstance) GetSeed() string {
+func (w *WalletInstance) GetSeed() (string, error) {
 	if w.WalletRPC != nil {
 		seed, err := w.WalletRPC.GetSeed()
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
-		return seed
+		return seed, nil
 	} else if w.WalletDisk != nil {
-		return w.WalletDisk.GetSeed()
+		return w.WalletDisk.GetSeed(), nil
 	}
 
-	return ""
+	return "", nil
 }
 
-func (w *WalletInstance) GetBalance(scid crypto.Hash) uint64 {
+func (w *WalletInstance) GetBalance(scid crypto.Hash) (uint64, error) {
 	if w.WalletRPC != nil {
 		result, err := w.WalletRPC.GetBalance(&rpc.GetBalance_Params{
 			SCID: scid,
 		})
 		if err != nil {
-			log.Fatal(err)
+			return 0, err
 		}
 
-		return result.Balance
+		return result.Balance, nil
 	} else if w.WalletDisk != nil {
 		err := w.WalletDisk.Sync_Wallet_Memory_With_Daemon_internal(scid)
 		if err != nil {
-			log.Fatal(err)
+			return 0, err
 		}
 
 		m_balance, _ := w.WalletDisk.Get_Balance_scid(scid)
-		return m_balance
+		return m_balance, nil
 	}
 
-	return 0
+	return 0, nil
 }
 
-func (w *WalletInstance) GetHeight() uint64 {
+func (w *WalletInstance) GetHeight() (uint64, error) {
 	if w.WalletRPC != nil {
 		result, err := w.WalletRPC.GetHeight()
 		if err != nil {
-			log.Fatal(err)
+			return 0, err
 		}
 
-		return result.Height
+		return result.Height, nil
 	} else if w.WalletDisk != nil {
-		return w.WalletDisk.Get_Height()
+		return w.WalletDisk.Get_Height(), nil
 	}
 
-	return 0
+	return 0, nil
 }
 
 func (w *WalletInstance) GetTransfers(params *rpc.Get_Transfers_Params) ([]rpc.Entry, error) {
@@ -322,7 +318,10 @@ func (w *WalletInstance) Transfer(params *rpc.Transfer_Params) (string, error) {
 }
 
 func (w *WalletInstance) EstimateFeesAndTransfer(transfer *rpc.Transfer_Params) (string, error) {
-	signer := w.GetAddress()
+	signer, err := w.GetAddress()
+	if err != nil {
+		return "", err
+	}
 
 	estimate, err := w.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
 		Ringsize:  transfer.Ringsize,
@@ -357,13 +356,17 @@ func (w *WalletInstance) EstimateFeesAndTransfer(transfer *rpc.Transfer_Params) 
 func (walletInstance *WalletInstance) InstallSmartContract(code []byte, promptFees bool) (string, error) {
 	codeBase64 := base64.StdEncoding.EncodeToString(code)
 	ringsize := uint64(2)
+	signer, err := walletInstance.GetAddress()
+	if err != nil {
+		return "", err
+	}
 
 	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
 		SC_Code: codeBase64,
 		SC_RPC: rpc.Arguments{
 			{Name: "entrypoint", DataType: rpc.DataString, Value: codeBase64}, // not needed but the fees are wrong without it
 		},
-		Signer: walletInstance.GetAddress(),
+		Signer: signer,
 	})
 
 	if err != nil {
@@ -404,12 +407,16 @@ func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid st
 	}
 
 	sc_rpc = append(sc_rpc, args[:]...)
+	signer, err := walletInstance.GetAddress()
+	if err != nil {
+		return "", err
+	}
 
 	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
 		Ringsize:  ringsize,
 		SC_RPC:    sc_rpc,
 		Transfers: transfers,
-		Signer:    walletInstance.GetAddress(),
+		Signer:    signer,
 	})
 
 	if err != nil {
@@ -502,7 +509,11 @@ func (walletInstance *WalletInstance) WaitTransaction(txid string) error {
 		}
 
 		txBlockHeight := txInfo.Block_Height
-		currentHeight := walletInstance.GetHeight()
+		currentHeight, err := walletInstance.GetHeight()
+		if err != nil {
+			return err
+		}
+
 		if startHeight == 0 {
 			startHeight = currentHeight
 		}

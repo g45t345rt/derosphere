@@ -43,16 +43,18 @@ func (nft *G45NFTCollection) Print() {
 }
 
 type G45NFT struct {
-	Token          string
-	Init           bool
-	Private        bool
-	Minter         string
-	FrozenMetadata bool
-	FrozenSupply   bool
-	Metadata       string
-	Supply         uint64
-	Collection     string
-	Owners         map[string]uint64
+	Token            string
+	Init             bool
+	Private          bool
+	Minter           string
+	OriginalMinter   string
+	FrozenMetadata   bool
+	FrozenSupply     bool
+	FrozenCollection bool
+	Metadata         string
+	Supply           uint64
+	Collection       string
+	Owners           map[string]uint64
 }
 
 func (nft *G45NFT) Print() {
@@ -60,10 +62,12 @@ func (nft *G45NFT) Print() {
 	fmt.Println("Init: ", nft.Init)
 	fmt.Println("Private: ", nft.Private)
 	fmt.Println("Minter: ", nft.Minter)
+	fmt.Println("Original Minter: ", nft.OriginalMinter)
 	if nft.Init {
-		fmt.Println("Collection Token: ", nft.Collection)
+		fmt.Println("Collection SCID: ", nft.Collection)
 		fmt.Println("Frozen Metadata: ", nft.FrozenMetadata)
 		fmt.Println("Frozen Supply: ", nft.FrozenSupply)
+		fmt.Println("Frozen Collection: ", nft.FrozenCollection)
 		fmt.Println("Metadata: ", nft.Metadata)
 		fmt.Println("Supply: ", nft.Supply)
 	}
@@ -177,6 +181,7 @@ func GetG45NFT(scid string, daemon *rpc_client.Daemon) (*G45NFT, error) {
 		nft.Collection = decodeString(values["collection"].(string))
 		nft.FrozenMetadata = values["frozenMetadata"].(float64) != 0
 		nft.FrozenSupply = values["frozenSupply"].(float64) != 0
+		nft.FrozenCollection = values["frozenCollection"].(float64) != 0
 		nft.Metadata = decodeString(values["metadata"].(string))
 		nft.Supply = uint64(values["supply"].(float64))
 	}
@@ -187,6 +192,13 @@ func GetG45NFT(scid string, daemon *rpc_client.Daemon) (*G45NFT, error) {
 	}
 
 	nft.Minter = minter
+
+	originalMinter, err := decodeAddress(values["originalMinter"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	nft.OriginalMinter = originalMinter
 
 	ownerKey, _ := regexp.Compile(`owner_(.+)`)
 	nft.Owners = make(map[string]uint64)

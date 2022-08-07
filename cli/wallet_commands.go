@@ -248,7 +248,13 @@ func CommandWalletAddress() *cli.Command {
 		Aliases: []string{"a"},
 		Usage:   "Wallet address",
 		Action: func(ctx *cli.Context) error {
-			fmt.Println(app.Context.WalletInstance.GetAddress())
+			addr, err := app.Context.WalletInstance.GetAddress()
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(addr)
 			return nil
 		},
 	}
@@ -261,7 +267,12 @@ func CommandWalletBalance() *cli.Command {
 		Usage:   "Wallet balance",
 		Action: func(ctx *cli.Context) error {
 			var scid crypto.Hash // default DERO scid
-			balance := app.Context.WalletInstance.GetBalance(scid)
+			balance, err := app.Context.WalletInstance.GetBalance(scid)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
 			fmt.Printf("%s\n", globals.FormatMoney(balance))
 			return nil
 		},
@@ -300,6 +311,84 @@ func CommandDisplayTransaction() *cli.Command {
 
 			fmt.Println(tx.Height)
 			fmt.Println(tx)
+			return nil
+		},
+	}
+}
+
+func CommandWalletBurn() *cli.Command {
+	return &cli.Command{
+		Name:    "burn",
+		Aliases: []string{"bu"},
+		Usage:   "Burn DERO/ASSET_TOKEN",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+			assetToken, err := app.Prompt("Enter asset token (empty for burning DERO)", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			burnAmount := uint64(0)
+			if assetToken == "" {
+				burnAmount, err = app.PromptDero("Enter burn amount (in Dero)", 0)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			} else {
+				burnAmount, err = app.PromptUInt("Enter burn amount (atomic value)", 0)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			transfer := rpc.Transfer{
+				SCID: crypto.HashHexToHash(assetToken),
+				Burn: burnAmount,
+			}
+
+			ringsize, err := app.PromptUInt("Set ringsize", 2)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			prompt := ""
+			if assetToken == "" {
+				prompt = fmt.Sprintf("Are you sure you want to burn %s DERO", globals.FormatMoney(transfer.Burn))
+			} else {
+				prompt = fmt.Sprintf("Are you sure you want to burn %d TOKEN", transfer.Burn)
+			}
+
+			yes, err := app.PromptYesNo(prompt, false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if !yes {
+				return nil
+			}
+
+			yes, err = app.PromptYesNo("The funds will literally burn like it never existed! Are your really sure?", false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if !yes {
+				return nil
+			}
+
+			txid, err := walletInstance.Transfer(&rpc.Transfer_Params{
+				Ringsize: ringsize,
+				Transfers: []rpc.Transfer{
+					transfer,
+				},
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txid)
 			return nil
 		},
 	}
@@ -689,16 +778,16 @@ func CommandCallSC() *cli.Command {
 					return nil
 				}
 
-				randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+				/*randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
 				if err != nil {
 					fmt.Println(err)
 					return nil
-				}
+				}*/
 
 				transfer = append(transfer, rpc.Transfer{
-					SCID:        crypto.HashHexToHash(assetToken),
-					Burn:        amount,
-					Destination: randomAddresses.Address[0],
+					SCID: crypto.HashHexToHash(assetToken),
+					Burn: amount,
+					//Destination: randomAddresses.Address[0],
 				})
 			}
 
@@ -750,7 +839,13 @@ func CommandAssetBalance() *cli.Command {
 			}
 
 			hash := crypto.HashHexToHash(scid)
-			fmt.Println(walletInstance.GetBalance(hash))
+			balance, err := walletInstance.GetBalance(hash)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(balance)
 			return nil
 		},
 	}
@@ -849,6 +944,7 @@ func WalletApp() *cli.App {
 			CommandWalletInfo(),
 			CommandDApp(),
 			CommandWalletTransfer(),
+			CommandWalletBurn(),
 			CommandWalletBalance(),
 			CommandAssetBalance(),
 			CommandWalletAddress(),

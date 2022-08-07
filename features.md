@@ -27,6 +27,7 @@ List of Derosphere features
 - ✔ List/Table pagination (load more data...)
 - ✔ Call unknown smart contract function (scan code and display funcs and params)
 - ✔ Successful transaction checker
+- ✔ Burn DERO or any ASSET_TOKEN
 - ☐ Display transaction data from txid (pretty print)
 - ☐ Block out of sync/in sync colors
 - ☐ Filesign (wallet disk only - need pull request for rpc server)

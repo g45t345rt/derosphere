@@ -295,12 +295,17 @@ func CommandName() *cli.Command {
 			sync()
 
 			db := app.Context.DB
-			walletAddress := app.Context.WalletInstance.GetAddress()
+			walletAddress, err := app.Context.WalletInstance.GetAddress()
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
 			sqlQuery := `select name from dapps_username where wallet_address == ?`
 
 			row := db.QueryRow(sqlQuery, walletAddress)
 			var name string
-			err := row.Scan(&name)
+			err = row.Scan(&name)
 			if err != nil {
 				if err == sql.ErrNoRows {
 					fmt.Println("You don't have a registered username")

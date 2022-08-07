@@ -92,10 +92,7 @@ func (app *AppContext) Run() {
 				closeWalletAfter := time.Duration(app.Config.CloseWalletAfter) * time.Second
 				if closeWalletAfter > 0 && app.WalletInstance != nil && time.Now().After(lastActivity.Add(closeWalletAfter)) {
 					m.Lock()
-					app.WalletInstance.Close()
-					app.WalletInstance = nil
-					app.UseApp = "rootApp"
-					app.DAppApp = nil
+					app.ResetRootApp()
 					fmt.Printf("\nWallet close after %ds of inactivity.\n", app.Config.CloseWalletAfter)
 					m.Unlock()
 				}
@@ -137,6 +134,16 @@ out:
 			app.DAppApp.Run(strings.Fields("cmd " + line))
 		}
 	}
+}
+
+func (app *AppContext) ResetRootApp() {
+	if app.WalletInstance != nil {
+		app.WalletInstance.Close()
+		app.WalletInstance = nil
+	}
+
+	app.UseApp = "rootApp"
+	app.DAppApp = nil
 }
 
 func (app *AppContext) LoadDB() {
@@ -212,8 +219,20 @@ func (app *AppContext) RefreshPrompt() {
 	prompt := fmt.Sprintf("[%s] > ", app.Config.Env)
 
 	if app.WalletInstance != nil {
-		daemonHeight, _ := app.WalletInstance.Daemon.GetHeight()
-		walletHeight := app.WalletInstance.GetHeight()
+		daemonHeight, err := app.WalletInstance.Daemon.GetHeight()
+		if err != nil {
+			fmt.Println(err)
+			app.ResetRootApp()
+			return
+		}
+
+		walletHeight, err := app.WalletInstance.GetHeight()
+		if err != nil {
+			fmt.Println(err)
+			app.ResetRootApp()
+			return
+		}
+
 		prompt = fmt.Sprintf("[%s] (%d/%d) > %s > ", app.Config.Env, walletHeight, daemonHeight.Height, app.WalletInstance.Name)
 
 		if app.DAppApp != nil {
