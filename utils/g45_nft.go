@@ -31,6 +31,7 @@ type G45NFTCollection struct {
 	NFTCount         uint64
 	Metadata         string
 	NFTs             map[string]uint64
+	Timestamp        uint64
 }
 
 func (nft *G45NFTCollection) Print() {
@@ -40,6 +41,7 @@ func (nft *G45NFTCollection) Print() {
 	fmt.Println("Metadata: ", nft.Metadata)
 	fmt.Println("Owner: ", nft.Owner)
 	fmt.Println("Original Owner: ", nft.OriginalOwner)
+	fmt.Println("Timestamp: ", nft.Timestamp)
 }
 
 type G45NFT struct {
@@ -55,6 +57,7 @@ type G45NFT struct {
 	Supply           uint64
 	Collection       string
 	Owners           map[string]uint64
+	Timestamp        uint64
 }
 
 func (nft *G45NFT) Print() {
@@ -63,6 +66,7 @@ func (nft *G45NFT) Print() {
 	fmt.Println("Private: ", nft.Private)
 	fmt.Println("Minter: ", nft.Minter)
 	fmt.Println("Original Minter: ", nft.OriginalMinter)
+	fmt.Println("Timestamp: ", nft.Timestamp)
 	if nft.Init {
 		fmt.Println("Collection SCID: ", nft.Collection)
 		fmt.Println("Frozen Metadata: ", nft.FrozenMetadata)
@@ -122,6 +126,7 @@ func GetG45NftCollection(scid string, daemon *rpc_client.Daemon) (*G45NFTCollect
 	nftCollection.FrozenMetadata = values["frozenMetadata"].(float64) != 0
 	nftCollection.NFTCount = uint64(values["nftCount"].(float64))
 	nftCollection.Metadata = decodeString(values["metadata"].(string))
+	nftCollection.Timestamp = uint64(values["timestamp"].(float64))
 
 	owner, err := decodeAddress(values["owner"].(string))
 	if err != nil {
@@ -177,6 +182,7 @@ func GetG45NFT(scid string, daemon *rpc_client.Daemon) (*G45NFT, error) {
 
 	nft.Token = scid
 	nft.Init = values["init"].(float64) != 0
+	nft.Timestamp = uint64(values["timestamp"].(float64))
 	if nft.Init {
 		nft.Collection = decodeString(values["collection"].(string))
 		nft.FrozenMetadata = values["frozenMetadata"].(float64) != 0

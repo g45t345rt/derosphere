@@ -8,7 +8,8 @@ Function Initialize() Uint64
 70 STORE("frozenMetadata", 0)
 80 STORE("metadata", "")
 90 STORE("nftCount", 0)
-100 RETURN 0
+100 STORE("timestamp", BLOCK_TIMESTAMP())
+110 RETURN 0
 End Function
 
 Function Freeze(collection Uint64, metadata Uint64) Uint64
