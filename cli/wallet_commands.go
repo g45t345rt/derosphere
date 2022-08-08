@@ -801,16 +801,16 @@ func CommandCallSC() *cli.Command {
 					return nil
 				}
 
-				/*randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+				randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
 				if err != nil {
 					fmt.Println(err)
 					return nil
-				}*/
+				}
 
 				transfer = append(transfer, rpc.Transfer{
-					SCID: crypto.HashHexToHash(assetToken),
-					Burn: amount,
-					//Destination: randomAddresses.Address[0],
+					SCID:        crypto.HashHexToHash(assetToken),
+					Burn:        amount,
+					Destination: randomAddresses.Address[0],
 				})
 			}
 

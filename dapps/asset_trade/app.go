@@ -497,16 +497,16 @@ func CommandCreateAuction() *cli.Command {
 			walletInstance := app.Context.WalletInstance
 			scid := getAuctionSCID()
 
-			/*randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
 			if err != nil {
 				fmt.Println(err)
 				return nil
-			}*/
+			}
 
 			transfer := rpc.Transfer{
-				SCID: crypto.HashHexToHash(sellAssetId),
-				Burn: amount,
-				//Destination: randomAddresses.Address[0],
+				SCID:        crypto.HashHexToHash(sellAssetId),
+				Burn:        amount,
+				Destination: randomAddresses.Address[0],
 			}
 
 			txId, err := walletInstance.CallSmartContract(2, scid, "CreateAuction", []rpc.Argument{
@@ -599,12 +599,6 @@ func CommandBidAuction() *cli.Command {
 
 			scid := getAuctionSCID()
 
-			/*randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}*/
-
 			query := `
 				select id, startAmount, sellAssetId, sellAmount, startTimestamp, duration, seller, bidAssetId, minBidAmount, bidSum, bidCount, timestamp
 				from dapps_asset_trade_auctions
@@ -637,10 +631,16 @@ func CommandBidAuction() *cli.Command {
 				}
 			}
 
+			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
 			transfer := rpc.Transfer{
-				SCID: crypto.HashHexToHash(auction.BidAssetId.String),
-				Burn: bidAmount,
-				//Destination: randomAddresses.Address[0],
+				SCID:        crypto.HashHexToHash(auction.BidAssetId.String),
+				Burn:        bidAmount,
+				Destination: randomAddresses.Address[0],
 			}
 
 			txId, err := walletInstance.CallSmartContract(2, scid, "Bid", []rpc.Argument{
@@ -949,16 +949,16 @@ func CommandCreateExchange() *cli.Command {
 			walletInstance := app.Context.WalletInstance
 			scid := getExchangeSCID()
 
-			/*randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
 			if err != nil {
 				fmt.Println(err)
 				return nil
-			}*/
+			}
 
 			transfer := rpc.Transfer{
-				SCID: crypto.HashHexToHash(sellAssetId),
-				Burn: sellAmount,
-				//Destination: randomAddresses.Address[0],
+				SCID:        crypto.HashHexToHash(sellAssetId),
+				Burn:        sellAmount,
+				Destination: randomAddresses.Address[0],
 			}
 
 			txId, err := walletInstance.CallSmartContract(2, scid, "CreateExchange", []rpc.Argument{
@@ -1067,15 +1067,15 @@ func CommandBuyExchange() *cli.Command {
 				return nil
 			}
 
-			/*randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
 			if err != nil {
 				fmt.Println(err)
 				return nil
-			}*/
+			}
 
 			transfer = rpc.Transfer{
-				Burn: uint64(exchange.BuyAmount.Int64),
-				//Destination: randomAddresses.Address[0],
+				Burn:        uint64(exchange.BuyAmount.Int64),
+				Destination: randomAddresses.Address[0],
 			}
 
 			if exchange.BuyAssetId.Valid && exchange.BuyAssetId.String != "" {

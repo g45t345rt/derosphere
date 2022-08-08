@@ -316,10 +316,16 @@ func CommandBurn() *cli.Command {
 				return nil
 			}
 
+			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
 			transfer := rpc.Transfer{
-				SCID: crypto.HashHexToHash(scid),
-				//Destination: randomAddresses.Address[0],
-				Burn: burnAmount,
+				SCID:        crypto.HashHexToHash(scid),
+				Destination: randomAddresses.Address[0],
+				Burn:        burnAmount,
 			}
 
 			txId, err := walletInstance.CallSmartContract(2, scid, "Burn", []rpc.Argument{}, []rpc.Transfer{
@@ -359,16 +365,16 @@ func CommandDisplayToken() *cli.Command {
 				return nil
 			}
 
-			/*randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
 			if err != nil {
 				fmt.Println(err)
 				return nil
-			}*/
+			}
 
 			transfer := rpc.Transfer{
-				SCID: crypto.HashHexToHash(scid),
-				//Destination: randomAddresses.Address[0],
-				Burn: amount,
+				SCID:        crypto.HashHexToHash(scid),
+				Destination: randomAddresses.Address[0],
+				Burn:        amount,
 			}
 
 			txId, err := walletInstance.CallSmartContract(2, scid, "DisplayToken", []rpc.Argument{}, []rpc.Transfer{
