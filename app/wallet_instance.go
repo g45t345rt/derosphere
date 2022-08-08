@@ -407,8 +407,8 @@ func (walletInstance *WalletInstance) InstallSmartContract(code []byte, promptFe
 
 func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid string, entrypoint string, args []rpc.Argument, transfers []rpc.Transfer, promptFees bool) (string, error) {
 	sc_rpc := rpc.Arguments{
-		{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL},
-		{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid},
+		{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: uint64(rpc.SC_CALL)},  // 'SC_ACTION' value should be of type uint64
+		{Name: rpc.SCID, DataType: rpc.DataHash, Value: crypto.HashHexToHash(scid)}, // 'SC_ID' value should be of type Hash
 		{Name: "entrypoint", DataType: rpc.DataString, Value: entrypoint},
 	}
 

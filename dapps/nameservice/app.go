@@ -32,18 +32,9 @@ func CommandRegister() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-
-			arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: SC_ID}
-			arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
-			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Register"}
-			arg2 := rpc.Argument{Name: "name", DataType: rpc.DataString, Value: username}
-
-			txid, err := walletInstance.EstimateFeesAndTransfer(&rpc.Transfer_Params{
-				Ringsize: 2,
-				SC_RPC: rpc.Arguments{
-					arg_sc, arg_sc_action, arg1, arg2,
-				},
-			})
+			txid, err := walletInstance.CallSmartContract(2, SC_ID, "Register", []rpc.Argument{
+				{Name: "name", DataType: rpc.DataString, Value: username},
+			}, []rpc.Transfer{}, true)
 
 			if err != nil {
 				fmt.Println(err)

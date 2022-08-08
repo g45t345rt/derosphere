@@ -440,30 +440,21 @@ func CommandBuyTicket() *cli.Command {
 				}
 			}
 
-			arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
-			arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
-			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Play"}
-			arg2 := rpc.Argument{Name: "txId", DataType: rpc.DataString, Value: txId}
-			arg3 := rpc.Argument{Name: "userPasswordHash", DataType: rpc.DataString, Value: userPasswordHash}
-
 			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			txid, err := walletInstance.EstimateFeesAndTransfer(&rpc.Transfer_Params{
-				Ringsize: 2,
-				Transfers: []rpc.Transfer{
-					{
-						Burn:        uint64(ticketPrice),
-						Destination: randomAddresses.Address[0],
-					},
+			txid, err := walletInstance.CallSmartContract(2, scid, "Play", []rpc.Argument{
+				{Name: "txId", DataType: rpc.DataString, Value: txId},
+				{Name: "userPasswordHash", DataType: rpc.DataString, Value: userPasswordHash},
+			}, []rpc.Transfer{
+				{
+					Burn:        uint64(ticketPrice),
+					Destination: randomAddresses.Address[0],
 				},
-				SC_RPC: rpc.Arguments{
-					arg_sc, arg_sc_action, arg1, arg2, arg3,
-				},
-			})
+			}, true)
 
 			if err != nil {
 				fmt.Println(err)
@@ -539,15 +530,6 @@ func CommandCreateLotto() *cli.Command {
 			}
 
 			antiSpamFee := uint64(100000)
-			arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
-			arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
-			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Create"}
-			arg2 := rpc.Argument{Name: "maxTickets", DataType: rpc.DataUint64, Value: maxTickets}
-			arg3 := rpc.Argument{Name: "ticketPrice", DataType: rpc.DataUint64, Value: ticketPrice}
-			arg4 := rpc.Argument{Name: "duration", DataType: rpc.DataUint64, Value: duration}
-			arg5 := rpc.Argument{Name: "uniqueWallet", DataType: rpc.DataUint64, Value: uniqueWallet}
-			arg6 := rpc.Argument{Name: "passwordHash", DataType: rpc.DataString, Value: passwordHash}
-			arg7 := rpc.Argument{Name: "startTimestamp", DataType: rpc.DataUint64, Value: startTimestamp}
 
 			randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
 			if err != nil {
@@ -555,18 +537,19 @@ func CommandCreateLotto() *cli.Command {
 				return nil
 			}
 
-			txid, err := walletInstance.EstimateFeesAndTransfer(&rpc.Transfer_Params{
-				Ringsize: 2,
-				Transfers: []rpc.Transfer{
-					{
-						Burn:        uint64(antiSpamFee + baseReward),
-						Destination: randomAddresses.Address[0],
-					},
+			txid, err := walletInstance.CallSmartContract(2, scid, "Create", []rpc.Argument{
+				{Name: "maxTickets", DataType: rpc.DataUint64, Value: maxTickets},
+				{Name: "ticketPrice", DataType: rpc.DataUint64, Value: ticketPrice},
+				{Name: "duration", DataType: rpc.DataUint64, Value: duration},
+				{Name: "uniqueWallet", DataType: rpc.DataUint64, Value: uniqueWallet},
+				{Name: "passwordHash", DataType: rpc.DataString, Value: passwordHash},
+				{Name: "startTimestamp", DataType: rpc.DataUint64, Value: startTimestamp},
+			}, []rpc.Transfer{
+				{
+					Burn:        uint64(antiSpamFee + baseReward),
+					Destination: randomAddresses.Address[0],
 				},
-				SC_RPC: rpc.Arguments{
-					arg_sc, arg_sc_action, arg1, arg2, arg3, arg4, arg5, arg6, arg7,
-				},
-			})
+			}, true)
 
 			if err != nil {
 				fmt.Println(err)
@@ -601,17 +584,9 @@ func CommandCancelLotto() *cli.Command {
 				return nil
 			}
 
-			arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
-			arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
-			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Cancel"}
-			arg2 := rpc.Argument{Name: "txId", DataType: rpc.DataString, Value: txId}
-
-			txid, err := walletInstance.EstimateFeesAndTransfer(&rpc.Transfer_Params{
-				Ringsize: 2,
-				SC_RPC: rpc.Arguments{
-					arg_sc, arg_sc_action, arg1, arg2,
-				},
-			})
+			txid, err := walletInstance.CallSmartContract(2, scid, "Cancel", []rpc.Argument{
+				{Name: "txId", DataType: rpc.DataString, Value: txId},
+			}, []rpc.Transfer{}, true)
 
 			if err != nil {
 				fmt.Println(err)
@@ -650,17 +625,9 @@ func CommandDrawLotto() *cli.Command {
 				return nil
 			}
 
-			arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
-			arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
-			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "Draw"}
-			arg2 := rpc.Argument{Name: "txId", DataType: rpc.DataString, Value: txId}
-
-			txid, err := walletInstance.EstimateFeesAndTransfer(&rpc.Transfer_Params{
-				Ringsize: 2,
-				SC_RPC: rpc.Arguments{
-					arg_sc, arg_sc_action, arg1, arg2,
-				},
-			})
+			txid, err := walletInstance.CallSmartContract(2, scid, "Draw", []rpc.Argument{
+				{Name: "txId", DataType: rpc.DataString, Value: txId},
+			}, []rpc.Transfer{}, true)
 
 			if err != nil {
 				fmt.Println(err)
@@ -708,19 +675,11 @@ func CommandClaimReward() *cli.Command {
 				return nil
 			}
 
-			arg_sc := rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: scid}
-			arg_sc_action := rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: rpc.SC_CALL}
-			arg1 := rpc.Argument{Name: "entrypoint", DataType: rpc.DataString, Value: "ClaimReward"}
-			arg2 := rpc.Argument{Name: "txId", DataType: rpc.DataString, Value: txId}
-			arg3 := rpc.Argument{Name: "comment", DataType: rpc.DataString, Value: comment}
-			arg4 := rpc.Argument{Name: "password", DataType: rpc.DataString, Value: password}
-
-			txid, err := walletInstance.EstimateFeesAndTransfer(&rpc.Transfer_Params{
-				Ringsize: 2,
-				SC_RPC: rpc.Arguments{
-					arg_sc, arg_sc_action, arg1, arg2, arg3, arg4,
-				},
-			})
+			txid, err := walletInstance.CallSmartContract(2, scid, "ClaimReward", []rpc.Argument{
+				{Name: "txId", DataType: rpc.DataString, Value: txId},
+				{Name: "comment", DataType: rpc.DataString, Value: comment},
+				{Name: "password", DataType: rpc.DataString, Value: password},
+			}, []rpc.Transfer{}, true)
 
 			if err != nil {
 				fmt.Println(err)
