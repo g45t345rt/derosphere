@@ -25,8 +25,8 @@ import (
 )
 
 type Config struct {
-	Env              string
-	CloseWalletAfter uint64
+	Env              string `json:"env"`
+	CloseWalletAfter uint64 `json:"closeWalletAfter"`
 }
 
 type AppContext struct {
@@ -249,12 +249,11 @@ func (app *AppContext) LoadConfig() {
 	if err != nil {
 		app.Config.Env = config.START_ENV
 		app.Config.CloseWalletAfter = 180 // default 180s (3min)
-		return
-	}
-
-	err = json.Unmarshal(content, &app.Config)
-	if err != nil {
-		log.Fatal(err)
+	} else {
+		err = json.Unmarshal(content, &app.Config)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	app.setEnvGlobals()

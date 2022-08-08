@@ -37,6 +37,29 @@ func CommandWalletInfo() *cli.Command {
 	}
 }
 
+func CommandDaemonInfo() *cli.Command {
+	return &cli.Command{
+		Name:    "daemon-info",
+		Aliases: []string{"di"},
+		Usage:   "Connected daemon information",
+		Action: func(ctx *cli.Context) error {
+			w := app.Context.WalletInstance
+
+			result, err := w.Daemon.GetInfo()
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println("Height: ", result.Height)
+			fmt.Println("Testnet: ", result.Testnet)
+			fmt.Println("Network: ", result.Network)
+			fmt.Println("Version: ", result.Version)
+			return nil
+		},
+	}
+}
+
 func CommandRegisterWallet() *cli.Command {
 	return &cli.Command{
 		Name:    "register",
@@ -942,6 +965,7 @@ func WalletApp() *cli.App {
 		},
 		Commands: []*cli.Command{
 			CommandWalletInfo(),
+			CommandDaemonInfo(),
 			CommandDApp(),
 			CommandWalletTransfer(),
 			CommandWalletBurn(),

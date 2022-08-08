@@ -2,4 +2,4 @@ package config
 
 import "github.com/blang/semver/v4"
 
-var Version = semver.MustParse("0.1.0")
+var Version = semver.MustParse("0.1.2")

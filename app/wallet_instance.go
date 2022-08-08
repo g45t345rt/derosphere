@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	"regexp"
 	"time"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
@@ -115,7 +115,13 @@ func (w *WalletInstance) Open() error {
 		}
 
 		w.WalletDisk = wallet
-		globals.Arguments["--daemon-address"] = strings.Replace(w.DaemonAddress, "http://", "", -1)
+
+		httpKey, err := regexp.Compile("https?://")
+		if err != nil {
+			return err
+		}
+
+		globals.Arguments["--daemon-address"] = httpKey.ReplaceAllString(w.DaemonAddress, "")
 		w.WalletDisk.SetNetwork(globals.IsMainnet())
 		w.WalletDisk.SetOnlineMode()
 		go deroWallet.Keep_Connectivity()

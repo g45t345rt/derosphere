@@ -17,7 +17,7 @@ var DAPP_NAME = "seals"
 
 var COLLECTION_SC_ID map[string]string = map[string]string{
 	"mainnet":   "",
-	"testnet":   "ae7edb0ebbf6df41b205a71e0e4b7cb5653109f3723128b5fe263f918a6f74d5",
+	"testnet":   "e1f37876324f8692dd126131931236c90d65417b9d61665e4ea8f849931468f4",
 	"simulator": "bcda6eff38e9d8c91ab441459c47bcf20196b7431760ab871f53fd27175f059c",
 }
 
