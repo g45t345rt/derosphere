@@ -3,7 +3,7 @@ Function Initialize() Uint64
 20 RETURN 1
 30 STORE("minter", SIGNER())
 40 STORE("originalMinter", SIGNER())
-50 STORE("type", "G45-NFT")
+50 STORE("type", "G45-AT")
 60 STORE("init", 0)
 70 STORE("timestamp", BLOCK_TIMESTAMP())
 80 RETURN 0

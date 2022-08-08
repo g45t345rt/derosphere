@@ -1,4 +1,4 @@
-package nft_trade
+package asset_trade
 
 import (
 	"database/sql"
@@ -18,7 +18,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var DAPP_NAME = "nft-trade"
+var DAPP_NAME = "asset-trade"
 
 var EXCHANGE_SCID map[string]string = map[string]string{
 	"mainnet":   "",
@@ -116,7 +116,7 @@ type Bid struct {
 
 func initData() {
 	sqlQuery := `
-		create table if not exists dapps_nft_trade_exchanges (
+		create table if not exists dapps_asset_trade_exchanges (
 			id bigint primary key,
 			sellAmount bigint,
 			sellAssetId varchar,
@@ -130,7 +130,7 @@ func initData() {
 			expireTimestamp bigint
 		);
 
-		create table if not exists dapps_nft_trade_auctions (
+		create table if not exists dapps_asset_trade_auctions (
 			id bigint primary key,
 			sellAssetId varchar,
 			sellAmount bigint,
@@ -147,7 +147,7 @@ func initData() {
 			lastBidder varchar
 		);
 
-		create table if not exists dapps_nft_trade_auctions_bids (
+		create table if not exists dapps_asset_trade_auctions_bids (
 			auId bigint,
 			bidder varchar,
 			lockedAmount bigint,
@@ -166,9 +166,9 @@ func initData() {
 
 func clearData() {
 	query := `
-		delete from dapps_nft_trade_exchanges;
-		delete from dapps_nft_trade_auctions;
-		delete from dapps_nft_trade_auctions_bids;
+		delete from dapps_asset_trade_exchanges;
+		delete from dapps_asset_trade_auctions;
+		delete from dapps_asset_trade_auctions_bids;
 	`
 
 	db := app.Context.DB
@@ -228,7 +228,7 @@ func syncAuction() {
 
 				switch commit.Action {
 				case "S":
-					query := fmt.Sprintf(`insert into dapps_nft_trade_auctions_bids (auId, bidder, %s)
+					query := fmt.Sprintf(`insert into dapps_asset_trade_auctions_bids (auId, bidder, %s)
 					values (?, ?, ?)
 					on conflict(auId, bidder) do update
 					set %s = ?`, columnName, columnName)
@@ -245,7 +245,7 @@ func syncAuction() {
 
 				switch commit.Action {
 				case "S":
-					query := fmt.Sprintf(`insert into dapps_nft_trade_auctions (id, %s)
+					query := fmt.Sprintf(`insert into dapps_asset_trade_auctions (id, %s)
 						values (?, ?)
 						on conflict(id) do update
 						set %s = ?`, columnName, columnName)
@@ -257,7 +257,7 @@ func syncAuction() {
 					}
 				case "D":
 					query := fmt.Sprintf(`
-					update dapps_nft_trade_auctions
+					update dapps_asset_trade_auctions
 					set %s = null
 					where id = ?
 				`, columnName)
@@ -270,7 +270,7 @@ func syncAuction() {
 			}
 		}
 
-		query := `delete from dapps_nft_trade_auctions
+		query := `delete from dapps_asset_trade_auctions
 		where sellAssetId is null`
 
 		_, err := tx.Exec(query)
@@ -339,7 +339,7 @@ func syncExchange() {
 				switch commit.Action {
 				case "S":
 					query := fmt.Sprintf(`
-					insert into dapps_nft_trade_exchanges (id, %s)
+					insert into dapps_asset_trade_exchanges (id, %s)
 					values (?, ?)
 					on conflict(id) do update 
 					set %s = ?
@@ -352,7 +352,7 @@ func syncExchange() {
 					}
 				case "D":
 					query := fmt.Sprintf(`
-					update dapps_nft_trade_exchanges
+					update dapps_asset_trade_exchanges
 					set %s = null
 					where id = ?
 				`, columnName)
@@ -365,7 +365,7 @@ func syncExchange() {
 			}
 		}
 
-		query := `delete from dapps_nft_trade_exchanges
+		query := `delete from dapps_asset_trade_exchanges
 		where sellAssetId is null`
 
 		_, err := tx.Exec(query)
@@ -390,7 +390,7 @@ func CommandListAuction() *cli.Command {
 	return &cli.Command{
 		Name:    "list-auction",
 		Aliases: []string{"la"},
-		Usage:   "NFTs in auction",
+		Usage:   "Assets in auction",
 		Action: func(c *cli.Context) error {
 			syncAuction()
 
@@ -398,7 +398,7 @@ func CommandListAuction() *cli.Command {
 
 			query := `
 				select id, startAmount, sellAssetId, sellAmount, startTimestamp, duration, seller, bidAssetId, minBidAmount, bidSum, bidCount, timestamp
-				from dapps_nft_trade_auctions
+				from dapps_asset_trade_auctions
 			`
 
 			rows, err := db.Query(query)
@@ -607,7 +607,7 @@ func CommandBidAuction() *cli.Command {
 
 			query := `
 				select id, startAmount, sellAssetId, sellAmount, startTimestamp, duration, seller, bidAssetId, minBidAmount, bidSum, bidCount, timestamp
-				from dapps_nft_trade_auctions
+				from dapps_asset_trade_auctions
 				where id = ?
 			`
 
@@ -687,7 +687,7 @@ func CommandListAuctionBids() *cli.Command {
 
 			query := `
 				select auId, bidder, lockedAmount, timestamp
-				from dapps_nft_trade_auctions_bids
+				from dapps_asset_trade_auctions_bids
 				where auId = ?
 			`
 
@@ -849,7 +849,7 @@ func CommandListExchange() *cli.Command {
 	return &cli.Command{
 		Name:    "list-exchange",
 		Aliases: []string{"le"},
-		Usage:   "NFTs you can buy",
+		Usage:   "Assets/NFTs you can buy",
 		Action: func(c *cli.Context) error {
 			syncExchange()
 
@@ -857,7 +857,7 @@ func CommandListExchange() *cli.Command {
 
 			query := `
 				select id, sellAmount, sellAssetId, buyAssetId, buyAmount, seller, timestamp, complete, completeTimestamp, buyer
-				from dapps_nft_trade_exchanges
+				from dapps_asset_trade_exchanges
 				where complete = false
 			`
 
@@ -1050,7 +1050,7 @@ func CommandBuyExchange() *cli.Command {
 
 			query := `
 				select id, sellAmount, sellAssetId, buyAssetId, buyAmount, seller, timestamp, complete, completeTimestamp
-				from dapps_nft_trade_exchanges
+				from dapps_asset_trade_exchanges
 				where id = ?
 			`
 
@@ -1097,11 +1097,11 @@ func CommandBuyExchange() *cli.Command {
 	}
 }
 
-func CommandViewNFT() *cli.Command {
+func CommandViewAsset() *cli.Command {
 	return &cli.Command{
 		Name:    "view",
 		Aliases: []string{"v"},
-		Usage:   "View specific NFT",
+		Usage:   "View asset",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 			scid := ctx.Args().First()
@@ -1114,13 +1114,13 @@ func CommandViewNFT() *cli.Command {
 				}
 			}
 
-			nft, err := utils.GetG45NFT(scid, walletInstance.Daemon)
+			asset, err := utils.GetG45_AT(scid, walletInstance.Daemon)
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			nft.Print()
+			asset.Print()
 			return nil
 		},
 	}
@@ -1130,7 +1130,7 @@ func App() *cli.App {
 	initData()
 
 	return &cli.App{
-		Name:        "nft-trade",
+		Name:        "asset-trade",
 		Description: "Browse, buy, sell and auction assets.",
 		Version:     "0.0.1",
 		Commands: []*cli.Command{
@@ -1146,7 +1146,7 @@ func App() *cli.App {
 			CommandListAuctionBids(),
 			CommandCheckoutAuction(),
 			CommandRetrieveLockedFundsAuction(),
-			CommandViewNFT(),
+			CommandViewAsset(),
 		},
 		Authors: []*cli.Author{
 			{Name: "g45t345rt"},

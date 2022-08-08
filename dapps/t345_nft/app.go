@@ -117,7 +117,7 @@ func CommandCancelTransfer() *cli.Command {
 func App() *cli.App {
 	return &cli.App{
 		Name:        "t345-nft",
-		Description: "Deploy & manage T345-NFT.",
+		Description: "Deploy & manage T345-NFT Smart Contract.",
 		Version:     "0.0.1",
 		Commands: []*cli.Command{
 			CommandDeploy(),

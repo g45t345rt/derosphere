@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"regexp"
 	"strings"
 
-	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/pkg/browser"
@@ -67,6 +65,7 @@ func (sn *SealNFT) Traits() string {
 		emptyStringToUnderscore(sn.TraitHairAndHats.String),
 		emptyStringToUnderscore(sn.TraitShirts.String),
 		emptyStringToUnderscore(sn.TraitTattoo.String),
+		emptyStringToUnderscore(sn.TraitFacialHair.String),
 	)
 
 	return strings.Join(traits, ", ")
@@ -75,7 +74,7 @@ func (sn *SealNFT) Traits() string {
 func initData() {
 	query := `
 		create table if not exists dapps_seals_collection (
-			token varchar primary key,
+			scid varchar primary key,
 			frozen_metadata boolean,
 			frozen_supply boolean,
 			supply bigint,
@@ -102,64 +101,53 @@ func initData() {
 
 func update() error {
 	daemon := app.Context.WalletInstance.Daemon
-	scid := getCollectionSCID()
+	collectionSCID := getCollectionSCID()
 
 	db := app.Context.DB
-	nftKey, _ := regexp.Compile(`nft_(.+)`)
-
 	tx, err := db.Begin()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer tx.Rollback()
 
-	result, err := daemon.GetSC(&rpc.GetSC_Params{
-		SCID:      scid,
-		Code:      true,
-		Variables: true,
-	})
-
-	if err != nil {
-		return err
-	}
-
 	_, err = tx.Exec(`delete from dapps_seals_collection;`)
 	if err != nil {
 		return err
 	}
 
-	for key := range result.VariableStringKeys {
-		if strings.HasPrefix(key, "nft_") {
-			assetTokenSCID := nftKey.ReplaceAllString(key, "$1")
+	collection, err := utils.GetG45_ATC(collectionSCID, daemon)
+	if err != nil {
+		return err
+	}
 
-			nft, err := utils.GetG45NFT(assetTokenSCID, daemon)
-			if err != nil {
-				fmt.Printf("%s %s\n", assetTokenSCID, err.Error())
-				continue
-			}
+	for assetSCID := range collection.Assets {
+		nft, err := utils.GetG45_AT(assetSCID, daemon)
+		if err != nil {
+			fmt.Printf("%s %s\n", assetSCID, err.Error())
+			continue
+		}
 
-			var metadata NFTMetadata
-			err = json.Unmarshal([]byte(nft.Metadata), &metadata)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
+		var metadata NFTMetadata
+		err = json.Unmarshal([]byte(nft.Metadata), &metadata)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
 
-			query := `
-				insert into dapps_seals_collection (token, frozen_metadata,	frozen_supply, supply, metadata, id,
-					rarity, trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo, trait_facialHair)
-				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-			`
+		query := `
+					insert into dapps_seals_collection (scid, frozen_metadata,	frozen_supply, supply, metadata, id,
+						rarity, trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo, trait_facialHair)
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				`
 
-			_, err = tx.Exec(query, nft.Token, nft.FrozenMetadata, nft.FrozenSupply, nft.Supply, nft.Metadata,
-				metadata.Id, metadata.Rarity, metadata.Attributes["background"],
-				metadata.Attributes["base"], metadata.Attributes["eyes"], metadata.Attributes["hair_and_hats"],
-				metadata.Attributes["shirts"], metadata.Attributes["tattoo"], metadata.Attributes["facial_hair"],
-			)
+		_, err = tx.Exec(query, nft.SCID, nft.FrozenMetadata, nft.FrozenSupply, nft.Supply, nft.Metadata,
+			metadata.Id, metadata.Rarity, metadata.Attributes["background"],
+			metadata.Attributes["base"], metadata.Attributes["eyes"], metadata.Attributes["hair_and_hats"],
+			metadata.Attributes["shirts"], metadata.Attributes["tattoo"], metadata.Attributes["facial_hair"],
+		)
 
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
 		}
 	}
 
@@ -199,7 +187,7 @@ func CommandList() *cli.Command {
 		Usage:   "List NFT collection",
 		Action: func(c *cli.Context) error {
 			db := app.Context.DB
-			query := `select token, frozen_metadata, frozen_supply, supply, metadata, id, rarity,
+			query := `select scid, frozen_metadata, frozen_supply, supply, metadata, id, rarity,
 			trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo
 			from dapps_seals_collection order by rarity desc`
 

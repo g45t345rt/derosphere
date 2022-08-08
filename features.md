@@ -23,12 +23,12 @@ List of Derosphere features
 - ✔ Register wallet solve anti-spam POW
 - ✔ Close wallet after inactivity - default to 3min (180s)
 - ✔ View asset token balance
-- ✔ Mint G45-NFT (collection) with all available functions
+- ✔ Mint G45-AT(C) with all available functions
 - ✔ List/Table pagination (load more data...)
 - ✔ Call unknown smart contract function (scan code and display funcs and params)
 - ✔ Successful transaction checker
 - ✔ Burn DERO or any ASSET_TOKEN
-- ☐ Display transaction data from txid (pretty print)
+- ☐ Display wallet transaction data from txid (pretty print)
 - ☐ Block out of sync/in sync colors
 - ☐ Filesign (wallet disk only - need pull request for rpc server)
 
@@ -50,16 +50,16 @@ Register a single username used by other dApps.
 - ✔ View list of usernames
 - ✔ View your current username
 
-### G45-NFT
+### G45-AT
 
-Tools to deploy G45-NFT Standard
-<https://github.com/g45t345rt/DERO-NFT-Standards/tree/master/g45-nft>  
+Tools to deploy G45-AT Standard
+<https://github.com/g45t345rt/DERO-NFT-Standards/tree/master/g45-at-standard>  
 
-- ✔ Deploy G45-NFT and G45-NFT-Collection | public and private
-- ✔ Edit G45-NFT (InitStore, AddSupply, SetMetadata, FreezeMetadata, FreezeSupply, DisplayToken, RetrieveToken)
-- ✔ Check if SCID is a valid G45-NFT or G45-NFT-Collection
-- ✔ Edit G45-NFT-Collection (SetNft,DelNft,Freeze,SetData,DelData)
-- ✔ Setup wizard to deploy from metadata.json (deploy-entire-collection, init-store-nfts)
+- ✔ Deploy G45-AT and G45-ATC | public and private
+- ✔ Edit G45-AT (InitStore, AddSupply, SetMetadata, SetCollection, Burn, Freeze, DisplayToken, RetrieveToken)
+- ✔ Check if SCID is a valid G45-AT or G45-ATC
+- ✔ Edit G45-ATC (SetAsset,DelAsset,Freeze,SetMetadata)
+- ✔ Setup wizard to deploy from metadata.json (deploy-entire-collection, init-store-assets)
 
 ### Lotto
 
@@ -84,7 +84,7 @@ Dero Seals NFT project. NFTs by MERU!
 - ✔ Open specific NFT image in the browser from id or NFT asset token
 - ☐ Export seals metadata
 
-### NFT Trade - Exchange / auction for Asset Tokens
+### Asset Trading - Exchange / auction for Asset Tokens & NFTs
 
 Exchange any type of asset token for DERO or other Asset Token
 
