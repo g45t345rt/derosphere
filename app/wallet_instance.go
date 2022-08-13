@@ -341,7 +341,7 @@ func (w *WalletInstance) EstimateFeesAndTransfer(transfer *rpc.Transfer_Params) 
 	}
 
 	transfer.Fees = estimate.GasStorage
-	yes, err := PromptYesNo(fmt.Sprintf("Fees are %s. Do you want to send the transaction?", rpc.FormatMoney(transfer.Fees)), false)
+	yes, err := PromptYesNo(fmt.Sprintf("TX fees are %s. Do you want to send the transaction?", rpc.FormatMoney(transfer.Fees)), false)
 	if HandlePromptErr(err) {
 		return "", err
 	}
@@ -382,7 +382,7 @@ func (walletInstance *WalletInstance) InstallSmartContract(code []byte, promptFe
 	fees := estimate.GasStorage
 
 	if promptFees {
-		yes, err := PromptYesNo(fmt.Sprintf("Fees are %s. Do you want to send the transaction?", rpc.FormatMoney(fees)), false)
+		yes, err := PromptYesNo(fmt.Sprintf("TX fees are %s. Do you want to send the transaction?", rpc.FormatMoney(fees)), false)
 		if err != nil {
 			return "", err
 		}
@@ -432,7 +432,7 @@ func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid st
 	fees := estimate.GasStorage
 
 	if promptFees {
-		yes, err := PromptYesNo(fmt.Sprintf("Fees are %s. Do you want to send the transaction?", rpc.FormatMoney(fees)), false)
+		yes, err := PromptYesNo(fmt.Sprintf("TX fees are %s. Do you want to send the transaction?", rpc.FormatMoney(fees)), false)
 		if err != nil {
 			return "", err
 		}

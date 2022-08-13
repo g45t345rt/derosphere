@@ -68,6 +68,11 @@ func CommandInitStore() *cli.Command {
 				return nil
 			}
 
+			metadataFormat, err := app.Prompt("Enter metadata format", "json")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
 			metadata, err := app.Prompt("Enter metadata", "")
 			if app.HandlePromptErr(err) {
 				return nil
@@ -107,6 +112,7 @@ func CommandInitStore() *cli.Command {
 			txId, err := walletInstance.CallSmartContract(2, scid, "InitStore", []rpc.Argument{
 				{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
 				{Name: "supply", DataType: rpc.DataUint64, Value: supply},
+				{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
 				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
 				{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
 				{Name: "freezeSupply", DataType: rpc.DataUint64, Value: uFreezeSupply},
@@ -273,6 +279,11 @@ func CommandSetMetadata() *cli.Command {
 				}
 			}
 
+			format, err := app.Prompt("Metadata format?", "json")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
 			metadata, err := app.Prompt("Set new metadata", "")
 			if app.HandlePromptErr(err) {
 				return nil
@@ -280,6 +291,7 @@ func CommandSetMetadata() *cli.Command {
 
 			walletInstance := app.Context.WalletInstance
 			txId, err := walletInstance.CallSmartContract(2, scid, "SetMetadata", []rpc.Argument{
+				{Name: "format", DataType: rpc.DataString, Value: format},
 				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
 			}, []rpc.Transfer{}, true)
 
@@ -792,6 +804,11 @@ func CommandSetCollectionMetadata() *cli.Command {
 				}
 			}
 
+			format, err := app.Prompt("Metadata format?", "json")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
 			metadata, err := app.Prompt("Set new metadata", "")
 			if app.HandlePromptErr(err) {
 				return nil
@@ -799,6 +816,7 @@ func CommandSetCollectionMetadata() *cli.Command {
 
 			walletInstance := app.Context.WalletInstance
 			txId, err := walletInstance.CallSmartContract(2, scid, "SetMetadata", []rpc.Argument{
+				{Name: "format", DataType: rpc.DataString, Value: format},
 				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
 			}, []rpc.Transfer{}, true)
 
@@ -1001,6 +1019,7 @@ func CommandInitStoreCollectionAssets() *cli.Command {
 					storeTxId, err := walletInstance.CallSmartContract(2, assetSCID, "InitStore", []rpc.Argument{
 						{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
 						{Name: "supply", DataType: rpc.DataUint64, Value: supply},
+						{Name: "metadataFormat", DataType: rpc.DataString, Value: "json"},
 						{Name: "metadata", DataType: rpc.DataString, Value: sMetadata},
 						{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
 						{Name: "freezeSupply", DataType: rpc.DataUint64, Value: uFreezeSupply},

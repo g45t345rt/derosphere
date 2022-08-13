@@ -29,6 +29,7 @@ type G45_ATC struct {
 	Owner            string
 	OriginalOwner    string
 	AssetCount       uint64
+	MetadataFormat   string
 	Metadata         string
 	Assets           map[string]uint64
 	Timestamp        uint64
@@ -38,6 +39,7 @@ func (a *G45_ATC) Print() {
 	fmt.Println("SCID: ", a.SCID)
 	fmt.Println("Frozen Collection: ", a.FrozenCollection)
 	fmt.Println("Frozen Metadata: ", a.FrozenMetadata)
+	fmt.Println("Metadata Format: ", a.MetadataFormat)
 	fmt.Println("Metadata: ", a.Metadata)
 	fmt.Println("Owner: ", a.Owner)
 	fmt.Println("Original Owner: ", a.OriginalOwner)
@@ -53,6 +55,7 @@ type G45_AT struct {
 	FrozenMetadata   bool
 	FrozenSupply     bool
 	FrozenCollection bool
+	MetadataFormat   string
 	Metadata         string
 	Supply           uint64
 	Collection       string
@@ -72,6 +75,7 @@ func (a *G45_AT) Print() {
 		fmt.Println("Frozen Metadata: ", a.FrozenMetadata)
 		fmt.Println("Frozen Supply: ", a.FrozenSupply)
 		fmt.Println("Frozen Collection: ", a.FrozenCollection)
+		fmt.Println("Metadata Format: ", a.MetadataFormat)
 		fmt.Println("Metadata: ", a.Metadata)
 		fmt.Println("Supply: ", a.Supply)
 	}
@@ -125,6 +129,7 @@ func GetG45_ATC(scid string, daemon *rpc_client.Daemon) (*G45_ATC, error) {
 	collection.FrozenCollection = values["frozenCollection"].(float64) != 0
 	collection.FrozenMetadata = values["frozenMetadata"].(float64) != 0
 	collection.AssetCount = uint64(values["assetCount"].(float64))
+	collection.MetadataFormat = decodeString(values["metadataFormat"].(string))
 	collection.Metadata = decodeString(values["metadata"].(string))
 	collection.Timestamp = uint64(values["timestamp"].(float64))
 
@@ -188,6 +193,7 @@ func GetG45_AT(scid string, daemon *rpc_client.Daemon) (*G45_AT, error) {
 		asset.FrozenMetadata = values["frozenMetadata"].(float64) != 0
 		asset.FrozenSupply = values["frozenSupply"].(float64) != 0
 		asset.FrozenCollection = values["frozenCollection"].(float64) != 0
+		asset.MetadataFormat = decodeString(values["metadataFormat"].(string))
 		asset.Metadata = decodeString(values["metadata"].(string))
 		asset.Supply = uint64(values["supply"].(float64))
 	}
