@@ -151,6 +151,7 @@ Function BuyOrSell(odId Uint64) Uint64
 270 IF amountSent == assetBalance * unitPrice THEN GOTO 290
 280 RETURN 1
 290 LET assetReceived = amountSent / unitPrice
+293 IF assetReceived == 0 THEN GOTO 410
 295 IF assetBalance < assetReceived THEN GOTO 410
 300 LET assetBalance = assetBalance - assetReceived
 310 IF EXISTS("fee_" + priceAssetId) == 0 THEN GOTO 330
@@ -167,6 +168,7 @@ Function BuyOrSell(odId Uint64) Uint64
 400 IF assetSent == priceBalance / unitPrice THEN GOTO 420
 410 RETURN 1
 420 LET amountReceived = assetSent * unitPrice
+423 IF amountReceived == 0 THEN GOTO 410
 425 IF priceBalance < amountReceived THEN GOTO 410
 430 LET priceBalance = priceBalance - amountReceived
 440 IF EXISTS("fee_" + priceAssetId) == 0 THEN GOTO 460
