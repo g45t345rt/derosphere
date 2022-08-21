@@ -42,11 +42,11 @@ func CommandDeploy() *cli.Command {
 	}
 }
 
-func CommandInitStore() *cli.Command {
+func CommandInitMint() *cli.Command {
 	return &cli.Command{
-		Name:    "init-store",
+		Name:    "init-mint",
 		Aliases: []string{"in"},
-		Usage:   "Init store (one time thing)",
+		Usage:   "Init mint (one time thing)",
 		Action: func(ctx *cli.Context) error {
 			scid := ctx.Args().First()
 			var err error
@@ -109,7 +109,7 @@ func CommandInitStore() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "InitStore", []rpc.Argument{
+			txId, err := walletInstance.CallSmartContract(2, scid, "InitMint", []rpc.Argument{
 				{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
 				{Name: "supply", DataType: rpc.DataUint64, Value: supply},
 				{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
@@ -132,8 +132,8 @@ func CommandInitStore() *cli.Command {
 
 func CommandAddSupply() *cli.Command {
 	return &cli.Command{
-		Name:    "add-supply",
-		Aliases: []string{"as"},
+		Name:    "mint",
+		Aliases: []string{"mt"},
 		Usage:   "Increase supply",
 		Action: func(ctx *cli.Context) error {
 			scid := ctx.Args().First()
@@ -146,14 +146,14 @@ func CommandAddSupply() *cli.Command {
 				}
 			}
 
-			supply, err := app.PromptUInt("Enter supply", 1)
+			supply, err := app.PromptUInt("Enter quantity", 1)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
 			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "AddSupply", []rpc.Argument{
-				{Name: "supply", DataType: rpc.DataUint64, Value: supply},
+			txId, err := walletInstance.CallSmartContract(2, scid, "Mint", []rpc.Argument{
+				{Name: "qty", DataType: rpc.DataUint64, Value: supply},
 			}, []rpc.Transfer{}, true)
 
 			if err != nil {
@@ -1015,8 +1015,8 @@ func CommandInitStoreCollectionAssets() *cli.Command {
 					}
 
 					sMetadata := string(bMetadata)
-					fmt.Println("InitStore: " + sMetadata)
-					storeTxId, err := walletInstance.CallSmartContract(2, assetSCID, "InitStore", []rpc.Argument{
+					fmt.Println("InitMint: " + sMetadata)
+					storeTxId, err := walletInstance.CallSmartContract(2, assetSCID, "InitMint", []rpc.Argument{
 						{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
 						{Name: "supply", DataType: rpc.DataUint64, Value: supply},
 						{Name: "metadataFormat", DataType: rpc.DataString, Value: "json"},
@@ -1104,7 +1104,7 @@ func App() *cli.App {
 			CommandView(),
 			CommandDeploy(),
 			CommandDeployCollection(),
-			CommandInitStore(),
+			CommandInitMint(),
 			CommandAddSupply(),
 			CommandBurn(),
 			CommandSetMetadata(),

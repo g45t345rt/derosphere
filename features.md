@@ -56,7 +56,7 @@ Tools to deploy G45-AT Standard
 <https://github.com/g45t345rt/DERO-NFT-Standards/tree/master/g45-at-standard>  
 
 - ✔ Deploy G45-AT and G45-ATC | public and private
-- ✔ Edit G45-AT (InitStore, AddSupply, SetMetadata, SetCollection, Burn, Freeze, DisplayToken, RetrieveToken)
+- ✔ Edit G45-AT (InitMint, Mint, SetMetadata, SetCollection, Burn, Freeze, DisplayToken, RetrieveToken)
 - ✔ Check if SCID is a valid G45-AT or G45-ATC
 - ✔ Edit G45-ATC (SetAsset,DelAsset,Freeze,SetMetadata)
 - ✔ Setup wizard to deploy from metadata.json (deploy-entire-collection, init-store-assets)

@@ -134,6 +134,7 @@ Function Bid(auId Uint64) Uint64
 110 IF EXISTS(auKey(auId, "bid_" + signerString + "_lockedAmount")) == 0 THEN GOTO 130
 120 LET lockedAmount = LOAD(auKey(auId, "bid_" + signerString + "_lockedAmount"))
 130 LET lockedAmount = lockedAmount + bidAmount
+135 IF LOAD(auKey(auId, "close")) == 1 THEN GOTO 150
 140 IF isAuctionFinished(auId) == 0 THEN GOTO 160
 150 RETURN 1
 160 IF bidAmount >= minBidAmount THEN GOTO 180
