@@ -48,7 +48,6 @@ func (a *G45_ATC) Print() {
 
 type G45_AT struct {
 	SCID             string
-	Init             bool
 	Private          bool
 	Minter           string
 	OriginalMinter   string
@@ -65,20 +64,17 @@ type G45_AT struct {
 
 func (a *G45_AT) Print() {
 	fmt.Println("SCID: ", a.SCID)
-	fmt.Println("Init: ", a.Init)
 	fmt.Println("Private: ", a.Private)
 	fmt.Println("Minter: ", a.Minter)
 	fmt.Println("Original Minter: ", a.OriginalMinter)
 	fmt.Println("Timestamp: ", a.Timestamp)
-	if a.Init {
-		fmt.Println("Collection SCID: ", a.Collection)
-		fmt.Println("Frozen Metadata: ", a.FrozenMetadata)
-		fmt.Println("Frozen Supply: ", a.FrozenSupply)
-		fmt.Println("Frozen Collection: ", a.FrozenCollection)
-		fmt.Println("Metadata Format: ", a.MetadataFormat)
-		fmt.Println("Metadata: ", a.Metadata)
-		fmt.Println("Supply: ", a.Supply)
-	}
+	fmt.Println("Collection SCID: ", a.Collection)
+	fmt.Println("Frozen Metadata: ", a.FrozenMetadata)
+	fmt.Println("Frozen Supply: ", a.FrozenSupply)
+	fmt.Println("Frozen Collection: ", a.FrozenCollection)
+	fmt.Println("Metadata Format: ", a.MetadataFormat)
+	fmt.Println("Metadata: ", a.Metadata)
+	fmt.Println("Supply: ", a.Supply)
 }
 
 func decodeString(value string) string {
@@ -186,17 +182,14 @@ func GetG45_AT(scid string, daemon *rpc_client.Daemon) (*G45_AT, error) {
 	}
 
 	asset.SCID = scid
-	asset.Init = values["init"].(float64) != 0
 	asset.Timestamp = uint64(values["timestamp"].(float64))
-	if asset.Init {
-		asset.Collection = decodeString(values["collection"].(string))
-		asset.FrozenMetadata = values["frozenMetadata"].(float64) != 0
-		asset.FrozenSupply = values["frozenSupply"].(float64) != 0
-		asset.FrozenCollection = values["frozenCollection"].(float64) != 0
-		asset.MetadataFormat = decodeString(values["metadataFormat"].(string))
-		asset.Metadata = decodeString(values["metadata"].(string))
-		asset.Supply = uint64(values["supply"].(float64))
-	}
+	asset.Collection = decodeString(values["collection"].(string))
+	asset.FrozenMetadata = values["frozenMetadata"].(float64) != 0
+	asset.FrozenSupply = values["frozenSupply"].(float64) != 0
+	asset.FrozenCollection = values["frozenCollection"].(float64) != 0
+	asset.MetadataFormat = decodeString(values["metadataFormat"].(string))
+	asset.Metadata = decodeString(values["metadata"].(string))
+	asset.Supply = uint64(values["supply"].(float64))
 
 	minter, err := decodeAddress(values["minter"].(string))
 	if err != nil {

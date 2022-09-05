@@ -359,20 +359,23 @@ func (w *WalletInstance) EstimateFeesAndTransfer(transfer *rpc.Transfer_Params) 
 	return txid, nil
 }
 
-func (walletInstance *WalletInstance) InstallSmartContract(code []byte, promptFees bool) (string, error) {
+func (walletInstance *WalletInstance) InstallSmartContract(code []byte, ringsize uint64, args []rpc.Argument, promptFees bool) (string, error) {
 	codeBase64 := base64.StdEncoding.EncodeToString(code)
-	ringsize := uint64(2)
 	signer, err := walletInstance.GetAddress()
 	if err != nil {
 		return "", err
 	}
 
+	sc_rpc := rpc.Arguments{
+		{Name: "entrypoint", DataType: rpc.DataString, Value: codeBase64},
+	}
+
+	sc_rpc = append(sc_rpc, args[:]...)
+
 	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
 		SC_Code: codeBase64,
-		SC_RPC: rpc.Arguments{
-			{Name: "entrypoint", DataType: rpc.DataString, Value: codeBase64}, // not needed but the fees are wrong without it
-		},
-		Signer: signer,
+		SC_RPC:  sc_rpc,
+		Signer:  signer,
 	})
 
 	if err != nil {
@@ -396,6 +399,7 @@ func (walletInstance *WalletInstance) InstallSmartContract(code []byte, promptFe
 		SC_Code:  codeBase64,
 		Ringsize: ringsize,
 		Fees:     fees,
+		SC_RPC:   args,
 	})
 
 	if err != nil {

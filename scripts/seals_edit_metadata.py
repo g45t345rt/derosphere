@@ -18,6 +18,15 @@ def get_rarity():
     return rarity
 
 
+def get_rarity_type(rarity):
+    if (rarity >= 353.62):
+        return "ultra_rare"
+    elif (rarity >= 300.11):
+        return "rare"
+    else:
+        return "common"
+
+
 def main():
     metadata_file = open(metadata_path, "rb")
     data = json.load(metadata_file)
@@ -31,6 +40,7 @@ def main():
         nft = nfts[cI]
         nft["id"] = int(id)
         nft["rarity"] = float(rarity[id])
+        nft["rarity_type"] = get_rarity_type(nft["rarity"])
         nft["attributes"] = {}
 
         attributes = collection["attributes"]

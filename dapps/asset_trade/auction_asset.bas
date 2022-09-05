@@ -82,9 +82,10 @@ Function CreateAuction(sellAssetId String, bidAssetId String, startAmount Uint64
 180 storeUint64(auKey(auId, "bidCount"), 0)
 190 storeUint64(auKey(auId, "timestamp"), BLOCK_TIMESTAMP())
 200 storeUint64(auKey(auId, "close"), 0)
-210 endStore()
-220 STORE("au_ctr", auId + 1)
-230 RETURN 0
+210 storeString(auKey(auId, "txId"), HEX(TXID()))
+220 endStore()
+230 STORE("au_ctr", auId + 1)
+240 RETURN 0
 End Function
 
 Function SetAuctionMinBid(auId Uint64, amount Uint64) Uint64
@@ -97,17 +98,15 @@ Function SetAuctionMinBid(auId Uint64, amount Uint64) Uint64
 End Function
 
 Function CloseAuction(auId Uint64) Uint64
-10 IF LOAD(auKey(auId, "seller")) == ADDRESS_STRING(SIGNER()) THEN GOTO 30
-20 RETURN 1
-30 IF LOAD(auKey(auId, "bidCount")) == 0 THEN GOTO 50
-40 RETURN 1
-50 IF LOAD(auKey(auId, "close")) == 0 THEN GOTO 70
-60 RETURN 1
-70 SEND_ASSET_TO_ADDRESS(SIGNER(), LOAD(auKey(auId, "sellAmount")), HEXDECODE(LOAD(auKey(auId, "sellAssetId"))))
-80 beginStore()
-90 storeUint64(auKey(auId, "close"), 1)
-100 endStore()
-110 RETURN 0
+10 IF LOAD(auKey(auId, "seller")) != ADDRESS_STRING(SIGNER()) THEN GOTO 90
+20 IF LOAD(auKey(auId, "bidCount")) > 0 THEN GOTO 90
+30 IF LOAD(auKey(auId, "close")) == 1 THEN GOTO 90
+40 SEND_ASSET_TO_ADDRESS(SIGNER(), LOAD(auKey(auId, "sellAmount")), HEXDECODE(LOAD(auKey(auId, "sellAssetId"))))
+50 beginStore()
+60 storeUint64(auKey(auId, "close"), 1)
+70 endStore()
+80 RETURN 0
+90 RETURN 1
 End Function
 
 Function isAuctionFinished (auId Uint64) Uint64
@@ -121,7 +120,7 @@ Function isAuctionFinished (auId Uint64) Uint64
 End Function
 
 Function Bid(auId Uint64) Uint64
-10 DIM minBidAmount, bidAmount, bidCount, lockedAmount, startAmount, currentBid, startTimestamp, duration, timestamp as Uint64
+10 DIM minBidAmount, bidAmount, bidCount, lockedAmount, startAmount, currentBid, timestamp as Uint64
 20 DIM bidAssetId, signerString as String
 30 LET signerString = ADDRESS_STRING(SIGNER())
 40 LET minBidAmount = LOAD(auKey(auId, "minBidAmount"))
@@ -130,11 +129,13 @@ Function Bid(auId Uint64) Uint64
 70 LET bidAmount = ASSETVALUE(HEXDECODE(bidAssetId))
 80 LET startAmount = LOAD(auKey(auId, "startAmount"))
 90 LET currentBid = LOAD(auKey(auId, "currentBid"))
+95 LET timestamp = BLOCK_TIMESTAMP()
 100 LET lockedAmount = 0
 110 IF EXISTS(auKey(auId, "bid_" + signerString + "_lockedAmount")) == 0 THEN GOTO 130
 120 LET lockedAmount = LOAD(auKey(auId, "bid_" + signerString + "_lockedAmount"))
 130 LET lockedAmount = lockedAmount + bidAmount
 135 IF LOAD(auKey(auId, "close")) == 1 THEN GOTO 150
+136 IF timestamp < LOAD(auKey(auId, "startTimestamp")) THEN GOTO 150
 140 IF isAuctionFinished(auId) == 0 THEN GOTO 160
 150 RETURN 1
 160 IF bidAmount >= minBidAmount THEN GOTO 180
@@ -148,7 +149,7 @@ Function Bid(auId Uint64) Uint64
 240 LET currentBid = currentBid + (lockedAmount - currentBid)
 250 storeUint64(auKey(auId, "bid_" + signerString + "_lockedAmount"), lockedAmount)
 260 storeUint64(auKey(auId, "bid_" + signerString + "_bidAmount"), lockedAmount)
-270 storeUint64(auKey(auId, "bid_" + signerString + "_timestamp"), BLOCK_TIMESTAMP())
+270 storeUint64(auKey(auId, "bid_" + signerString + "_timestamp"), timestamp)
 280 storeUint64(auKey(auId, "currentBid"), currentBid)
 290 storeUint64(auKey(auId, "bidCount"), bidCount + 1)
 300 storeString(auKey(auId, "lastBidder"), signerString)

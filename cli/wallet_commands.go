@@ -599,7 +599,7 @@ func CommandInstallSC() *cli.Command {
 				return nil
 			}
 
-			txId, err := walletInstance.InstallSmartContract(code, true)
+			txId, err := walletInstance.InstallSmartContract(code, 2, []rpc.Argument{}, true)
 			if err != nil {
 				fmt.Println(err)
 				return nil
