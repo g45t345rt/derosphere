@@ -1,8 +1,8 @@
 {
   "name": "Dero Seals NFTs",
   "description": "DERO SEALS is a community initiated expression of privacy & freedom minded supporters.\nThe DERO SEALS are full time DERO aficionados with an unwavering realization and understanding of DERO's global impact. Seals build on DERO in preparation for a global audience while spreading conviction to newcomers. DERO SEALS will build an assortment of projects to help pave the way for heightened global awareness. The first being DERO SEALS private NFT.",
-  "assetImage": "https://imagedelivery.net/zAjZFa6f2RjCu5A0cXIeHA/dero-seals-{id}/default",
-  "backdropImage": "https://imagedelivery.net/zAjZFa6f2RjCu5A0cXIeHA/7984df0b-1b2f-41b4-44f0-619b4f622500/huge",
+  "assetImage": "ipfs://QmZbRcPRpwyRRm9SnKApQkx9mWxA4bfhKArdgfp8xMu2fa/low/{id}.jpg",
+  "backdropImage": "ipfs://ipfs/QmSDuT2Kh6QQn9feDWZFUGJ2hdsc7eD6raQkZiFTYo8Nip?filename=backdrop.jpg",
   "assetName": "Dero Seals #{id}",
   "links": {
     "website": "https://www.deroseals.com/",

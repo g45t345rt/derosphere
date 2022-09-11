@@ -115,7 +115,7 @@ func update() error {
 		return err
 	}
 
-	collection, err := utils.GetG45_ATC(collectionSCID, daemon)
+	collection, err := utils.GetG45_C(collectionSCID, daemon)
 	if err != nil {
 		return err
 	}

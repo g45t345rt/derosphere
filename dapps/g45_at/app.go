@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"regexp"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/rpc"
@@ -529,10 +528,14 @@ func CommandCheckValid() *cli.Command {
 				fmt.Println("Valid G45-AT (Public) Smart Contract.")
 			case utils.G45_AT_PRIVATE_CODE:
 				fmt.Println("Valid G45-AT (Private) Smart Contract.")
-			case utils.G45_ATC_CODE:
+			case utils.G45_C_CODE:
 				fmt.Println("Valid G45-ATC Smart Contract.")
+			case utils.G45_NFT_PRIVATE_CODE:
+				fmt.Println("Valid G45-NFT (Private) Smart Contract.")
+			case utils.G45_NFT_PUBLIC_CODE:
+				fmt.Println("Valid G45-NFT (Public) Smart Contract.")
 			default:
-				fmt.Println("Not a valid G45-AT.")
+				fmt.Println("Not a valid G45 Smart Contract.")
 			}
 
 			return nil
@@ -573,7 +576,7 @@ func DoCollectionDeploy() (string, error) {
 		uFreezeMetadata = 1
 	}
 
-	txId, err := walletInstance.InstallSmartContract([]byte(utils.G45_ATC_CODE), 2, []rpc.Argument{
+	txId, err := walletInstance.InstallSmartContract([]byte(utils.G45_C_CODE), 2, []rpc.Argument{
 		{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
 		{Name: "metadata", DataType: rpc.DataString, Value: metadata},
 		{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
@@ -845,14 +848,14 @@ func CommandSetCollectionMetadata() *cli.Command {
 	}
 }
 
-func CommandDeployEntireCollection() *cli.Command {
+func CommandDeployNFTCollection() *cli.Command {
 	return &cli.Command{
-		Name:  "deploy-entire-collection",
-		Usage: "Script to deploy entire collection of nfts",
+		Name:  "deploy-nft-collection",
+		Usage: "Script to deploy nft collection",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 
-			installCollection, err := app.PromptYesNo("Install G45-ATC?", true)
+			installCollection, err := app.PromptYesNo("Install G45-C?", true)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -866,7 +869,7 @@ func CommandDeployEntireCollection() *cli.Command {
 
 				walletInstance.RunTxChecker(collectionSCID)
 			} else {
-				collectionSCID, err = app.Prompt("G45-ATC Smart Contract?", "")
+				collectionSCID, err = app.Prompt("G45-C Smart Contract?", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}
@@ -890,49 +893,14 @@ func CommandDeployEntireCollection() *cli.Command {
 				return nil
 			}
 
-			assetType, err := app.PromptChoose("G45-AT type", []string{"public", "private"}, "private")
+			assetType, err := app.PromptChoose("G45-NFT type", []string{"public", "private"}, "private")
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			scCode := utils.G45_AT_PUBLIC_CODE
+			scCode := utils.G45_NFT_PUBLIC_CODE
 			if assetType == "private" {
-				scCode = utils.G45_AT_PRIVATE_CODE
-			}
-
-			supply, err := app.PromptUInt("Supply", 1)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			uFreezeMetadata := 0
-			freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if freezeMetadata {
-				uFreezeMetadata = 1
-			}
-
-			uFreezeSupply := 0
-			freezeSupply, err := app.PromptYesNo("Freeze supply?", false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if freezeSupply {
-				uFreezeSupply = 1
-			}
-
-			uFreezeCollection := 0
-			freezeCollection, err := app.PromptYesNo("Freeze collection?", false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if freezeCollection {
-				uFreezeCollection = 1
+				scCode = utils.G45_NFT_PRIVATE_CODE
 			}
 
 			startIndex, err := app.PromptUInt("Asset start index", 0)
@@ -961,12 +929,8 @@ func CommandDeployEntireCollection() *cli.Command {
 				fmt.Printf("Install Asset - %d\n", index)
 				assetSCID, err := walletInstance.InstallSmartContract([]byte(scCode), 2, []rpc.Argument{
 					{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
-					{Name: "supply", DataType: rpc.DataUint64, Value: supply},
 					{Name: "metadataFormat", DataType: rpc.DataString, Value: "json"},
 					{Name: "metadata", DataType: rpc.DataString, Value: sMetadata},
-					{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
-					{Name: "freezeSupply", DataType: rpc.DataUint64, Value: uFreezeSupply},
-					{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
 				}, false)
 
 				if err != nil {
@@ -996,132 +960,6 @@ func CommandDeployEntireCollection() *cli.Command {
 				if err != nil {
 					fmt.Println(err)
 					goto set_collection
-				}
-			}
-
-			return nil
-		},
-	}
-}
-
-func CommandInitStoreCollectionAssets() *cli.Command {
-	return &cli.Command{
-		Name:  "init-store-assets",
-		Usage: "Script to initialize store of assets from metadata.json",
-		Action: func(ctx *cli.Context) error {
-			walletInstance := app.Context.WalletInstance
-			metadata_path, err := app.Prompt("Enter metadata file path", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			content, err := ioutil.ReadFile(metadata_path)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			var metadataList []interface{}
-			err = json.Unmarshal(content, &metadataList)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			collectionSCID, err := app.Prompt("Collection", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			supply, err := app.PromptUInt("Supply", 1)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			uFreezeMetadata := 0
-			freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if freezeMetadata {
-				uFreezeMetadata = 1
-			}
-
-			uFreezeSupply := 0
-			freezeSupply, err := app.PromptYesNo("Freeze supply?", false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if freezeSupply {
-				uFreezeSupply = 1
-			}
-
-			uFreezeCollection := 0
-			freezeCollection, err := app.PromptYesNo("Freeze collection?", false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if freezeCollection {
-				uFreezeCollection = 1
-			}
-
-			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
-				Code:      true,
-				Variables: true,
-				SCID:      collectionSCID,
-			})
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			if result.Code != utils.G45_ATC_CODE {
-				fmt.Println("Not a valid G45-ATC Smart Contract.")
-				return nil
-			}
-
-			assetKey, _ := regexp.Compile(`asset_(.+)`)
-
-			for key, value := range result.VariableStringKeys {
-				if assetKey.Match([]byte(key)) {
-					assetSCID := assetKey.ReplaceAllString(key, "$1")
-					index := uint64(value.(float64))
-					assetMetadata := metadataList[index]
-
-					bMetadata, err := json.Marshal(assetMetadata)
-					if err != nil {
-						fmt.Println(err)
-						continue
-					}
-
-					sMetadata := string(bMetadata)
-					fmt.Println("InitMint: " + sMetadata)
-					storeTxId, err := walletInstance.CallSmartContract(2, assetSCID, "InitMint", []rpc.Argument{
-						{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
-						{Name: "supply", DataType: rpc.DataUint64, Value: supply},
-						{Name: "metadataFormat", DataType: rpc.DataString, Value: "json"},
-						{Name: "metadata", DataType: rpc.DataString, Value: sMetadata},
-						{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
-						{Name: "freezeSupply", DataType: rpc.DataUint64, Value: uFreezeSupply},
-						{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
-					}, []rpc.Transfer{}, false)
-
-					if err != nil {
-						fmt.Println(err)
-						continue
-					}
-
-					err = walletInstance.WaitTransaction(storeTxId)
-					if err != nil {
-						fmt.Println(err)
-						break
-					}
-
-					fmt.Println(storeTxId)
 				}
 			}
 
@@ -1167,7 +1005,7 @@ func CommandViewCollection() *cli.Command {
 			}
 
 			walletInstance := app.Context.WalletInstance
-			collection, err := utils.GetG45_ATC(scid, walletInstance.Daemon)
+			collection, err := utils.GetG45_C(scid, walletInstance.Daemon)
 			if err != nil {
 				fmt.Println(err)
 				return nil
@@ -1188,7 +1026,6 @@ func App() *cli.App {
 			CommandView(),
 			CommandDeploy(),
 			CommandDeployCollection(),
-			//CommandInitMint(),
 			CommandAddSupply(),
 			CommandBurn(),
 			CommandSetMetadata(),
@@ -1208,8 +1045,7 @@ func App() *cli.App {
 			CommandCollectionSetAsset(),
 			CommandCollectionDelAsset(),
 			CommandCollectionFreeze(),
-			CommandDeployEntireCollection(),
-			CommandInitStoreCollectionAssets(),
+			CommandDeployNFTCollection(),
 		},
 		Authors: []*cli.Author{
 			{Name: "g45t345rt"},

@@ -3,6 +3,8 @@ package utils
 import (
 	_ "embed"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -19,10 +21,16 @@ var G45_AT_PUBLIC_CODE string
 //go:embed g45_at_private.bas
 var G45_AT_PRIVATE_CODE string
 
-//go:embed g45_atc.bas
-var G45_ATC_CODE string
+//go:embed g45_c.bas
+var G45_C_CODE string
 
-type G45_ATC struct {
+//go:embed g45_nft_public.bas
+var G45_NFT_PUBLIC_CODE string
+
+//go:embed g45_nft_private.bas
+var G45_NFT_PRIVATE_CODE string
+
+type G45_C struct {
 	SCID             string
 	FrozenCollection bool
 	FrozenMetadata   bool
@@ -35,7 +43,7 @@ type G45_ATC struct {
 	Timestamp        uint64
 }
 
-func (a *G45_ATC) Print() {
+func (a *G45_C) Print() {
 	fmt.Println("SCID: ", a.SCID)
 	fmt.Println("Frozen Collection: ", a.FrozenCollection)
 	fmt.Println("Frozen Metadata: ", a.FrozenMetadata)
@@ -44,6 +52,19 @@ func (a *G45_ATC) Print() {
 	fmt.Println("Owner: ", a.Owner)
 	fmt.Println("Original Owner: ", a.OriginalOwner)
 	fmt.Println("Timestamp: ", a.Timestamp)
+}
+
+func (a *G45_C) JsonMetadata() (map[string]interface{}, error) {
+	var metadata map[string]interface{}
+	if a.MetadataFormat == "json" {
+		err := json.Unmarshal([]byte(a.Metadata), &metadata)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("metadata format is not JSON")
+	}
+	return metadata, nil
 }
 
 type G45_AT struct {
@@ -77,6 +98,54 @@ func (a *G45_AT) Print() {
 	fmt.Println("Supply: ", a.Supply)
 }
 
+func (a *G45_AT) JsonMetadata() (map[string]interface{}, error) {
+	var metadata map[string]interface{}
+	if a.MetadataFormat == "json" {
+		err := json.Unmarshal([]byte(a.Metadata), &metadata)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("metadata format is not JSON")
+	}
+	return metadata, nil
+}
+
+type G45_NFT struct {
+	SCID           string
+	Private        bool
+	Minter         string
+	MetadataFormat string
+	Metadata       string
+	Collection     string
+	Owner          string
+	Timestamp      uint64
+}
+
+func (a *G45_NFT) Print() {
+	fmt.Println("SCID: ", a.SCID)
+	fmt.Println("Private: ", a.Private)
+	fmt.Println("Minter: ", a.Minter)
+	fmt.Println("Timestamp: ", a.Timestamp)
+	fmt.Println("Collection SCID: ", a.Collection)
+	fmt.Println("Metadata Format: ", a.MetadataFormat)
+	fmt.Println("Metadata: ", a.Metadata)
+	fmt.Println("Owner: ", a.Owner)
+}
+
+func (a *G45_NFT) JsonMetadata() (map[string]interface{}, error) {
+	var metadata map[string]interface{}
+	if a.MetadataFormat == "json" {
+		err := json.Unmarshal([]byte(a.Metadata), &metadata)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("metadata format is not JSON")
+	}
+	return metadata, nil
+}
+
 func decodeString(value string) string {
 	bytes, err := hex.DecodeString(value)
 	if err != nil {
@@ -101,7 +170,7 @@ func decodeAddress(value string) (string, error) {
 	return rpc.NewAddressFromKeys(p).String(), nil
 }
 
-func GetG45_ATC(scid string, daemon *rpc_client.Daemon) (*G45_ATC, error) {
+func GetG45_C(scid string, daemon *rpc_client.Daemon) (*G45_C, error) {
 	result, err := daemon.GetSC(&rpc.GetSC_Params{
 		SCID:      scid,
 		Code:      true,
@@ -112,11 +181,11 @@ func GetG45_ATC(scid string, daemon *rpc_client.Daemon) (*G45_ATC, error) {
 		return nil, err
 	}
 
-	collection := &G45_ATC{}
+	collection := &G45_C{}
 
 	values := result.VariableStringKeys
 	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_atc_code := strings.ReplaceAll(strings.ReplaceAll(G45_ATC_CODE, "\r", ""), "\n", "")
+	g45_atc_code := strings.ReplaceAll(strings.ReplaceAll(G45_C_CODE, "\r", ""), "\n", "")
 	if code != g45_atc_code {
 		return nil, fmt.Errorf("not a valid G45-ATC")
 	}
@@ -213,6 +282,50 @@ func GetG45_AT(scid string, daemon *rpc_client.Daemon) (*G45_AT, error) {
 			asset.Owners[owner] = uint64(value.(float64))
 		}
 	}
+
+	return asset, nil
+}
+
+func GetG45_NFT(scid string, daemon *rpc_client.Daemon) (*G45_NFT, error) {
+	result, err := daemon.GetSC(&rpc.GetSC_Params{
+		SCID:      scid,
+		Code:      true,
+		Variables: true,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	values := result.VariableStringKeys
+	asset := &G45_NFT{}
+
+	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
+	g45_nft_public_code := strings.ReplaceAll(strings.ReplaceAll(G45_NFT_PUBLIC_CODE, "\r", ""), "\n", "")
+	g45_nft_private_code := strings.ReplaceAll(strings.ReplaceAll(G45_NFT_PRIVATE_CODE, "\r", ""), "\n", "")
+
+	switch code {
+	case g45_nft_public_code:
+		asset.Private = false
+	case g45_nft_private_code:
+		asset.Private = true
+	default:
+		return nil, fmt.Errorf("not a valid G45-NFT")
+	}
+
+	asset.SCID = scid
+	asset.Timestamp = uint64(values["timestamp"].(float64))
+	asset.Collection = decodeString(values["collection"].(string))
+	asset.MetadataFormat = decodeString(values["metadataFormat"].(string))
+	asset.Metadata = decodeString(values["metadata"].(string))
+	asset.Owner = decodeString(values["owner"].(string))
+
+	minter, err := decodeAddress(values["minter"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	asset.Minter = minter
 
 	return asset, nil
 }

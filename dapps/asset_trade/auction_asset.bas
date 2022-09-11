@@ -62,30 +62,29 @@ Function Initialize() Uint64
 End Function
 
 Function CreateAuction(sellAssetId String, bidAssetId String, startAmount Uint64, minBidAmount Uint64, startTimestamp Uint64, duration Uint64) Uint64
-10 DIM auId, sellAmount as Uint64
+10 DIM auId as Uint64
 20 LET auId = LOAD("au_ctr")
-30 LET sellAmount = ASSETVALUE(HEXDECODE(sellAssetId))
-40 IF sellAmount > 0 THEN GOTO 60
-50 RETURN 1
-60 IF startTimestamp > 0 THEN GOTO 80
-70 LET startTimestamp = BLOCK_TIMESTAMP()
-80 beginStore()
-90 storeUint64(auKey(auId, "startAmount"), startAmount)
-100 storeString(auKey(auId, "sellAssetId"), sellAssetId)
-110 storeUint64(auKey(auId, "sellAmount"), sellAmount)
-120 storeUint64(auKey(auId, "startTimestamp"), startTimestamp)
-130 storeUint64(auKey(auId, "duration"), duration)
-140 storeString(auKey(auId, "seller"), ADDRESS_STRING(SIGNER()))
-150 storeString(auKey(auId, "bidAssetId"), bidAssetId)
-160 storeUint64(auKey(auId, "minBidAmount"), minBidAmount)
-170 storeUint64(auKey(auId, "currentBid"), 0)
-180 storeUint64(auKey(auId, "bidCount"), 0)
-190 storeUint64(auKey(auId, "timestamp"), BLOCK_TIMESTAMP())
-200 storeUint64(auKey(auId, "close"), 0)
-210 storeString(auKey(auId, "txId"), HEX(TXID()))
-220 endStore()
-230 STORE("au_ctr", auId + 1)
-240 RETURN 0
+30 IF startTimestamp > 0 THEN GOTO 50
+40 LET startTimestamp = BLOCK_TIMESTAMP()
+50 IF EXISTS("fee_" + tradeAssetId) == 0 THEN GOTO 230
+60 beginStore()
+70 storeUint64(auKey(auId, "startAmount"), startAmount)
+80 storeString(auKey(auId, "sellAssetId"), sellAssetId)
+90 storeUint64(auKey(auId, "sellAmount"), ASSETVALUE(HEXDECODE(sellAssetId)))
+100 storeUint64(auKey(auId, "startTimestamp"), startTimestamp)
+110 storeUint64(auKey(auId, "duration"), duration)
+120 storeString(auKey(auId, "seller"), ADDRESS_STRING(SIGNER()))
+130 storeString(auKey(auId, "bidAssetId"), bidAssetId)
+140 storeUint64(auKey(auId, "minBidAmount"), minBidAmount)
+150 storeUint64(auKey(auId, "currentBid"), 0)
+160 storeUint64(auKey(auId, "bidCount"), 0)
+170 storeUint64(auKey(auId, "timestamp"), BLOCK_TIMESTAMP())
+180 storeUint64(auKey(auId, "close"), 0)
+190 storeString(auKey(auId, "txId"), HEX(TXID()))
+200 endStore()
+210 STORE("au_ctr", auId + 1)
+220 RETURN 0
+230 RETURN 1
 End Function
 
 Function SetAuctionMinBid(auId Uint64, amount Uint64) Uint64
@@ -206,17 +205,45 @@ Function RetrieveLockedFunds(auId Uint64) Uint64
 End Function
 
 Function SetAssetFee(assetId String, fee Uint64) Uint64
-10 IF LOAD("owner") == SIGNER() THEN GOTO 30
-20 RETURN 1
-30 IF fee <= 100 THEN GOTO 50
+10 IF LOAD("owner") != SIGNER() THEN GOTO 50
+20 IF fee > 100 THEN GOTO 50
+30 STORE("fee_" + assetId, fee)
+40 RETURN 0
+50 RETURN 1
+End Function
+
+Function DelAssetFee(assetId String) Uint64
+10 IF LOAD("owner") != SIGNER() THEN GOTO 40
+20 DELETE("fee_" + assetId)
+30 RETURN 0
 40 RETURN 1
-50 STORE("fee" + assetId, fee)
-60 RETURN 0
+End Function
+
+Function TransferOwnership(newMinter string) Uint64
+10 IF LOAD("owner") != SIGNER() THEN GOTO 40
+20 STORE("tempOwner", ADDRESS_RAW(newMinter))
+30 RETURN 0
+40 RETURN 1
+End Function
+
+Function CancelTransferOwnership() Uint64
+10 IF LOAD("owner") != SIGNER() THEN GOTO 40
+20 DELETE("tempOwner")
+30 RETURN 0
+40 RETURN 1
+End Function
+
+Function ClaimOwnership() Uint64
+10 IF LOAD("tempOwner") != SIGNER() THEN GOTO 50
+20 STORE("owner", SIGNER())
+30 DELETE("tempOwner")
+40 RETURN 0
+50 RETURN 1
 End Function
 
 Function UpdateCode(code String) Uint64
-10 IF LOAD("owner") == SIGNER() THEN GOTO 30
-20 RETURN 1
-30 UPDATE_SC_CODE(code)
-40 RETURN 0
+10 IF LOAD("owner") != SIGNER() THEN GOTO 40
+20 UPDATE_SC_CODE(code)
+30 RETURN 0
+40 RETURN 1
 End Function
