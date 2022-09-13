@@ -73,11 +73,12 @@ type G45_AT struct {
 	Minter           string
 	OriginalMinter   string
 	FrozenMetadata   bool
-	FrozenSupply     bool
+	FrozenMint       bool
 	FrozenCollection bool
 	MetadataFormat   string
 	Metadata         string
-	Supply           uint64
+	TotalSupply      uint64
+	Decimals         uint64
 	Collection       string
 	Owners           map[string]uint64
 	Timestamp        uint64
@@ -91,11 +92,12 @@ func (a *G45_AT) Print() {
 	fmt.Println("Timestamp: ", a.Timestamp)
 	fmt.Println("Collection SCID: ", a.Collection)
 	fmt.Println("Frozen Metadata: ", a.FrozenMetadata)
-	fmt.Println("Frozen Supply: ", a.FrozenSupply)
+	fmt.Println("Frozen Mint: ", a.FrozenMint)
 	fmt.Println("Frozen Collection: ", a.FrozenCollection)
 	fmt.Println("Metadata Format: ", a.MetadataFormat)
 	fmt.Println("Metadata: ", a.Metadata)
-	fmt.Println("Supply: ", a.Supply)
+	fmt.Println("Total Supply: ", a.TotalSupply)
+	fmt.Println("Decimals: ", a.Decimals)
 }
 
 func (a *G45_AT) JsonMetadata() (map[string]interface{}, error) {
@@ -254,11 +256,12 @@ func GetG45_AT(scid string, daemon *rpc_client.Daemon) (*G45_AT, error) {
 	asset.Timestamp = uint64(values["timestamp"].(float64))
 	asset.Collection = decodeString(values["collection"].(string))
 	asset.FrozenMetadata = values["frozenMetadata"].(float64) != 0
-	asset.FrozenSupply = values["frozenSupply"].(float64) != 0
+	asset.FrozenMint = values["frozenMint"].(float64) != 0
 	asset.FrozenCollection = values["frozenCollection"].(float64) != 0
 	asset.MetadataFormat = decodeString(values["metadataFormat"].(string))
 	asset.Metadata = decodeString(values["metadata"].(string))
-	asset.Supply = uint64(values["supply"].(float64))
+	asset.TotalSupply = uint64(values["totalSupply"].(float64))
+	asset.Decimals = uint64(values["decimals"].(float64))
 
 	minter, err := decodeAddress(values["minter"].(string))
 	if err != nil {

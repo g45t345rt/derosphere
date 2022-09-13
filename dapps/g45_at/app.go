@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/rpc"
@@ -87,6 +88,55 @@ func CommandDeploy() *cli.Command {
 				{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
 				{Name: "freezeSupply", DataType: rpc.DataUint64, Value: uFreezeSupply},
 				{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
+			}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func CommandDeployNFT() *cli.Command {
+	return &cli.Command{
+		Name:    "deploy-nft",
+		Aliases: []string{"dn"},
+		Usage:   "Deploy G45-NFT Smart Contract",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+			assetType, err := app.PromptChoose("Privacy type", []string{"public", "private"}, "private")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			code := utils.G45_NFT_PRIVATE_CODE
+			if assetType == "public" {
+				code = utils.G45_NFT_PUBLIC_CODE
+			}
+
+			collectionSCID, err := app.Prompt("Enter collection scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			metadataFormat, err := app.Prompt("Enter metadata format", "json")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			metadata, err := app.Prompt("Enter metadata", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			txId, err := walletInstance.InstallSmartContract([]byte(code), 2, []rpc.Argument{
+				{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
+				{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
+				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
 			}, true)
 
 			if err != nil {
@@ -935,6 +985,7 @@ func CommandDeployNFTCollection() *cli.Command {
 
 				if err != nil {
 					fmt.Println(err)
+					time.Sleep(2 * time.Second)
 					goto install_asset
 				}
 
@@ -953,6 +1004,7 @@ func CommandDeployNFTCollection() *cli.Command {
 
 				if err != nil {
 					fmt.Println(err)
+					time.Sleep(2 * time.Second)
 					goto set_collection
 				}
 
@@ -1025,6 +1077,7 @@ func App() *cli.App {
 		Commands: []*cli.Command{
 			CommandView(),
 			CommandDeploy(),
+			CommandDeployNFT(),
 			CommandDeployCollection(),
 			CommandAddSupply(),
 			CommandBurn(),

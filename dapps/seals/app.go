@@ -140,7 +140,7 @@ func update() error {
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 				`
 
-		_, err = tx.Exec(query, nft.SCID, nft.FrozenMetadata, nft.FrozenSupply, nft.Supply, nft.Metadata,
+		_, err = tx.Exec(query, nft.SCID, nft.FrozenMetadata, nft.FrozenMint, nft.TotalSupply, nft.Metadata,
 			metadata.Id, metadata.Rarity, metadata.Attributes["background"],
 			metadata.Attributes["base"], metadata.Attributes["eyes"], metadata.Attributes["hair_and_hats"],
 			metadata.Attributes["shirts"], metadata.Attributes["tattoo"], metadata.Attributes["facial_hair"],
