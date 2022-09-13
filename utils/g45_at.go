@@ -59,10 +59,10 @@ func (a *G45_C) JsonMetadata() (map[string]interface{}, error) {
 	if a.MetadataFormat == "json" {
 		err := json.Unmarshal([]byte(a.Metadata), &metadata)
 		if err != nil {
-			return nil, err
+			return metadata, err
 		}
 	} else {
-		return nil, errors.New("metadata format is not JSON")
+		return metadata, errors.New("metadata format is not JSON")
 	}
 	return metadata, nil
 }
@@ -105,10 +105,10 @@ func (a *G45_AT) JsonMetadata() (map[string]interface{}, error) {
 	if a.MetadataFormat == "json" {
 		err := json.Unmarshal([]byte(a.Metadata), &metadata)
 		if err != nil {
-			return nil, err
+			return metadata, err
 		}
 	} else {
-		return nil, errors.New("metadata format is not JSON")
+		return metadata, errors.New("metadata format is not JSON")
 	}
 	return metadata, nil
 }
@@ -140,10 +140,10 @@ func (a *G45_NFT) JsonMetadata() (map[string]interface{}, error) {
 	if a.MetadataFormat == "json" {
 		err := json.Unmarshal([]byte(a.Metadata), &metadata)
 		if err != nil {
-			return nil, err
+			return metadata, err
 		}
 	} else {
-		return nil, errors.New("metadata format is not JSON")
+		return metadata, errors.New("metadata format is not JSON")
 	}
 	return metadata, nil
 }
