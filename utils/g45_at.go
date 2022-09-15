@@ -21,6 +21,12 @@ var G45_AT_PUBLIC_CODE string
 //go:embed g45_at_private.bas
 var G45_AT_PRIVATE_CODE string
 
+//go:embed g45_fat_public.bas
+var G45_FAT_PUBLIC_CODE string
+
+//go:embed g45_fat_private.bas
+var G45_FAT_PRIVATE_CODE string
+
 //go:embed g45_c.bas
 var G45_C_CODE string
 
@@ -29,6 +35,37 @@ var G45_NFT_PUBLIC_CODE string
 
 //go:embed g45_nft_private.bas
 var G45_NFT_PRIVATE_CODE string
+
+type G45_FAT struct {
+	SCID             string
+	Private          bool
+	Minter           string
+	FrozenMetadata   bool
+	FrozenCollection bool
+	MetadataFormat   string
+	Metadata         string
+	MaxSupply        uint64
+	TotalSupply      uint64
+	Decimals         uint64
+	Collection       string
+	Owners           map[string]uint64
+	Timestamp        uint64
+}
+
+func (a *G45_FAT) Print() {
+	fmt.Println("SCID: ", a.SCID)
+	fmt.Println("Private: ", a.Private)
+	fmt.Println("Minter: ", a.Minter)
+	fmt.Println("Timestamp: ", a.Timestamp)
+	fmt.Println("Collection SCID: ", a.Collection)
+	fmt.Println("Frozen Metadata: ", a.FrozenMetadata)
+	fmt.Println("Frozen Collection: ", a.FrozenCollection)
+	fmt.Println("Metadata Format: ", a.MetadataFormat)
+	fmt.Println("Metadata: ", a.Metadata)
+	fmt.Println("Max Supply: ", a.MaxSupply)
+	fmt.Println("Total Supply: ", a.TotalSupply)
+	fmt.Println("Decimals: ", a.Decimals)
+}
 
 type G45_C struct {
 	SCID             string
@@ -77,6 +114,7 @@ type G45_AT struct {
 	FrozenCollection bool
 	MetadataFormat   string
 	Metadata         string
+	MaxSupply        uint64
 	TotalSupply      uint64
 	Decimals         uint64
 	Collection       string
@@ -96,6 +134,7 @@ func (a *G45_AT) Print() {
 	fmt.Println("Frozen Collection: ", a.FrozenCollection)
 	fmt.Println("Metadata Format: ", a.MetadataFormat)
 	fmt.Println("Metadata: ", a.Metadata)
+	fmt.Println("Max Supply: ", a.MaxSupply)
 	fmt.Println("Total Supply: ", a.TotalSupply)
 	fmt.Println("Decimals: ", a.Decimals)
 }
@@ -187,9 +226,9 @@ func GetG45_C(scid string, daemon *rpc_client.Daemon) (*G45_C, error) {
 
 	values := result.VariableStringKeys
 	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_atc_code := strings.ReplaceAll(strings.ReplaceAll(G45_C_CODE, "\r", ""), "\n", "")
-	if code != g45_atc_code {
-		return nil, fmt.Errorf("not a valid G45-ATC")
+	g45_c_code := strings.ReplaceAll(strings.ReplaceAll(G45_C_CODE, "\r", ""), "\n", "")
+	if code != g45_c_code {
+		return nil, fmt.Errorf("not a valid G45-C")
 	}
 
 	collection.SCID = scid
@@ -260,6 +299,7 @@ func GetG45_AT(scid string, daemon *rpc_client.Daemon) (*G45_AT, error) {
 	asset.FrozenCollection = values["frozenCollection"].(float64) != 0
 	asset.MetadataFormat = decodeString(values["metadataFormat"].(string))
 	asset.Metadata = decodeString(values["metadata"].(string))
+	asset.MaxSupply = uint64(values["maxSupply"].(float64))
 	asset.TotalSupply = uint64(values["totalSupply"].(float64))
 	asset.Decimals = uint64(values["decimals"].(float64))
 
@@ -276,6 +316,63 @@ func GetG45_AT(scid string, daemon *rpc_client.Daemon) (*G45_AT, error) {
 	}
 
 	asset.OriginalMinter = originalMinter
+
+	ownerKey, _ := regexp.Compile(`owner_(.+)`)
+	asset.Owners = make(map[string]uint64)
+	for key, value := range result.VariableStringKeys {
+		if ownerKey.Match([]byte(key)) {
+			owner := ownerKey.ReplaceAllString(key, "$1")
+			asset.Owners[owner] = uint64(value.(float64))
+		}
+	}
+
+	return asset, nil
+}
+
+func GetG45_FAT(scid string, daemon *rpc_client.Daemon) (*G45_FAT, error) {
+	result, err := daemon.GetSC(&rpc.GetSC_Params{
+		SCID:      scid,
+		Code:      true,
+		Variables: true,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	values := result.VariableStringKeys
+	asset := &G45_FAT{}
+
+	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
+	g45_fat_public_code := strings.ReplaceAll(strings.ReplaceAll(G45_AT_PUBLIC_CODE, "\r", ""), "\n", "")
+	g45_fat_private_code := strings.ReplaceAll(strings.ReplaceAll(G45_AT_PRIVATE_CODE, "\r", ""), "\n", "")
+
+	switch code {
+	case g45_fat_public_code:
+		asset.Private = false
+	case g45_fat_private_code:
+		asset.Private = true
+	default:
+		return nil, fmt.Errorf("not a valid G45-FAT")
+	}
+
+	asset.SCID = scid
+	asset.Timestamp = uint64(values["timestamp"].(float64))
+	asset.Collection = decodeString(values["collection"].(string))
+	asset.FrozenMetadata = values["frozenMetadata"].(float64) != 0
+	asset.FrozenCollection = values["frozenCollection"].(float64) != 0
+	asset.MetadataFormat = decodeString(values["metadataFormat"].(string))
+	asset.Metadata = decodeString(values["metadata"].(string))
+	asset.MaxSupply = uint64(values["maxSupply"].(float64))
+	asset.TotalSupply = uint64(values["totalSupply"].(float64))
+	asset.Decimals = uint64(values["decimals"].(float64))
+
+	minter, err := decodeAddress(values["minter"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	asset.Minter = minter
 
 	ownerKey, _ := regexp.Compile(`owner_(.+)`)
 	asset.Owners = make(map[string]uint64)

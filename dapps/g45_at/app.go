@@ -35,7 +35,12 @@ func CommandDeploy() *cli.Command {
 				return nil
 			}
 
-			supply, err := app.PromptUInt("Enter supply", 1)
+			decimals, err := app.PromptUInt("Enter token decimals", 0)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			startSupply, err := app.PromptUInt("Enter amount to mint", 1)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -60,14 +65,14 @@ func CommandDeploy() *cli.Command {
 				uFreezeMetadata = 1
 			}
 
-			freezeSupply, err := app.PromptYesNo("Freeze supply?", false)
+			freezeMint, err := app.PromptYesNo("Freeze minting?", false)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			uFreezeSupply := 0
-			if freezeSupply {
-				uFreezeSupply = 1
+			uFreezeMint := 0
+			if freezeMint {
+				uFreezeMint = 1
 			}
 
 			freezeCollection, err := app.PromptYesNo("Freeze collection?", false)
@@ -81,12 +86,13 @@ func CommandDeploy() *cli.Command {
 			}
 
 			txId, err := walletInstance.InstallSmartContract([]byte(code), 2, []rpc.Argument{
+				{Name: "startSupply", DataType: rpc.DataUint64, Value: startSupply},
+				{Name: "decimals", DataType: rpc.DataUint64, Value: decimals},
 				{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
-				{Name: "supply", DataType: rpc.DataUint64, Value: supply},
 				{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
 				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
 				{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
-				{Name: "freezeSupply", DataType: rpc.DataUint64, Value: uFreezeSupply},
+				{Name: "freezeMint", DataType: rpc.DataUint64, Value: uFreezeMint},
 				{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
 			}, true)
 

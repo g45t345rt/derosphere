@@ -66,7 +66,7 @@ Function CreateAuction(sellAssetId String, bidAssetId String, startAmount Uint64
 20 LET auId = LOAD("au_ctr")
 30 IF startTimestamp > 0 THEN GOTO 50
 40 LET startTimestamp = BLOCK_TIMESTAMP()
-50 IF EXISTS("fee_" + tradeAssetId) == 0 THEN GOTO 230
+50 IF EXISTS("fee_" + bidAssetId) == 0 THEN GOTO 230
 60 beginStore()
 70 storeUint64(auKey(auId, "startAmount"), startAmount)
 80 storeString(auKey(auId, "sellAssetId"), sellAssetId)
@@ -119,7 +119,7 @@ Function isAuctionFinished (auId Uint64) Uint64
 End Function
 
 Function Bid(auId Uint64) Uint64
-10 DIM minBidAmount, bidAmount, bidCount, lockedAmount, startAmount, currentBid, timestamp as Uint64
+10 DIM minBidAmount, bidAmount, bidCount, lockedAmount, startAmount, currentBid, timestamp, bdrBidCount as Uint64
 20 DIM bidAssetId, signerString as String
 30 LET signerString = ADDRESS_STRING(SIGNER())
 40 LET minBidAmount = LOAD(auKey(auId, "minBidAmount"))
@@ -130,8 +130,8 @@ Function Bid(auId Uint64) Uint64
 90 LET currentBid = LOAD(auKey(auId, "currentBid"))
 95 LET timestamp = BLOCK_TIMESTAMP()
 100 LET lockedAmount = 0
-110 IF EXISTS(auKey(auId, "bid_" + signerString + "_lockedAmount")) == 0 THEN GOTO 130
-120 LET lockedAmount = LOAD(auKey(auId, "bid_" + signerString + "_lockedAmount"))
+110 IF EXISTS(auKey(auId, "bdr_" + signerString + "_lockedAmount")) == 0 THEN GOTO 130
+120 LET lockedAmount = LOAD(auKey(auId, "bdr_" + signerString + "_lockedAmount"))
 130 LET lockedAmount = lockedAmount + bidAmount
 135 IF LOAD(auKey(auId, "close")) == 1 THEN GOTO 150
 136 IF timestamp < LOAD(auKey(auId, "startTimestamp")) THEN GOTO 150
@@ -146,14 +146,18 @@ Function Bid(auId Uint64) Uint64
 220 RETURN 1
 230 beginStore()
 240 LET currentBid = currentBid + (lockedAmount - currentBid)
-250 storeUint64(auKey(auId, "bid_" + signerString + "_lockedAmount"), lockedAmount)
-260 storeUint64(auKey(auId, "bid_" + signerString + "_bidAmount"), lockedAmount)
-270 storeUint64(auKey(auId, "bid_" + signerString + "_timestamp"), timestamp)
-280 storeUint64(auKey(auId, "currentBid"), currentBid)
-290 storeUint64(auKey(auId, "bidCount"), bidCount + 1)
-300 storeString(auKey(auId, "lastBidder"), signerString)
-310 endStore()
-320 RETURN 0
+250 LET bdrBidCount = 0
+260 IF EXISTS(auKey(auId, "bdr_" + signerString + "_bidCount")) == 0 THEN GOTO 280
+270 LET bdrBidCount = LOAD(auKey(auId, "bdr_" + signerString + "_bidCount"))
+280 storeUint64(auKey(auId, "bdr_" + signerString + "_lockedAmount"), lockedAmount)
+290 storeUint64(auKey(auId, "bdr_" + signerString + "_bidAmount"), lockedAmount)
+300 storeUint64(auKey(auId, "bdr_" + signerString + "_timestamp"), timestamp)
+310 storeUint64(auKey(auId, "bdr_" + signerString + "_bidCount"), bdrBidCount + 1)
+320 storeUint64(auKey(auId, "currentBid"), currentBid)
+330 storeUint64(auKey(auId, "bidCount"), bidCount + 1)
+340 storeString(auKey(auId, "lastBidder"), signerString)
+350 endStore()
+360 RETURN 0
 End Function
 
 Function CheckoutAuction(auId Uint64) Uint64
@@ -175,7 +179,7 @@ Function CheckoutAuction(auId Uint64) Uint64
 160 LET currentBid = currentBid - auctionCut
 170 beginStore()
 180 storeUint64(auKey(auId, "close"), 1)
-190 storeUint64(auKey(auId, "bid_" + winner + "_lockedAmount"), 0)
+190 storeUint64(auKey(auId, "bdr_" + winner + "_lockedAmount"), 0)
 200 storeUint64(auKey(auId, "checkoutFee"), auctionCut)
 210 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(winner), sellAmount, HEXDECODE(sellAssetId))
 220 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(seller), currentBid, HEXDECODE(bidAssetId))
@@ -194,12 +198,12 @@ Function RetrieveLockedFunds(auId Uint64) Uint64
 70 RETURN 1
 80 IF winner != signerString THEN GOTO 100
 90 RETURN 1
-100 LET lockedAmount = LOAD(auKey(auId, "bid_" + signerString + "_lockedAmount"))
+100 LET lockedAmount = LOAD(auKey(auId, "bdr_" + signerString + "_lockedAmount"))
 110 IF lockedAmount > 0 THEN GOTO 130
 120 RETURN 1
 130 beginStore()
 140 SEND_ASSET_TO_ADDRESS(SIGNER(), lockedAmount, HEXDECODE(bidAssetId))
-150 storeUint64(auKey(auId, "bid_" + signerString + "_lockedAmount"), 0)
+150 storeUint64(auKey(auId, "bdr_" + signerString + "_lockedAmount"), 0)
 160 endStore()
 170 RETURN 0
 End Function
