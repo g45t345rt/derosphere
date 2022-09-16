@@ -76,6 +76,10 @@ func (asset *G45_FAT) Print() {
 	fmt.Println("Decimals: ", asset.Decimals)
 }
 
+func (asset *G45_FAT) JsonMetadata() (map[string]interface{}, error) {
+	return formatMetadata(asset.MetadataFormat, asset.Metadata)
+}
+
 func (asset *G45_FAT) Parse(scId string, result *rpc.GetSC_Result) error {
 	values := result.VariableStringKeys
 
