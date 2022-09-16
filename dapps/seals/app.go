@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/utils"
 	"github.com/pkg/browser"
@@ -115,13 +116,37 @@ func update() error {
 		return err
 	}
 
-	collection, err := utils.GetG45_C(collectionSCID, daemon)
+	collection := utils.G45_C{}
+	result, err := daemon.GetSC(&rpc.GetSC_Params{
+		SCID:      collectionSCID,
+		Code:      true,
+		Variables: true,
+	})
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return nil
+	}
+
+	err = collection.Parse(collectionSCID, result)
+	if err != nil {
+		fmt.Println(err)
+		return nil
 	}
 
 	for assetSCID := range collection.Assets {
-		nft, err := utils.GetG45_AT(assetSCID, daemon)
+		nft := utils.G45_NFT{}
+
+		result, err := daemon.GetSC(&rpc.GetSC_Params{
+			SCID:      assetSCID,
+			Code:      true,
+			Variables: true,
+		})
+		if err != nil {
+			fmt.Printf("%s %s\n", assetSCID, err.Error())
+			continue
+		}
+
+		err = nft.Parse(assetSCID, result)
 		if err != nil {
 			fmt.Printf("%s %s\n", assetSCID, err.Error())
 			continue
@@ -135,12 +160,12 @@ func update() error {
 		}
 
 		query := `
-					insert into dapps_seals_collection (scid, frozen_metadata,	frozen_supply, supply, metadata, id,
+					insert into dapps_seals_collection (scid, metadata, id,
 						rarity, trait_background, trait_base, trait_eyes, trait_hairAndHats, trait_shirts, trait_tattoo, trait_facialHair)
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 				`
 
-		_, err = tx.Exec(query, nft.SCID, nft.FrozenMetadata, nft.FrozenMint, nft.TotalSupply, nft.Metadata,
+		_, err = tx.Exec(query, nft.SCID, nft.Metadata,
 			metadata.Id, metadata.Rarity, metadata.Attributes["background"],
 			metadata.Attributes["base"], metadata.Attributes["eyes"], metadata.Attributes["hair_and_hats"],
 			metadata.Attributes["shirts"], metadata.Attributes["tattoo"], metadata.Attributes["facial_hair"],

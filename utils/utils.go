@@ -2,11 +2,14 @@ package utils
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/deroproject/derohe/cryptography/crypto"
+	"github.com/deroproject/derohe/rpc"
 	"github.com/g45t345rt/derosphere/config"
 	"github.com/urfave/cli/v2"
 )
@@ -53,4 +56,28 @@ func NewNullString(s string) sql.NullString {
 		String: s,
 		Valid:  true,
 	}
+}
+
+func DecodeString(value string) string {
+	bytes, err := hex.DecodeString(value)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return string(bytes)
+}
+
+func DecodeAddress(value string) (string, error) {
+	p := new(crypto.Point)
+	key, err := hex.DecodeString(value)
+	if err != nil {
+		return "", err
+	}
+
+	err = p.DecodeCompressed(key)
+	if err != nil {
+		return "", err
+	}
+
+	return rpc.NewAddressFromKeys(p).String(), nil
 }

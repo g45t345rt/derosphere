@@ -1158,7 +1158,18 @@ func CommandViewAsset() *cli.Command {
 				}
 			}
 
-			asset, err := utils.GetG45_AT(scid, walletInstance.Daemon)
+			asset := utils.G45_AT{}
+			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
+				SCID:      scid,
+				Code:      true,
+				Variables: true,
+			})
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			err = asset.Parse(scid, result)
 			if err != nil {
 				fmt.Println(err)
 				return nil
