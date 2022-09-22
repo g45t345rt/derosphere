@@ -1,4 +1,4 @@
-package g45_at
+package g45_sc
 
 import (
 	"encoding/json"
@@ -13,10 +13,10 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func CommandDeploy() *cli.Command {
+func CommandDeployAT() *cli.Command {
 	return &cli.Command{
-		Name:    "deploy",
-		Aliases: []string{"d"},
+		Name:    "deploy-at",
+		Aliases: []string{"d-at"},
 		Usage:   "Deploy G45-AT Smart Contract",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
@@ -107,10 +107,93 @@ func CommandDeploy() *cli.Command {
 	}
 }
 
+func CommandDeployFAT() *cli.Command {
+	return &cli.Command{
+		Name:    "deploy-fat",
+		Aliases: []string{"d-fat"},
+		Usage:   "Deploy G45-FAT Smart Contract",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+			assetType, err := app.PromptChoose("Asset token type", []string{"public", "private"}, "private")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			code := utils.G45_FAT_PRIVATE_CODE
+			if assetType == "public" {
+				code = utils.G45_FAT_PUBLIC_CODE
+			}
+
+			collectionSCID, err := app.Prompt("Enter collection scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			decimals, err := app.PromptUInt("Enter token decimals", 0)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			startSupply, err := app.PromptUInt("Enter max supply", 1)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			metadataFormat, err := app.Prompt("Enter metadata format", "json")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			metadata, err := app.Prompt("Enter metadata", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			uFreezeMetadata := 0
+			if freezeMetadata {
+				uFreezeMetadata = 1
+			}
+
+			freezeCollection, err := app.PromptYesNo("Freeze collection?", false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			uFreezeCollection := 0
+			if freezeCollection {
+				uFreezeCollection = 1
+			}
+
+			txId, err := walletInstance.InstallSmartContract([]byte(code), 2, []rpc.Argument{
+				{Name: "maxSupply", DataType: rpc.DataUint64, Value: startSupply},
+				{Name: "decimals", DataType: rpc.DataUint64, Value: decimals},
+				{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
+				{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
+				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
+				{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
+				{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
+			}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
 func CommandDeployNFT() *cli.Command {
 	return &cli.Command{
 		Name:    "deploy-nft",
-		Aliases: []string{"dn"},
+		Aliases: []string{"d-nft"},
 		Usage:   "Deploy G45-NFT Smart Contract",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
@@ -590,6 +673,10 @@ func CommandCheckValid() *cli.Command {
 				fmt.Println("Valid G45-NFT (Private) Smart Contract.")
 			case utils.G45_NFT_PUBLIC_CODE:
 				fmt.Println("Valid G45-NFT (Public) Smart Contract.")
+			case utils.G45_FAT_PRIVATE_CODE:
+				fmt.Println("Valid G45-FAT (Private) Smart Contract.")
+			case utils.G45_FAT_PUBLIC_CODE:
+				fmt.Println("Valid G45-FAT (Public) Smart Contract.")
 			default:
 				fmt.Println("Not a valid G45 Smart Contract.")
 			}
@@ -645,7 +732,7 @@ func DoCollectionDeploy() (string, error) {
 func CommandDeployCollection() *cli.Command {
 	return &cli.Command{
 		Name:    "collection-deploy",
-		Aliases: []string{"cd"},
+		Aliases: []string{"d-c"},
 		Usage:   "Deploy G45-ATC Smart Contract",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
@@ -1099,12 +1186,13 @@ func CommandViewCollection() *cli.Command {
 
 func App() *cli.App {
 	return &cli.App{
-		Name:        "g45-at",
-		Description: "Deploy & manage G45-AT Smart Contract.",
+		Name:        "g45-sc",
+		Description: "Deploy & manage G45 Smart Contract.",
 		Version:     "0.0.1",
 		Commands: []*cli.Command{
 			CommandView(),
-			CommandDeploy(),
+			CommandDeployAT(),
+			CommandDeployFAT(),
 			CommandDeployNFT(),
 			CommandDeployCollection(),
 			CommandAddSupply(),

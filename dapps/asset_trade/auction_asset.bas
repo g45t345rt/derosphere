@@ -55,7 +55,7 @@ Function Initialize() Uint64
 10 IF EXISTS("owner") == 0 THEN GOTO 30
 20 RETURN 1
 30 STORE("owner", SIGNER())
-40 STORE("fee_0000000000000000000000000000000000000000000000000000000000000000", 2)
+40 STORE("fee_0000000000000000000000000000000000000000000000000000000000000000", 25) // 2.5%
 50 STORE("au_ctr", 0)
 60 initStore()
 70 RETURN 0
@@ -175,7 +175,7 @@ Function CheckoutAuction(auId Uint64) Uint64
 120 IF isAuctionFinished(auId) == 1 THEN GOTO 140
 130 RETURN 1
 140 IF EXISTS("fee_" + bidAssetId) == 0 THEN GOTO 170
-150 LET auctionCut = currentBid * LOAD("fee_" + bidAssetId) / 100
+150 LET auctionCut = currentBid * LOAD("fee_" + bidAssetId) / 1000
 160 LET currentBid = currentBid - auctionCut
 170 beginStore()
 180 storeUint64(auKey(auId, "close"), 1)
@@ -210,7 +210,7 @@ End Function
 
 Function SetAssetFee(assetId String, fee Uint64) Uint64
 10 IF LOAD("owner") != SIGNER() THEN GOTO 50
-20 IF fee > 100 THEN GOTO 50
+20 IF fee > 1000 THEN GOTO 50
 30 STORE("fee_" + assetId, fee)
 40 RETURN 0
 50 RETURN 1

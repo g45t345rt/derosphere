@@ -1,10 +1,13 @@
+from ast import operator
 import csv
 import json
 import sys
+import operator
 
 metadata_path = "./metadata.json"  # sys.argv[1]
 rarity_path = "./rarity.csv"  # sys.argv[2]
-out_path = "./nfts.json"  # sys.argv[3]
+nfts_out_path = "./nfts.json"  # sys.argv[3]
+collection_stats_out_path = "./stats.json"  # sys.argv[3]
 
 
 def get_rarity():
@@ -43,31 +46,89 @@ def main():
     attributes_names = json.load(attributes_names_file)
     attributes_names_file.close()
 
-    rarity = get_rarity()
+    #rarity = get_rarity() // don't need rarity file anymore - the nft platform will calculate it
+    collection_stats = {}
+    #attr_stats = {}
     nfts = []
     for cI in range(len(metadata["collection"])):
         collection = metadata["collection"][cI]
-        id = collection["name"].replace("#", "")
+        id = collection["name"].replace("#", "")  # don't need # with ID
 
-        nfts.append({})
-        nft = nfts[cI]
+        nft = {}
         nft["id"] = int(id)
-        nft["rarity"] = float(rarity[id])
-        nft["rarity_type"] = get_rarity_type(nft["rarity"])
+        #nft["rarity"] = float(rarity[id])
+        #nft["rarity_type"] = get_rarity_type(nft["rarity"])
         nft["attributes"] = {}
 
         attributes = collection["attributes"]
+        is_dero_man_suit = False
         for attribute in attributes:
             attr_category = capitalize_words(attribute["trait_type"])
             if attr_category == "Background" or attr_category == "Base":
                 continue
             attr_name = attributes_names[attribute["value"].replace(
-                "Untitled_Artwork ", "")]
+                "Untitled_Artwork ", "")]  # Remove unnecessary Untitled_Artwork
+            if attr_category == "Shirts":
+                is_dero_man_suit = attr_name == "Dero Man Suit"
             nft["attributes"][attr_category] = attr_name
+            if attr_category not in collection_stats:
+                collection_stats[attr_category] = {
+                    "count": 0, "attributes": {}}
+            collection_stats[attr_category]["count"] += 1
+            if attr_name not in collection_stats[attr_category]["attributes"]:
+                collection_stats[attr_category]["attributes"][attr_name] = {
+                    "count": 0}
+            collection_stats[attr_category]["attributes"][attr_name]["count"] += 1
+            #attr_stats[attr_name] = attr_stats.get(attr_name, 0) + 1
 
-    nfts_file = open(out_path, "w")
+        # Metadata fix - All Dero Man Suit should have Blue Eyes
+        if is_dero_man_suit:
+            if "Eyes" in nft["attributes"]:
+                if nft["attributes"]["Eyes"] in ["Green Eyes", "Red Eyes", "Blue Eyes"]:
+                    nft["attributes"]["Eyes"] = "Blue Eyes"
+            else:
+                nft["attributes"]["Eyes"] = "Blue Eyes"
+        nfts.append(nft)
+
+    nft_count = len(nfts)
+    for layer in collection_stats:
+        c_count = collection_stats[layer]["count"]
+        collection_stats[layer]["percentage"] = round(
+            c_count * 100 / nft_count, 2)
+        for attribute in collection_stats[layer]["attributes"]:
+            count = collection_stats[layer]["attributes"][attribute]["count"]
+            collection_stats[layer]["attributes"][attribute]["percentage"] = round(
+                count * 100 / nft_count, 2)
+            collection_stats[layer]["attributes"][attribute]["score"] = round(
+                1 / (count / nft_count), 2)
+        """
+        n_count = nft_count - c_count
+        collection_stats[layer]["attributes"]["None"] = {
+            "count": n_count, "percentage": round(n_count * 100 / nft_count, 2), "score": 0}
+        for nft in nfts:
+            if layer not in nft["attributes"]:
+                nft["attributes"][layer] = "None"
+        """
+
+    """
+    for nft in nfts:
+        nft_score = 0
+        for layer in nft["attributes"]:
+            attr = nft["attributes"][layer]
+            a_score = collection_stats[layer]["attributes"][attr]["score"]
+            nft_score += a_score
+        nft["score"] = round(nft_score, 2)
+    """
+
+    #nfts.sort(key=operator.itemgetter("score"), reverse=True)
+
+    nfts_file = open(nfts_out_path, "w")
     json.dump(nfts, nfts_file, indent=2)
     nfts_file.close()
+
+    stats_file = open(collection_stats_out_path, "w")
+    json.dump(collection_stats, stats_file, indent=2)
+    stats_file.close()
 
 
 if __name__ == "__main__":

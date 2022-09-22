@@ -3,7 +3,7 @@ package dapps
 import (
 	"github.com/g45t345rt/derosphere/dapps/asset_trade"
 	"github.com/g45t345rt/derosphere/dapps/dnd"
-	"github.com/g45t345rt/derosphere/dapps/g45_at"
+	"github.com/g45t345rt/derosphere/dapps/g45_sc"
 	"github.com/g45t345rt/derosphere/dapps/lotto"
 	"github.com/g45t345rt/derosphere/dapps/nameservice"
 	"github.com/g45t345rt/derosphere/dapps/seals"
@@ -26,7 +26,7 @@ func List() []*cli.App {
 	return []*cli.App{
 		nameservice.App(),
 		username.App(),
-		g45_at.App(),
+		g45_sc.App(),
 		t345_nft.App(),
 		lotto.App(),
 		dnd.App(),
