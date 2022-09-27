@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -544,6 +545,45 @@ func CommandWalletTransfer() *cli.Command {
 	}
 }
 
+func CommandWalletTransferFromFile() *cli.Command {
+	return &cli.Command{
+		Name:    "transfer-from-file",
+		Aliases: []string{"tff"},
+		Usage:   "Transfer from json file",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			filePath, err := app.Prompt("Filepath", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			content, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			var transfer *rpc.Transfer_Params
+			err = json.Unmarshal(content, &transfer)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			txid, err := walletInstance.Transfer(transfer)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txid)
+			return nil
+		},
+	}
+}
+
 func CommandWalletTransactions() *cli.Command {
 	return &cli.Command{
 		Name:    "transactions",
@@ -968,6 +1008,7 @@ func WalletApp() *cli.App {
 			CommandDaemonInfo(),
 			CommandDApp(),
 			CommandWalletTransfer(),
+			CommandWalletTransferFromFile(),
 			CommandWalletBurn(),
 			CommandWalletBalance(),
 			CommandAssetBalance(),

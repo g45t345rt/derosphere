@@ -58,13 +58,12 @@ func NewNullString(s string) sql.NullString {
 	}
 }
 
-func DecodeString(value string) string {
+func DecodeString(value string) (string, error) {
 	bytes, err := hex.DecodeString(value)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-
-	return string(bytes)
+	return string(bytes), nil
 }
 
 func DecodeAddress(value string) (string, error) {

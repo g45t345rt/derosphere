@@ -101,16 +101,16 @@ def main():
                 count * 100 / nft_count, 2)
             collection_stats[layer]["attributes"][attribute]["score"] = round(
                 1 / (count / nft_count), 2)
-        """
+
         n_count = nft_count - c_count
         collection_stats[layer]["attributes"]["None"] = {
             "count": n_count, "percentage": round(n_count * 100 / nft_count, 2), "score": 0}
         for nft in nfts:
             if layer not in nft["attributes"]:
                 nft["attributes"][layer] = "None"
-        """
 
-    """
+
+
     for nft in nfts:
         nft_score = 0
         for layer in nft["attributes"]:
@@ -118,9 +118,9 @@ def main():
             a_score = collection_stats[layer]["attributes"][attr]["score"]
             nft_score += a_score
         nft["score"] = round(nft_score, 2)
-    """
 
-    #nfts.sort(key=operator.itemgetter("score"), reverse=True)
+
+    nfts.sort(key=operator.itemgetter("score"), reverse=True)
 
     nfts_file = open(nfts_out_path, "w")
     json.dump(nfts, nfts_file, indent=2)
