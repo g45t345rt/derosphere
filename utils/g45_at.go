@@ -2,6 +2,7 @@ package utils
 
 import (
 	_ "embed"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -103,7 +104,6 @@ func (asset *G45_FAT) Parse(scId string, result *rpc.GetSC_Result) error {
 
 	asset.SCID = scId
 	asset.Timestamp = uint64(values["timestamp"].(float64))
-	//asset.Collection, err := DecodeString(values["collection"].(string))
 	collection, err := DecodeString(values["collection"].(string))
 	if err != nil {
 		return err
@@ -163,7 +163,7 @@ type G45_C struct {
 	Collection     string
 	MetadataFormat string
 	Metadata       string
-	Assets         map[string]interface{}
+	Assets         map[string]uint64
 	AssetCount     uint64
 	Timestamp      uint64
 }
@@ -222,18 +222,32 @@ func (collection *G45_C) Parse(scId string, result *rpc.GetSC_Result) error {
 	collection.Owner = owner
 	collection.OriginalOwner = originalOwner
 
-	jsonAssets, err := DecodeString(values["assets"].(string))
+	assetKey, err := regexp.Compile(`assets_(.+)`)
 	if err != nil {
 		return err
 	}
 
-	assets, err := formatMetadata("json", jsonAssets)
-	if err != nil {
-		return err
+	collection.Assets = make(map[string]uint64)
+	for sKey, sValue := range values {
+		if assetKey.Match([]byte(sKey)) {
+			valueBytes, err := hex.DecodeString(sValue.(string))
+			if err != nil {
+				return err
+			}
+
+			var assets map[string]uint64
+			err = json.Unmarshal(valueBytes, &assets)
+			if err != nil {
+				return err
+			}
+
+			for key, value := range assets {
+				collection.Assets[key] = value
+			}
+		}
 	}
 
-	collection.Assets = assets
-
+	collection.AssetCount = uint64(len(collection.Assets))
 	return nil
 }
 
@@ -260,6 +274,7 @@ func (asset *G45_DC) Print() {
 	fmt.Println("Metadata: ", asset.Metadata)
 	fmt.Println("Owner: ", asset.Owner)
 	fmt.Println("Original Owner: ", asset.OriginalOwner)
+	fmt.Println("Asset Count: ", asset.AssetCount)
 	fmt.Println("Timestamp: ", asset.Timestamp)
 }
 
@@ -312,7 +327,7 @@ func (collection *G45_DC) Parse(scId string, result *rpc.GetSC_Result) error {
 	}
 
 	collection.Assets = make(map[string]uint64)
-	for key, value := range result.VariableStringKeys {
+	for key, value := range values {
 		if assetKey.Match([]byte(key)) {
 			assetSCID := assetKey.ReplaceAllString(key, "$1")
 			collection.Assets[assetSCID] = uint64(value.(float64))

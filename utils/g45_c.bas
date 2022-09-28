@@ -23,10 +23,18 @@ Function Freeze(assets Uint64, metadata Uint64) Uint64
 7 RETURN 1
 End Function
 
-Function SetAssets(assets String) Uint64
+Function SetAssets(index Uint64, assets String) Uint64
 1 IF LOAD("owner") != SIGNER() THEN GOTO 5
 2 IF LOAD("frozenAssets") >= 1 THEN GOTO 5
-3 STORE("assets", assets)
+3 STORE("assets_" + index, assets)
+4 RETURN 0
+5 RETURN 1
+End Function
+
+Function DelAssets(index Uint64, assets String) Uint64
+1 IF LOAD("owner") != SIGNER() THEN GOTO 5
+2 IF LOAD("frozenAssets") >= 1 THEN GOTO 5
+3 DELETE("assets_" + index)
 4 RETURN 0
 5 RETURN 1
 End Function

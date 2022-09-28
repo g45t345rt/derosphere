@@ -938,10 +938,10 @@ func Command_G45_NFT_Deploy() *cli.Command {
 	}
 }
 
-func Command_G45_NFT_DisplayToken() *cli.Command {
+func Command_G45_NFT_DisplayNFT() *cli.Command {
 	return &cli.Command{
-		Name:    "g45-nft-displaytoken",
-		Aliases: []string{"g45-nft-dt"},
+		Name:    "g45-nft-displaynft",
+		Aliases: []string{"g45-nft-dn"},
 		Usage:   "Display token in SC",
 		Action: func(ctx *cli.Context) error {
 			scid := ctx.Args().First()
@@ -967,7 +967,7 @@ func Command_G45_NFT_DisplayToken() *cli.Command {
 				Burn:        1,
 			}
 
-			txId, err := walletInstance.CallSmartContract(2, scid, "DisplayToken", []rpc.Argument{}, []rpc.Transfer{
+			txId, err := walletInstance.CallSmartContract(2, scid, "DisplayNFT", []rpc.Argument{}, []rpc.Transfer{
 				transfer,
 			}, true)
 
@@ -982,10 +982,10 @@ func Command_G45_NFT_DisplayToken() *cli.Command {
 	}
 }
 
-func Command_G45_NFT_RetrieveToken() *cli.Command {
+func Command_G45_NFT_RetrieveNFT() *cli.Command {
 	return &cli.Command{
-		Name:    "g45-nft-retrievetoken",
-		Aliases: []string{"g45-nft-rt"},
+		Name:    "g45-nft-retrievenft",
+		Aliases: []string{"g45-nft-rn"},
 		Usage:   "Retrieve token from SC",
 		Action: func(ctx *cli.Context) error {
 			scid := ctx.Args().First()
@@ -999,7 +999,7 @@ func Command_G45_NFT_RetrieveToken() *cli.Command {
 				}
 			}
 
-			txId, err := walletInstance.CallSmartContract(2, scid, "RetrieveToken", []rpc.Argument{}, []rpc.Transfer{}, true)
+			txId, err := walletInstance.CallSmartContract(2, scid, "RetrieveNFT", []rpc.Argument{}, []rpc.Transfer{}, true)
 
 			if err != nil {
 				fmt.Println(err)
@@ -1148,17 +1148,58 @@ func Command_G45_C_Freeze() *cli.Command {
 	}
 }
 
-func G45_C_SetAssets(scId string, assets []byte) (string, error) {
-	walletInstance := app.Context.WalletInstance
-	txId, err := walletInstance.CallSmartContract(2, scId, "SetAssets", []rpc.Argument{
-		{Name: "assets", DataType: rpc.DataString, Value: string(assets)},
-	}, []rpc.Transfer{}, true)
-
-	if err != nil {
-		return "", err
+func G45_C_SetAssets(scId string, assets map[string]uint64, promptFees bool) error {
+	startAt, err := app.PromptUInt("Start at index", 0)
+	if app.HandlePromptErr(err) {
+		return nil
 	}
 
-	return txId, nil
+	var entries []map[string]uint64
+	maxAssetsPerEntry := 100
+	index := 0
+	assetsEntry := make(map[string]uint64)
+	for key, v := range assets {
+		assetsEntry[key] = v
+		index++
+
+		if index >= maxAssetsPerEntry {
+			entries = append(entries, assetsEntry)
+			assetsEntry = make(map[string]uint64)
+			index = 0
+		}
+	}
+
+	if len(assetsEntry) > 0 {
+		entries = append(entries, assetsEntry)
+	}
+
+	fmt.Printf("%d assets with %d entries\n", len(assets), len(entries))
+	walletInstance := app.Context.WalletInstance
+	for i, entry := range entries {
+		if i >= int(startAt) {
+			data, err := json.Marshal(entry)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+		set_assets:
+			fmt.Printf("Set Assets %d - %d assets\n", i, len(entry))
+			txId, err := walletInstance.CallSmartContract(2, scId, "SetAssets", []rpc.Argument{
+				{Name: "index", DataType: rpc.DataUint64, Value: uint64(i)},
+				{Name: "assets", DataType: rpc.DataString, Value: string(data)},
+			}, []rpc.Transfer{}, promptFees)
+			if err != nil {
+				fmt.Println(err)
+				time.Sleep(2 * time.Second)
+				goto set_assets
+			}
+
+			walletInstance.RunTxChecker(txId)
+		}
+	}
+
+	return nil
 }
 
 func Command_G45_C_SetAssets() *cli.Command {
@@ -1183,14 +1224,19 @@ func Command_G45_C_SetAssets() *cli.Command {
 				return nil
 			}
 
-			walletInstance := app.Context.WalletInstance
-			txId, err := G45_C_SetAssets(collectionSCID, content)
+			var assets map[string]uint64
+			err = json.Unmarshal(content, &assets)
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			walletInstance.RunTxChecker(txId)
+			err = G45_C_SetAssets(collectionSCID, assets, false)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
 			return nil
 		},
 	}
@@ -1444,21 +1490,9 @@ func Command_G45_C_DeployNFTs() *cli.Command {
 			}
 
 			if setCollectionAssets {
-				data, err := json.Marshal(nfts)
+				err = G45_C_SetAssets(collectionSCID, nfts, false)
 				if err != nil {
 					return err
-				}
-
-				txId, err := G45_C_SetAssets(collectionSCID, data)
-				if err != nil {
-					fmt.Println(err)
-					return nil
-				}
-
-				err = walletInstance.WaitTransaction(txId)
-				if err != nil {
-					fmt.Println(err)
-					return nil
 				}
 			}
 
@@ -1984,9 +2018,10 @@ func App() *cli.App {
 			Command_G45_FAT_RetrieveToken(),
 			// G45-NFT
 			Command_G45_NFT_Deploy(),
-			Command_G45_NFT_DisplayToken(),
-			Command_G45_NFT_RetrieveToken(),
+			Command_G45_NFT_DisplayNFT(),
+			Command_G45_NFT_RetrieveNFT(),
 			// G45-C
+			Command_G45_C_View(),
 			Command_G45_C_Deploy(),
 			Command_G45_C_Freeze(),
 			Command_G45_C_SetAssets(),
