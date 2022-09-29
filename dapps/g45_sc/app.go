@@ -1108,7 +1108,7 @@ func G45_BC_Deploy() (string, error) {
 		uFreezeMetadata = 1
 	}
 
-	txId, err := walletInstance.InstallSmartContract([]byte(utils.G45_C_CODE), 2, []rpc.Argument{
+	txId, err := walletInstance.InstallSmartContract([]byte(utils.G45_BC_CODE), 2, []rpc.Argument{
 		{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
 		{Name: "metadata", DataType: rpc.DataString, Value: metadata},
 		{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
@@ -1125,7 +1125,7 @@ func Command_G45_BC_Deploy() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 
-			txId, err := G45_C_Deploy()
+			txId, err := G45_BC_Deploy()
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -1148,7 +1148,7 @@ func Command_G45_BC_Freeze() *cli.Command {
 			}
 
 			uFreezeAssets := 0
-			freezeAssets, err := app.PromptYesNo("Freeze collection/assets/nfts?", false)
+			freezeAssets, err := app.PromptYesNo("Freeze assets/nfts?", false)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -1415,14 +1415,14 @@ func Command_G45_BC_DeployNFTs() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 
-			installCollection, err := app.PromptYesNo("Install G45-C?", true)
+			installCollection, err := app.PromptYesNo("Install G45-BC?", true)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
 			var collectionSCID string
 			if installCollection {
-				collectionSCID, err = G45_C_Deploy()
+				collectionSCID, err = G45_BC_Deploy()
 				if app.HandlePromptErr(err) {
 					return nil
 				}
@@ -1593,16 +1593,6 @@ func G45_C_Deploy() (string, error) {
 		return "", err
 	}
 
-	uFreezeCollection := 0
-	freezeCollection, err := app.PromptYesNo("Freeze collection?", false)
-	if err != nil {
-		return "", err
-	}
-
-	if freezeCollection {
-		uFreezeCollection = 1
-	}
-
 	uFreezeMetadata := 0
 	freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
 	if err != nil {
@@ -1616,7 +1606,6 @@ func G45_C_Deploy() (string, error) {
 	txId, err := walletInstance.InstallSmartContract([]byte(utils.G45_C_CODE), 2, []rpc.Argument{
 		{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
 		{Name: "metadata", DataType: rpc.DataString, Value: metadata},
-		{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
 		{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
 	}, true)
 
@@ -1627,7 +1616,7 @@ func Command_G45_C_Deploy() *cli.Command {
 	return &cli.Command{
 		Name:    "g45-c-deploy",
 		Aliases: []string{"g45-c-d"},
-		Usage:   "Deploy G45-DC Smart Contract",
+		Usage:   "Deploy G45-C Smart Contract",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 
@@ -1724,7 +1713,7 @@ func Command_G45_C_Freeze() *cli.Command {
 			}
 
 			uFreezeAssets := 0
-			freezeAssets, err := app.PromptYesNo("Freeze collection/assets/nfts?", false)
+			freezeAssets, err := app.PromptYesNo("Freeze assets/nfts?", false)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -1892,7 +1881,7 @@ func Command_G45_C_DeployNFTs() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 
-			installCollection, err := app.PromptYesNo("Install G45-DC?", true)
+			installCollection, err := app.PromptYesNo("Install G45-C?", true)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
@@ -1906,7 +1895,7 @@ func Command_G45_C_DeployNFTs() *cli.Command {
 
 				walletInstance.RunTxChecker(collectionSCID)
 			} else {
-				collectionSCID, err = app.Prompt("G45-DC Smart Contract?", "")
+				collectionSCID, err = app.Prompt("G45-C Smart Contract?", "")
 				if app.HandlePromptErr(err) {
 					return nil
 				}
@@ -2015,7 +2004,7 @@ func CommandValidSC() *cli.Command {
 	return &cli.Command{
 		Name:    "valid-sc",
 		Aliases: []string{"v-sc"},
-		Usage:   "Check if smart contract is a valid G45-AT/G45-FAT/G45-NFT/G45-C/G45-DC",
+		Usage:   "Check if smart contract is a valid G45-AT/G45-FAT/G45-NFT/G45-C/G45-BC",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 

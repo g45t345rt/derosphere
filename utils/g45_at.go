@@ -27,7 +27,7 @@ var G45_FAT_PRIVATE_CODE string
 //go:embed g45_c.bas
 var G45_C_CODE string
 
-//go:embed g45_c.bas
+//go:embed g45_bc.bas
 var G45_BC_CODE string
 
 //go:embed g45_nft_public.bas
