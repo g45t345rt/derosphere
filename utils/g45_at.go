@@ -188,7 +188,7 @@ func (collection *G45_BC) Parse(scId string, result *rpc.GetSC_Result) error {
 	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
 	g45_c_code := strings.ReplaceAll(strings.ReplaceAll(G45_BC_CODE, "\r", ""), "\n", "")
 	if code != g45_c_code {
-		return fmt.Errorf("not a valid G45-C")
+		return fmt.Errorf("not a valid G45-BC")
 	}
 
 	collection.SCID = scId
@@ -287,7 +287,7 @@ func (collection *G45_C) Parse(scId string, result *rpc.GetSC_Result) error {
 	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
 	g45_dc_code := strings.ReplaceAll(strings.ReplaceAll(G45_C_CODE, "\r", ""), "\n", "")
 	if code != g45_dc_code {
-		return fmt.Errorf("not a valid G45-DC")
+		return fmt.Errorf("not a valid G45-C")
 	}
 
 	collection.SCID = scId
