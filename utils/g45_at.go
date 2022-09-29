@@ -27,9 +27,6 @@ var G45_FAT_PRIVATE_CODE string
 //go:embed g45_c.bas
 var G45_C_CODE string
 
-//go:embed g45_bc.bas
-var G45_BC_CODE string
-
 //go:embed g45_nft_public.bas
 var G45_NFT_PUBLIC_CODE string
 
@@ -152,9 +149,9 @@ func (asset *G45_FAT) Parse(scId string, result *rpc.GetSC_Result) error {
 	return nil
 }
 
-/** G45-BC **/
+/** G45-C **/
 
-type G45_BC struct {
+type G45_C struct {
 	SCID           string
 	FrozenAssets   bool
 	FrozenMetadata bool
@@ -168,7 +165,7 @@ type G45_BC struct {
 	Timestamp      uint64
 }
 
-func (asset *G45_BC) Print() {
+func (asset *G45_C) Print() {
 	fmt.Println("SCID: ", asset.SCID)
 	fmt.Println("Frozen Assets: ", asset.FrozenAssets)
 	fmt.Println("Frozen Metadata: ", asset.FrozenMetadata)
@@ -179,16 +176,16 @@ func (asset *G45_BC) Print() {
 	fmt.Println("Timestamp: ", asset.Timestamp)
 }
 
-func (asset *G45_BC) JsonMetadata() (map[string]interface{}, error) {
+func (asset *G45_C) JsonMetadata() (map[string]interface{}, error) {
 	return formatMetadata(asset.MetadataFormat, asset.Metadata)
 }
 
-func (collection *G45_BC) Parse(scId string, result *rpc.GetSC_Result) error {
+func (collection *G45_C) Parse(scId string, result *rpc.GetSC_Result) error {
 	values := result.VariableStringKeys
 	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_c_code := strings.ReplaceAll(strings.ReplaceAll(G45_BC_CODE, "\r", ""), "\n", "")
+	g45_c_code := strings.ReplaceAll(strings.ReplaceAll(G45_C_CODE, "\r", ""), "\n", "")
 	if code != g45_c_code {
-		return fmt.Errorf("not a valid G45-BC")
+		return fmt.Errorf("not a valid G45-C")
 	}
 
 	collection.SCID = scId
@@ -248,92 +245,6 @@ func (collection *G45_BC) Parse(scId string, result *rpc.GetSC_Result) error {
 	}
 
 	collection.AssetCount = uint64(len(collection.Assets))
-	return nil
-}
-
-/** G45-C **/
-
-type G45_C struct {
-	SCID           string
-	FrozenAssets   bool
-	FrozenMetadata bool
-	Owner          string
-	OriginalOwner  string
-	AssetCount     uint64
-	MetadataFormat string
-	Metadata       string
-	Assets         map[string]uint64
-	Timestamp      uint64
-}
-
-func (asset *G45_C) Print() {
-	fmt.Println("SCID: ", asset.SCID)
-	fmt.Println("Frozen Assets: ", asset.FrozenAssets)
-	fmt.Println("Frozen Metadata: ", asset.FrozenMetadata)
-	fmt.Println("Metadata Format: ", asset.MetadataFormat)
-	fmt.Println("Metadata: ", asset.Metadata)
-	fmt.Println("Owner: ", asset.Owner)
-	fmt.Println("Original Owner: ", asset.OriginalOwner)
-	fmt.Println("Asset Count: ", asset.AssetCount)
-	fmt.Println("Timestamp: ", asset.Timestamp)
-}
-
-func (asset *G45_C) JsonMetadata() (map[string]interface{}, error) {
-	return formatMetadata(asset.MetadataFormat, asset.Metadata)
-}
-
-func (collection *G45_C) Parse(scId string, result *rpc.GetSC_Result) error {
-	values := result.VariableStringKeys
-	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_dc_code := strings.ReplaceAll(strings.ReplaceAll(G45_C_CODE, "\r", ""), "\n", "")
-	if code != g45_dc_code {
-		return fmt.Errorf("not a valid G45-C")
-	}
-
-	collection.SCID = scId
-	collection.FrozenAssets = values["frozenAssets"].(float64) != 0
-	collection.FrozenMetadata = values["frozenMetadata"].(float64) != 0
-	collection.AssetCount = uint64(values["assetCount"].(float64))
-	metadataFormat, err := DecodeString(values["metadataFormat"].(string))
-	if err != nil {
-		return err
-	}
-	collection.MetadataFormat = metadataFormat
-
-	metadata, err := DecodeString(values["metadata"].(string))
-	if err != nil {
-		return err
-	}
-	collection.Metadata = metadata
-
-	collection.Timestamp = uint64(values["timestamp"].(float64))
-
-	owner, err := DecodeAddress(values["owner"].(string))
-	if err != nil {
-		return err
-	}
-
-	originalOwner, err := DecodeAddress(values["originalOwner"].(string))
-	if err != nil {
-		return err
-	}
-
-	collection.Owner = owner
-	collection.OriginalOwner = originalOwner
-
-	assetKey, err := regexp.Compile(`asset_(.+)`)
-	if err != nil {
-		return err
-	}
-
-	collection.Assets = make(map[string]uint64)
-	for key, value := range values {
-		if assetKey.Match([]byte(key)) {
-			assetSCID := assetKey.ReplaceAllString(key, "$1")
-			collection.Assets[assetSCID] = uint64(value.(float64))
-		}
-	}
-
 	return nil
 }
 

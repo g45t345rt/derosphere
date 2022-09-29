@@ -417,9 +417,14 @@ func (walletInstance *WalletInstance) CallSmartContract(ringsize uint64, scid st
 	}
 
 	sc_rpc = append(sc_rpc, args[:]...)
-	signer, err := walletInstance.GetAddress()
-	if err != nil {
-		return "", err
+
+	signer := ""
+	var err error
+	if ringsize == 2 {
+		signer, err = walletInstance.GetAddress()
+		if err != nil {
+			return "", err
+		}
 	}
 
 	estimate, err := walletInstance.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{

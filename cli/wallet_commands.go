@@ -836,7 +836,7 @@ func CommandCallSC() *cli.Command {
 					return nil
 				}
 
-				amount, err := app.PromptDero("Enter amount (in Dero)", 0)
+				amount, err := app.PromptUInt("Enter amount (atomic value)", 0)
 				if app.HandlePromptErr(err) {
 					return nil
 				}
