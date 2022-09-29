@@ -16,6 +16,42 @@ import (
 
 /** G45-AT **/
 
+func Command_G45_AT_View() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-at-view",
+		Aliases: []string{"g45-at-v"},
+		Usage:   "Display G45-AT metadata and more",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+
+			asset := utils.G45_AT{}
+			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
+				SCID:      scid,
+				Code:      true,
+				Variables: true,
+			})
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			err = asset.Parse(scid, result)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			asset.Print()
+			return nil
+		},
+	}
+}
+
 func Command_G45_AT_Deploy() *cli.Command {
 	return &cli.Command{
 		Name:    "g45-at-deploy",
@@ -126,14 +162,14 @@ func Command_G45_AT_Mint() *cli.Command {
 				}
 			}
 
-			supply, err := app.PromptUInt("Enter quantity", 1)
+			supply, err := app.PromptUInt("Enter amount", 1)
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
 			walletInstance := app.Context.WalletInstance
 			txId, err := walletInstance.CallSmartContract(2, scid, "Mint", []rpc.Argument{
-				{Name: "qty", DataType: rpc.DataUint64, Value: supply},
+				{Name: "amount", DataType: rpc.DataUint64, Value: supply},
 			}, []rpc.Transfer{}, true)
 
 			if err != nil {
@@ -503,11 +539,13 @@ func Command_G45_AT_ClaimMinter() *cli.Command {
 	}
 }
 
-func Command_G45_AT_View() *cli.Command {
+/** G45-FAT **/
+
+func Command_G45_FAT_View() *cli.Command {
 	return &cli.Command{
-		Name:    "g45-at-view",
-		Aliases: []string{"g45-at-v"},
-		Usage:   "Display G45-AT metadata and more",
+		Name:    "g45-fat-view",
+		Aliases: []string{"g45-fat-v"},
+		Usage:   "Display G45-FAT metadata and more",
 		Action: func(ctx *cli.Context) error {
 			scid, err := app.Prompt("Enter scid", "")
 			if app.HandlePromptErr(err) {
@@ -516,7 +554,7 @@ func Command_G45_AT_View() *cli.Command {
 
 			walletInstance := app.Context.WalletInstance
 
-			asset := utils.G45_AT{}
+			asset := utils.G45_FAT{}
 			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
 				SCID:      scid,
 				Code:      true,
@@ -538,8 +576,6 @@ func Command_G45_AT_View() *cli.Command {
 		},
 	}
 }
-
-/** G45-FAT **/
 
 func Command_G45_FAT_Deploy() *cli.Command {
 	return &cli.Command{
@@ -1012,6 +1048,501 @@ func Command_G45_NFT_RetrieveNFT() *cli.Command {
 	}
 }
 
+/** G45-BC **/
+
+func Command_G45_BC_View() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-bc-view",
+		Aliases: []string{"g45-bc-v"},
+		Usage:   "Display G45-BC metadata and more",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			collection := utils.G45_BC{}
+			result, err := walletInstance.Daemon.GetSC(&rpc.GetSC_Params{
+				SCID:      scid,
+				Code:      true,
+				Variables: true,
+			})
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			err = collection.Parse(scid, result)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			collection.Print()
+			return nil
+		},
+	}
+}
+
+func G45_BC_Deploy() (string, error) {
+	walletInstance := app.Context.WalletInstance
+
+	metadataFormat, err := app.Prompt("Metadata format?", "json")
+	if err != nil {
+		return "", err
+	}
+
+	metadata, err := app.Prompt("Set metadata", "")
+	if err != nil {
+		return "", err
+	}
+
+	uFreezeMetadata := 0
+	freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
+	if err != nil {
+		return "", err
+	}
+
+	if freezeMetadata {
+		uFreezeMetadata = 1
+	}
+
+	txId, err := walletInstance.InstallSmartContract([]byte(utils.G45_C_CODE), 2, []rpc.Argument{
+		{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
+		{Name: "metadata", DataType: rpc.DataString, Value: metadata},
+		{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
+	}, true)
+
+	return txId, err
+}
+
+func Command_G45_BC_Deploy() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-bc-deploy",
+		Aliases: []string{"g45-bc-d"},
+		Usage:   "Deploy G45-BC Smart Contract",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			txId, err := G45_C_Deploy()
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func Command_G45_BC_Freeze() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-bc-freeze",
+		Aliases: []string{"g45-bc-freeze"},
+		Usage:   "Freeze G45-BC (assets/metadata)",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			uFreezeAssets := 0
+			freezeAssets, err := app.PromptYesNo("Freeze collection/assets/nfts?", false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if freezeAssets {
+				uFreezeAssets = 1
+			}
+
+			uFreezeMetadata := 0
+			freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if freezeMetadata {
+				uFreezeMetadata = 1
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, scid, "Freeze", []rpc.Argument{
+				{Name: "assets", DataType: rpc.DataUint64, Value: uFreezeAssets},
+				{Name: "metadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func G45_BC_SetAssets(scId string, assets map[string]uint64, promptFees bool) error {
+	startAt, err := app.PromptUInt("Start at index", 0)
+	if app.HandlePromptErr(err) {
+		return nil
+	}
+
+	var entries []map[string]uint64
+	maxAssetsPerEntry := 100
+	index := 0
+	assetsEntry := make(map[string]uint64)
+	for key, v := range assets {
+		assetsEntry[key] = v
+		index++
+
+		if index >= maxAssetsPerEntry {
+			entries = append(entries, assetsEntry)
+			assetsEntry = make(map[string]uint64)
+			index = 0
+		}
+	}
+
+	if len(assetsEntry) > 0 {
+		entries = append(entries, assetsEntry)
+	}
+
+	fmt.Printf("%d assets with %d entries\n", len(assets), len(entries))
+	walletInstance := app.Context.WalletInstance
+	for i, entry := range entries {
+		if i >= int(startAt) {
+			data, err := json.Marshal(entry)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+		set_assets:
+			fmt.Printf("Set Assets %d - %d assets\n", i, len(entry))
+			txId, err := walletInstance.CallSmartContract(2, scId, "SetAssets", []rpc.Argument{
+				{Name: "index", DataType: rpc.DataUint64, Value: uint64(i)},
+				{Name: "assets", DataType: rpc.DataString, Value: string(data)},
+			}, []rpc.Transfer{}, promptFees)
+			if err != nil {
+				fmt.Println(err)
+				time.Sleep(2 * time.Second)
+				goto set_assets
+			}
+
+			err = walletInstance.WaitTransaction(txId)
+			if err != nil {
+				fmt.Println(err)
+				time.Sleep(2 * time.Second)
+				goto set_assets
+			}
+		}
+	}
+
+	return nil
+}
+
+func Command_G45_BC_SetAssets() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-bc-setassets",
+		Aliases: []string{"g45-bc-sa"},
+		Usage:   "Set assets to G45-BC",
+		Action: func(ctx *cli.Context) error {
+			collectionSCID, err := app.Prompt("Enter collection scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			metadataPath, err := app.Prompt("Enter assets metadata file path", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			content, err := ioutil.ReadFile(metadataPath)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			var assets map[string]uint64
+			err = json.Unmarshal(content, &assets)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			err = G45_BC_SetAssets(collectionSCID, assets, false)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			return nil
+		},
+	}
+}
+
+func Command_G45_BC_SetMetadata() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-bc-setmetadata",
+		Aliases: []string{"g45-bc-sm"},
+		Usage:   "Set/edit metadata of the collection",
+		Action: func(ctx *cli.Context) error {
+			scid := ctx.Args().First()
+			var err error
+
+			if scid == "" {
+				scid, err = app.Prompt("Enter scid", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			format, err := app.Prompt("Metadata format?", "json")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			metadata, err := app.Prompt("Set new metadata", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, scid, "SetMetadata", []rpc.Argument{
+				{Name: "format", DataType: rpc.DataString, Value: format},
+				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func Command_G45_BC_TransferOwnership() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-bc-transferownership",
+		Aliases: []string{"g45-bc-to"},
+		Usage:   "Initiate collection transfer ownership",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			addr, err := app.Prompt("New owner address", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, scid, "TransferOwnership", []rpc.Argument{
+				{Name: "newOwner", DataType: rpc.DataString, Value: addr},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func Command_G45_BC_ClaimOwnership() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-bc-collectionclaimownership",
+		Aliases: []string{"g45-bc-cco"},
+		Usage:   "Claim collection ownership",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, scid, "ClaimOwnership", []rpc.Argument{}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func Command_G45_BC_CancelTransferOwnership() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-bc-canceltransferownership",
+		Aliases: []string{"g45-bc-cto"},
+		Usage:   "Cancel transfer collection ownership",
+		Action: func(ctx *cli.Context) error {
+			scid, err := app.Prompt("Enter scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, scid, "CancelTransferOwnership", []rpc.Argument{}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func Command_G45_BC_DeployNFTs() *cli.Command {
+	return &cli.Command{
+		Name:  "g45-bc-deploynfts",
+		Usage: "Script to deploy nfts with collection",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			installCollection, err := app.PromptYesNo("Install G45-C?", true)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			var collectionSCID string
+			if installCollection {
+				collectionSCID, err = G45_C_Deploy()
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+
+				walletInstance.RunTxChecker(collectionSCID)
+			} else {
+				collectionSCID, err = app.Prompt("G45-C Smart Contract?", "")
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			metadataPath, err := app.Prompt("Enter nfts metadata file path", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			content, err := ioutil.ReadFile(metadataPath)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			var metadataList []interface{}
+			err = json.Unmarshal(content, &metadataList)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			scType, err := app.PromptChoose("G45-NFT type", []string{"public", "private"}, "private")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			scCode := utils.G45_NFT_PUBLIC_CODE
+			if scType == "private" {
+				scCode = utils.G45_NFT_PRIVATE_CODE
+			}
+
+			startIndex, err := app.PromptUInt("NFT start index", 0)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			endIndex, err := app.PromptUInt("NFT end index", 99)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			nfts := make(map[string]uint64)
+
+			nftsOutputPath, err := app.Prompt("Enter nfts output file path", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			//sleep := 1000 * time.Millisecond
+			for index := startIndex; index <= endIndex; index++ {
+				assetMetadata := metadataList[index]
+
+				bMetadata, err := json.Marshal(assetMetadata)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+
+				sMetadata := string(bMetadata)
+
+			install_asset:
+				fmt.Printf("Install NFT - %d\n", index)
+				assetSCID, err := walletInstance.InstallSmartContract([]byte(scCode), 2, []rpc.Argument{
+					{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
+					{Name: "metadataFormat", DataType: rpc.DataString, Value: "json"},
+					{Name: "metadata", DataType: rpc.DataString, Value: sMetadata},
+				}, false)
+
+				if err != nil {
+					fmt.Println(err)
+					time.Sleep(2 * time.Second)
+					goto install_asset
+				}
+
+				err = walletInstance.WaitTransaction(assetSCID)
+				if err != nil {
+					fmt.Println(err)
+					time.Sleep(2 * time.Second)
+					goto install_asset
+				}
+
+				nfts[assetSCID] = index
+
+				jsonNFTs, err := json.Marshal(nfts)
+				if err != nil {
+					return err
+				}
+
+				err = ioutil.WriteFile(nftsOutputPath, jsonNFTs, os.ModePerm)
+				if err != nil {
+					return err
+				}
+			}
+
+			setCollectionAssets, err := app.PromptYesNo("Set all nfts in collection?", true)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if setCollectionAssets {
+				err = G45_BC_SetAssets(collectionSCID, nfts, false)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+	}
+}
+
 /** G45-C **/
 
 func Command_G45_C_View() *cli.Command {
@@ -1062,6 +1593,16 @@ func G45_C_Deploy() (string, error) {
 		return "", err
 	}
 
+	uFreezeCollection := 0
+	freezeCollection, err := app.PromptYesNo("Freeze collection?", false)
+	if err != nil {
+		return "", err
+	}
+
+	if freezeCollection {
+		uFreezeCollection = 1
+	}
+
 	uFreezeMetadata := 0
 	freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
 	if err != nil {
@@ -1075,6 +1616,7 @@ func G45_C_Deploy() (string, error) {
 	txId, err := walletInstance.InstallSmartContract([]byte(utils.G45_C_CODE), 2, []rpc.Argument{
 		{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
 		{Name: "metadata", DataType: rpc.DataString, Value: metadata},
+		{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
 		{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
 	}, true)
 
@@ -1085,12 +1627,82 @@ func Command_G45_C_Deploy() *cli.Command {
 	return &cli.Command{
 		Name:    "g45-c-deploy",
 		Aliases: []string{"g45-c-d"},
-		Usage:   "Deploy G45-C Smart Contract",
+		Usage:   "Deploy G45-DC Smart Contract",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 
 			txId, err := G45_C_Deploy()
 			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func Command_G45_C_SetAsset() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-c-setasset",
+		Aliases: []string{"g45-c-sa"},
+		Usage:   "Set new asset to G45-C",
+		Action: func(ctx *cli.Context) error {
+			collectionSCID, err := app.Prompt("Enter collection scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			assetSCID, err := app.Prompt("Enter asset token", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			index, err := app.PromptUInt("Enter index", 0)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, collectionSCID, "SetAsset", []rpc.Argument{
+				{Name: "asset", DataType: rpc.DataString, Value: assetSCID},
+				{Name: "index", DataType: rpc.DataUint64, Value: index},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			walletInstance.RunTxChecker(txId)
+			return nil
+		},
+	}
+}
+
+func Command_G45_C_DelAsset() *cli.Command {
+	return &cli.Command{
+		Name:    "g45-c-delasset",
+		Aliases: []string{"g45-c-da"},
+		Usage:   "Del asset from G45-C",
+		Action: func(ctx *cli.Context) error {
+			collectionSCID, err := app.Prompt("Enter collection scid", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			assetSCID, err := app.Prompt("Enter asset token", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			walletInstance := app.Context.WalletInstance
+			txId, err := walletInstance.CallSmartContract(2, collectionSCID, "DelAsset", []rpc.Argument{
+				{Name: "asset", DataType: rpc.DataString, Value: assetSCID},
+			}, []rpc.Transfer{}, true)
+
+			if err != nil {
+				fmt.Println(err)
 				return nil
 			}
 
@@ -1143,100 +1755,6 @@ func Command_G45_C_Freeze() *cli.Command {
 			}
 
 			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func G45_C_SetAssets(scId string, assets map[string]uint64, promptFees bool) error {
-	startAt, err := app.PromptUInt("Start at index", 0)
-	if app.HandlePromptErr(err) {
-		return nil
-	}
-
-	var entries []map[string]uint64
-	maxAssetsPerEntry := 100
-	index := 0
-	assetsEntry := make(map[string]uint64)
-	for key, v := range assets {
-		assetsEntry[key] = v
-		index++
-
-		if index >= maxAssetsPerEntry {
-			entries = append(entries, assetsEntry)
-			assetsEntry = make(map[string]uint64)
-			index = 0
-		}
-	}
-
-	if len(assetsEntry) > 0 {
-		entries = append(entries, assetsEntry)
-	}
-
-	fmt.Printf("%d assets with %d entries\n", len(assets), len(entries))
-	walletInstance := app.Context.WalletInstance
-	for i, entry := range entries {
-		if i >= int(startAt) {
-			data, err := json.Marshal(entry)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-		set_assets:
-			fmt.Printf("Set Assets %d - %d assets\n", i, len(entry))
-			txId, err := walletInstance.CallSmartContract(2, scId, "SetAssets", []rpc.Argument{
-				{Name: "index", DataType: rpc.DataUint64, Value: uint64(i)},
-				{Name: "assets", DataType: rpc.DataString, Value: string(data)},
-			}, []rpc.Transfer{}, promptFees)
-			if err != nil {
-				fmt.Println(err)
-				time.Sleep(2 * time.Second)
-				goto set_assets
-			}
-
-			walletInstance.RunTxChecker(txId)
-		}
-	}
-
-	return nil
-}
-
-func Command_G45_C_SetAssets() *cli.Command {
-	return &cli.Command{
-		Name:    "g45-c-setassets",
-		Aliases: []string{"g45-c-sa"},
-		Usage:   "Set assets to G45-C",
-		Action: func(ctx *cli.Context) error {
-			collectionSCID, err := app.Prompt("Enter collection scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			metadataPath, err := app.Prompt("Enter assets metadata file path", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			content, err := ioutil.ReadFile(metadataPath)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			var assets map[string]uint64
-			err = json.Unmarshal(content, &assets)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			err = G45_C_SetAssets(collectionSCID, assets, false)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
 			return nil
 		},
 	}
@@ -1370,447 +1888,6 @@ func Command_G45_C_CancelTransferOwnership() *cli.Command {
 func Command_G45_C_DeployNFTs() *cli.Command {
 	return &cli.Command{
 		Name:  "g45-c-deploynfts",
-		Usage: "Script to deploy nfts with collection",
-		Action: func(ctx *cli.Context) error {
-			walletInstance := app.Context.WalletInstance
-
-			installCollection, err := app.PromptYesNo("Install G45-C?", true)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			var collectionSCID string
-			if installCollection {
-				collectionSCID, err = G45_C_Deploy()
-				if app.HandlePromptErr(err) {
-					return nil
-				}
-
-				walletInstance.RunTxChecker(collectionSCID)
-			} else {
-				collectionSCID, err = app.Prompt("G45-C Smart Contract?", "")
-				if app.HandlePromptErr(err) {
-					return nil
-				}
-			}
-
-			metadataPath, err := app.Prompt("Enter nfts metadata file path", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			content, err := ioutil.ReadFile(metadataPath)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			var metadataList []interface{}
-			err = json.Unmarshal(content, &metadataList)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			scType, err := app.PromptChoose("G45-NFT type", []string{"public", "private"}, "private")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			scCode := utils.G45_NFT_PUBLIC_CODE
-			if scType == "private" {
-				scCode = utils.G45_NFT_PRIVATE_CODE
-			}
-
-			startIndex, err := app.PromptUInt("NFT start index", 0)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			endIndex, err := app.PromptUInt("NFT end index", 99)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			nfts := make(map[string]uint64)
-
-			nftsOutputPath, err := app.Prompt("Enter nfts output file path", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			//sleep := 1000 * time.Millisecond
-			for index := startIndex; index <= endIndex; index++ {
-				assetMetadata := metadataList[index]
-
-				bMetadata, err := json.Marshal(assetMetadata)
-				if err != nil {
-					fmt.Println(err)
-					continue
-				}
-
-				sMetadata := string(bMetadata)
-
-			install_asset:
-				fmt.Printf("Install NFT - %d\n", index)
-				assetSCID, err := walletInstance.InstallSmartContract([]byte(scCode), 2, []rpc.Argument{
-					{Name: "collection", DataType: rpc.DataString, Value: collectionSCID},
-					{Name: "metadataFormat", DataType: rpc.DataString, Value: "json"},
-					{Name: "metadata", DataType: rpc.DataString, Value: sMetadata},
-				}, false)
-
-				if err != nil {
-					fmt.Println(err)
-					time.Sleep(2 * time.Second)
-					goto install_asset
-				}
-
-				err = walletInstance.WaitTransaction(assetSCID)
-				if err != nil {
-					fmt.Println(err)
-					goto install_asset
-				}
-
-				nfts[assetSCID] = index
-
-				jsonNFTs, err := json.Marshal(nfts)
-				if err != nil {
-					return err
-				}
-
-				err = ioutil.WriteFile(nftsOutputPath, jsonNFTs, os.ModePerm)
-				if err != nil {
-					return err
-				}
-			}
-
-			setCollectionAssets, err := app.PromptYesNo("Set all nfts in collection?", true)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if setCollectionAssets {
-				err = G45_C_SetAssets(collectionSCID, nfts, false)
-				if err != nil {
-					return err
-				}
-			}
-
-			return nil
-		},
-	}
-}
-
-/** G45-DC **/
-
-func G45_DC_Deploy() (string, error) {
-	walletInstance := app.Context.WalletInstance
-
-	metadataFormat, err := app.Prompt("Metadata format?", "json")
-	if err != nil {
-		return "", err
-	}
-
-	metadata, err := app.Prompt("Set metadata", "")
-	if err != nil {
-		return "", err
-	}
-
-	uFreezeCollection := 0
-	freezeCollection, err := app.PromptYesNo("Freeze collection?", false)
-	if err != nil {
-		return "", err
-	}
-
-	if freezeCollection {
-		uFreezeCollection = 1
-	}
-
-	uFreezeMetadata := 0
-	freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
-	if err != nil {
-		return "", err
-	}
-
-	if freezeMetadata {
-		uFreezeMetadata = 1
-	}
-
-	txId, err := walletInstance.InstallSmartContract([]byte(utils.G45_DC_CODE), 2, []rpc.Argument{
-		{Name: "metadataFormat", DataType: rpc.DataString, Value: metadataFormat},
-		{Name: "metadata", DataType: rpc.DataString, Value: metadata},
-		{Name: "freezeCollection", DataType: rpc.DataUint64, Value: uFreezeCollection},
-		{Name: "freezeMetadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
-	}, true)
-
-	return txId, err
-}
-
-func Command_G45_DC_Deploy() *cli.Command {
-	return &cli.Command{
-		Name:    "g45-dc-deploy",
-		Aliases: []string{"g45-dc-d"},
-		Usage:   "Deploy G45-DC Smart Contract",
-		Action: func(ctx *cli.Context) error {
-			walletInstance := app.Context.WalletInstance
-
-			txId, err := G45_DC_Deploy()
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func Command_G45_DC_SetAsset() *cli.Command {
-	return &cli.Command{
-		Name:    "g45-dc-setasset",
-		Aliases: []string{"g45-dc-sa"},
-		Usage:   "Set new asset to G45-DC",
-		Action: func(ctx *cli.Context) error {
-			collectionSCID, err := app.Prompt("Enter collection scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			assetSCID, err := app.Prompt("Enter asset token", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			index, err := app.PromptUInt("Enter index", 0)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, collectionSCID, "SetAsset", []rpc.Argument{
-				{Name: "asset", DataType: rpc.DataString, Value: assetSCID},
-				{Name: "index", DataType: rpc.DataUint64, Value: index},
-			}, []rpc.Transfer{}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func Command_G45_DC_DelAsset() *cli.Command {
-	return &cli.Command{
-		Name:    "g45-dc-delasset",
-		Aliases: []string{"g45-dc-da"},
-		Usage:   "Del asset from G45-DC",
-		Action: func(ctx *cli.Context) error {
-			collectionSCID, err := app.Prompt("Enter collection scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			assetSCID, err := app.Prompt("Enter asset token", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, collectionSCID, "DelAsset", []rpc.Argument{
-				{Name: "asset", DataType: rpc.DataString, Value: assetSCID},
-			}, []rpc.Transfer{}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func Command_G45_DC_Freeze() *cli.Command {
-	return &cli.Command{
-		Name:    "g45-dc-freeze",
-		Aliases: []string{"g45-dc-freeze"},
-		Usage:   "Freeze G45-DC (assets/metadata)",
-		Action: func(ctx *cli.Context) error {
-			scid, err := app.Prompt("Enter scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			uFreezeAssets := 0
-			freezeAssets, err := app.PromptYesNo("Freeze collection/assets/nfts?", false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if freezeAssets {
-				uFreezeAssets = 1
-			}
-
-			uFreezeMetadata := 0
-			freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			if freezeMetadata {
-				uFreezeMetadata = 1
-			}
-
-			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "Freeze", []rpc.Argument{
-				{Name: "assets", DataType: rpc.DataUint64, Value: uFreezeAssets},
-				{Name: "metadata", DataType: rpc.DataUint64, Value: uFreezeMetadata},
-			}, []rpc.Transfer{}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func Command_G45_DC_SetMetadata() *cli.Command {
-	return &cli.Command{
-		Name:    "g45-dc-setmetadata",
-		Aliases: []string{"g45-dc-sm"},
-		Usage:   "Set/edit metadata of the collection",
-		Action: func(ctx *cli.Context) error {
-			scid := ctx.Args().First()
-			var err error
-
-			if scid == "" {
-				scid, err = app.Prompt("Enter scid", "")
-				if app.HandlePromptErr(err) {
-					return nil
-				}
-			}
-
-			format, err := app.Prompt("Metadata format?", "json")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			metadata, err := app.Prompt("Set new metadata", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "SetMetadata", []rpc.Argument{
-				{Name: "format", DataType: rpc.DataString, Value: format},
-				{Name: "metadata", DataType: rpc.DataString, Value: metadata},
-			}, []rpc.Transfer{}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func Command_G45_DC_TransferOwnership() *cli.Command {
-	return &cli.Command{
-		Name:    "g45-dc-transferownership",
-		Aliases: []string{"g45-dc-to"},
-		Usage:   "Initiate collection transfer ownership",
-		Action: func(ctx *cli.Context) error {
-			scid, err := app.Prompt("Enter scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			addr, err := app.Prompt("New owner address", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "TransferOwnership", []rpc.Argument{
-				{Name: "newOwner", DataType: rpc.DataString, Value: addr},
-			}, []rpc.Transfer{}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func Command_G45_DC_ClaimOwnership() *cli.Command {
-	return &cli.Command{
-		Name:    "g45-dc-collectionclaimownership",
-		Aliases: []string{"g45-dc-cco"},
-		Usage:   "Claim collection ownership",
-		Action: func(ctx *cli.Context) error {
-			scid, err := app.Prompt("Enter scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "ClaimOwnership", []rpc.Argument{}, []rpc.Transfer{}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func Command_G45_DC_CancelTransferOwnership() *cli.Command {
-	return &cli.Command{
-		Name:    "g45-dc-canceltransferownership",
-		Aliases: []string{"g45-dc-cto"},
-		Usage:   "Cancel transfer collection ownership",
-		Action: func(ctx *cli.Context) error {
-			scid, err := app.Prompt("Enter scid", "")
-			if app.HandlePromptErr(err) {
-				return nil
-			}
-
-			walletInstance := app.Context.WalletInstance
-			txId, err := walletInstance.CallSmartContract(2, scid, "CancelTransferOwnership", []rpc.Argument{}, []rpc.Transfer{}, true)
-
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			walletInstance.RunTxChecker(txId)
-			return nil
-		},
-	}
-}
-
-func Command_G45_DC_DeployNFTs() *cli.Command {
-	return &cli.Command{
-		Name:  "g45-dc-deploynfts",
 		Usage: "Script to deploy nft collection",
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
@@ -1822,7 +1899,7 @@ func Command_G45_DC_DeployNFTs() *cli.Command {
 
 			var collectionSCID string
 			if installCollection {
-				collectionSCID, err = G45_DC_Deploy()
+				collectionSCID, err = G45_C_Deploy()
 				if app.HandlePromptErr(err) {
 					return nil
 				}
@@ -1902,6 +1979,7 @@ func Command_G45_DC_DeployNFTs() *cli.Command {
 				err = walletInstance.WaitTransaction(assetSCID)
 				if err != nil {
 					fmt.Println(err)
+					time.Sleep(2 * time.Second)
 					goto install_asset
 				}
 
@@ -1921,6 +1999,7 @@ func Command_G45_DC_DeployNFTs() *cli.Command {
 				err = walletInstance.WaitTransaction(setTxId)
 				if err != nil {
 					fmt.Println(err)
+					time.Sleep(2 * time.Second)
 					goto set_collection
 				}
 			}
@@ -1969,8 +2048,8 @@ func CommandValidSC() *cli.Command {
 				fmt.Println("Valid G45-AT (Private) Smart Contract.")
 			case utils.G45_C_CODE:
 				fmt.Println("Valid G45-C Smart Contract.")
-			case utils.G45_DC_CODE:
-				fmt.Println("Valid G45-DC Smart Contract.")
+			case utils.G45_BC_CODE:
+				fmt.Println("Valid G45-BC Smart Contract.")
 			case utils.G45_NFT_PRIVATE_CODE:
 				fmt.Println("Valid G45-NFT (Private) Smart Contract.")
 			case utils.G45_NFT_PUBLIC_CODE:
@@ -2009,6 +2088,7 @@ func App() *cli.App {
 			Command_G45_AT_CancelTransferMinter(),
 			Command_G45_AT_ClaimMinter(),
 			// G45-FAT
+			Command_G45_FAT_View(),
 			Command_G45_FAT_Deploy(),
 			Command_G45_FAT_SetMetadata(),
 			Command_G45_FAT_SetCollection(),
@@ -2020,26 +2100,27 @@ func App() *cli.App {
 			Command_G45_NFT_Deploy(),
 			Command_G45_NFT_DisplayNFT(),
 			Command_G45_NFT_RetrieveNFT(),
+			// G45-BC
+			Command_G45_BC_View(),
+			Command_G45_BC_Deploy(),
+			Command_G45_BC_Freeze(),
+			Command_G45_BC_SetAssets(),
+			Command_G45_BC_SetMetadata(),
+			Command_G45_BC_TransferOwnership(),
+			Command_G45_BC_CancelTransferOwnership(),
+			Command_G45_BC_ClaimOwnership(),
+			Command_G45_BC_DeployNFTs(),
 			// G45-C
 			Command_G45_C_View(),
 			Command_G45_C_Deploy(),
 			Command_G45_C_Freeze(),
-			Command_G45_C_SetAssets(),
+			Command_G45_C_SetAsset(),
+			Command_G45_C_DelAsset(),
 			Command_G45_C_SetMetadata(),
 			Command_G45_C_TransferOwnership(),
 			Command_G45_C_CancelTransferOwnership(),
 			Command_G45_C_ClaimOwnership(),
 			Command_G45_C_DeployNFTs(),
-			// G45-DC
-			Command_G45_DC_Deploy(),
-			Command_G45_DC_Freeze(),
-			Command_G45_DC_SetAsset(),
-			Command_G45_DC_DelAsset(),
-			Command_G45_DC_SetMetadata(),
-			Command_G45_DC_TransferOwnership(),
-			Command_G45_DC_CancelTransferOwnership(),
-			Command_G45_DC_ClaimOwnership(),
-			Command_G45_DC_DeployNFTs(),
 			// Others
 			CommandValidSC(),
 		},

@@ -502,26 +502,35 @@ func (walletInstance *WalletInstance) WaitTransaction(txid string) error {
 	fmt.Printf("Waiting for transaction... %s\n", txid)
 
 	startHeight := uint64(0)
-	for {
-		time.Sleep(2 * time.Second)
+	tries := 25
+	waitInterval := 2 * time.Second
+	var i int
+	var err error
 
-		result, err := walletInstance.Daemon.GetTransaction(&rpc.GetTransaction_Params{
+	for i = 0; i < tries; i++ {
+		time.Sleep(waitInterval)
+
+		var result *rpc.GetTransaction_Result
+		result, err = walletInstance.Daemon.GetTransaction(&rpc.GetTransaction_Params{
 			Tx_Hashes: []string{txid},
 		})
 
 		if err != nil {
-			return err
+			continue
 		}
 
 		txInfo := result.Txs[0]
 		if !txInfo.In_pool && txInfo.ValidBlock == "" {
-			return fmt.Errorf("invalid transaction")
+			err = errors.New("invalid transaction")
+			break
 		}
 
 		txBlockHeight := txInfo.Block_Height
-		currentHeight, err := walletInstance.GetHeight()
+
+		var currentHeight uint64
+		currentHeight, err = walletInstance.GetHeight()
 		if err != nil {
-			return err
+			continue
 		}
 
 		if startHeight == 0 {
@@ -531,13 +540,19 @@ func (walletInstance *WalletInstance) WaitTransaction(txid string) error {
 		//fmt.Printf("%d %d %d\n", currentHeight, txBlockHeight, startHeight)
 
 		if txBlockHeight != -1 {
+			err = nil
 			break
 		}
 
 		if currentHeight >= startHeight+2 {
-			return fmt.Errorf("stuck transaction")
+			err = errors.New("stuck transaction")
+			break
 		}
 	}
 
-	return nil
+	if i == tries {
+		err = errors.New(`maximum tries exceeded`)
+	}
+
+	return err
 }

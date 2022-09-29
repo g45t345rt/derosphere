@@ -8,6 +8,7 @@ metadata_path = "./metadata.json"  # sys.argv[1]
 rarity_path = "./rarity.csv"  # sys.argv[2]
 nfts_out_path = "./nfts.json"  # sys.argv[3]
 collection_stats_out_path = "./stats.json"  # sys.argv[3]
+ipfs_folder_cid = "QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6"
 
 
 def get_rarity():
@@ -37,6 +38,26 @@ def capitalize_words(value):
     return " ".join(words)
 
 
+def captain_nft(id, index):
+    return {
+        "id": id,
+        "name": "Captain #{i}".format(i=index),
+        "image": "ipfs://{cid}/low/captain.jpg".format(cid=ipfs_folder_cid),
+        "attributes": {},
+        "score": 100
+    }
+
+
+def jeff_nft(id):
+    return {
+        "id": id,
+        "name": "Jeff",
+        "image": "ipfs://{cid}/low/jeff.jpg".format(cid=ipfs_folder_cid),
+        "attributes": {},
+        "score": 100
+    }
+
+
 def main():
     metadata_file = open(metadata_path, "rb")
     metadata = json.load(metadata_file)
@@ -46,7 +67,7 @@ def main():
     attributes_names = json.load(attributes_names_file)
     attributes_names_file.close()
 
-    #rarity = get_rarity() // don't need rarity file anymore - the nft platform will calculate it
+    # rarity = get_rarity() // don't need rarity file anymore - the nft platform will calculate it
     collection_stats = {}
     #attr_stats = {}
     nfts = []
@@ -56,6 +77,9 @@ def main():
 
         nft = {}
         nft["id"] = int(id)
+        nft["name"] = "Dero Seals #{id}".format(id=id)
+        nft["image"] = "ipfs://{cid}/low/{id}.jpg".format(
+            cid=ipfs_folder_cid, id=id)
         #nft["rarity"] = float(rarity[id])
         #nft["rarity_type"] = get_rarity_type(nft["rarity"])
         nft["attributes"] = {}
@@ -105,11 +129,9 @@ def main():
         n_count = nft_count - c_count
         collection_stats[layer]["attributes"]["None"] = {
             "count": n_count, "percentage": round(n_count * 100 / nft_count, 2), "score": 0}
-        for nft in nfts:
-            if layer not in nft["attributes"]:
-                nft["attributes"][layer] = "None"
-
-
+        # for nft in nfts:
+        # if layer not in nft["attributes"]:
+        #  nft["attributes"][layer] = "None"
 
     for nft in nfts:
         nft_score = 0
@@ -119,8 +141,14 @@ def main():
             nft_score += a_score
         nft["score"] = round(nft_score, 2)
 
-
     nfts.sort(key=operator.itemgetter("score"), reverse=True)
+
+    # remove last 10 nfts with 9 Captain and Jeff
+    for i in range(1, 10):
+        pos = len(nfts)-11+i
+        nft = nfts[pos]
+        nfts[pos] = captain_nft(nft["id"], i)
+    nfts[3499] = jeff_nft(nfts[3499]["id"])
 
     nfts_file = open(nfts_out_path, "w")
     json.dump(nfts, nfts_file, indent=2)

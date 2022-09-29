@@ -24,11 +24,11 @@ var G45_FAT_PUBLIC_CODE string
 //go:embed g45_fat_private.bas
 var G45_FAT_PRIVATE_CODE string
 
-//go:embed g45_dc.bas
-var G45_DC_CODE string
-
 //go:embed g45_c.bas
 var G45_C_CODE string
+
+//go:embed g45_c.bas
+var G45_BC_CODE string
 
 //go:embed g45_nft_public.bas
 var G45_NFT_PUBLIC_CODE string
@@ -152,9 +152,9 @@ func (asset *G45_FAT) Parse(scId string, result *rpc.GetSC_Result) error {
 	return nil
 }
 
-/** G45-C **/
+/** G45-BC **/
 
-type G45_C struct {
+type G45_BC struct {
 	SCID           string
 	FrozenAssets   bool
 	FrozenMetadata bool
@@ -168,7 +168,7 @@ type G45_C struct {
 	Timestamp      uint64
 }
 
-func (asset *G45_C) Print() {
+func (asset *G45_BC) Print() {
 	fmt.Println("SCID: ", asset.SCID)
 	fmt.Println("Frozen Assets: ", asset.FrozenAssets)
 	fmt.Println("Frozen Metadata: ", asset.FrozenMetadata)
@@ -179,14 +179,14 @@ func (asset *G45_C) Print() {
 	fmt.Println("Timestamp: ", asset.Timestamp)
 }
 
-func (asset *G45_C) JsonMetadata() (map[string]interface{}, error) {
+func (asset *G45_BC) JsonMetadata() (map[string]interface{}, error) {
 	return formatMetadata(asset.MetadataFormat, asset.Metadata)
 }
 
-func (collection *G45_C) Parse(scId string, result *rpc.GetSC_Result) error {
+func (collection *G45_BC) Parse(scId string, result *rpc.GetSC_Result) error {
 	values := result.VariableStringKeys
 	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_c_code := strings.ReplaceAll(strings.ReplaceAll(G45_C_CODE, "\r", ""), "\n", "")
+	g45_c_code := strings.ReplaceAll(strings.ReplaceAll(G45_BC_CODE, "\r", ""), "\n", "")
 	if code != g45_c_code {
 		return fmt.Errorf("not a valid G45-C")
 	}
@@ -251,9 +251,9 @@ func (collection *G45_C) Parse(scId string, result *rpc.GetSC_Result) error {
 	return nil
 }
 
-/** G45-DC **/
+/** G45-C **/
 
-type G45_DC struct {
+type G45_C struct {
 	SCID           string
 	FrozenAssets   bool
 	FrozenMetadata bool
@@ -266,7 +266,7 @@ type G45_DC struct {
 	Timestamp      uint64
 }
 
-func (asset *G45_DC) Print() {
+func (asset *G45_C) Print() {
 	fmt.Println("SCID: ", asset.SCID)
 	fmt.Println("Frozen Assets: ", asset.FrozenAssets)
 	fmt.Println("Frozen Metadata: ", asset.FrozenMetadata)
@@ -278,14 +278,14 @@ func (asset *G45_DC) Print() {
 	fmt.Println("Timestamp: ", asset.Timestamp)
 }
 
-func (asset *G45_DC) JsonMetadata() (map[string]interface{}, error) {
+func (asset *G45_C) JsonMetadata() (map[string]interface{}, error) {
 	return formatMetadata(asset.MetadataFormat, asset.Metadata)
 }
 
-func (collection *G45_DC) Parse(scId string, result *rpc.GetSC_Result) error {
+func (collection *G45_C) Parse(scId string, result *rpc.GetSC_Result) error {
 	values := result.VariableStringKeys
 	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_dc_code := strings.ReplaceAll(strings.ReplaceAll(G45_DC_CODE, "\r", ""), "\n", "")
+	g45_dc_code := strings.ReplaceAll(strings.ReplaceAll(G45_C_CODE, "\r", ""), "\n", "")
 	if code != g45_dc_code {
 		return fmt.Errorf("not a valid G45-DC")
 	}
