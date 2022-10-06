@@ -74,7 +74,7 @@ func (d *Daemon) GetHeight() (*rpc.Daemon_GetHeight_Result, error) {
 
 func (d *Daemon) GetBlock(params *rpc.GetBlock_Params) (*rpc.GetBlock_Result, error) {
 	var result *rpc.GetBlock_Result
-	err := d.client.CallFor(&result, "DERO.GetBlock")
+	err := d.client.CallFor(&result, "DERO.GetBlock", params)
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +95,16 @@ func (d *Daemon) GetTransaction(params *rpc.GetTransaction_Params) (*rpc.GetTran
 func (d *Daemon) NameToAddress(params *rpc.NameToAddress_Params) (*rpc.NameToAddress_Result, error) {
 	var result *rpc.NameToAddress_Result
 	err := d.client.CallFor(&result, "DERO.NameToAddress", params)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (d *Daemon) GetEncrypedBalance(params *rpc.GetEncryptedBalance_Params) (*rpc.GetEncryptedBalance_Result, error) {
+	var result *rpc.GetEncryptedBalance_Result
+	err := d.client.CallFor(&result, "DERO.GetEncryptedBalance", params)
 	if err != nil {
 		return nil, err
 	}

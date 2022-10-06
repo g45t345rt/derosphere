@@ -212,10 +212,3 @@ Function ClaimOwnership() Uint64
 40 RETURN 0
 50 RETURN 1
 End Function
-
-Function UpdateCode(code String) Uint64
-10 IF LOAD("owner") != SIGNER() THEN GOTO 40
-20 UPDATE_SC_CODE(code)
-30 RETURN 0
-40 RETURN 1
-End Function

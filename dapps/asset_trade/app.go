@@ -2,7 +2,9 @@ package asset_trade
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"regexp"
 	"strconv"
@@ -20,7 +22,7 @@ import (
 var DAPP_NAME = "asset-trade"
 
 var EXCHANGE_SCID map[string]string = map[string]string{
-	"mainnet":   "",
+	"mainnet":   "e2ec01dcb1fc87abc6af5e958c936c0ad05e19b318be1c87e9ba2d188e8d689f",
 	"testnet":   "d8301b171c1554c15a553f26dfd8754963c9201781fd46eb4c547685029afeb8",
 	"simulator": "ad0be83e6443c9002eb063e9443230e250f2a2007bacb6a141e72e8eea3a1bf1",
 }
@@ -1037,6 +1039,115 @@ func CommandCloseOrder() *cli.Command {
 	}
 }
 
+func CommandCreateSellOrdersFromFile() *cli.Command {
+	return &cli.Command{
+		Name:    "create-sell-orders-from-file",
+		Aliases: []string{"csoff"},
+		Usage:   "Create sell orders from file",
+		Action: func(ctx *cli.Context) error {
+			lRateAmount, err := app.PromptUInt("Enter amount (atomic value)", 1)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			rAssetId, err := app.Prompt("Enter price asset id (empty for DERO)", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			rRateAmount := uint64(0)
+			if rAssetId == "" {
+				rAssetId = crypto.ZEROHASH.String() //"0000000000000000000000000000000000000000000000000000000000000000"
+				rRateAmount, err = app.PromptDero("Enter unit price (in Dero)", 0)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			} else {
+				rRateAmount, err = app.PromptUInt("Enter unit price (atomic value)", 1)
+				if app.HandlePromptErr(err) {
+					return nil
+				}
+			}
+
+			expireTimestamp, err := app.PromptUInt("Expire timestamp (unix)", 0)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			uOneTx := uint64(0)
+			oneTx, err := app.PromptYesNo("One transaction only?", false)
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			if oneTx {
+				uOneTx = 1
+			}
+
+			walletInstance := app.Context.WalletInstance
+			scid := getExchangeSCID()
+
+			transfer := rpc.Transfer{}
+
+			scidFilePath, err := app.Prompt("Enter scids json file", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			content, err := ioutil.ReadFile(scidFilePath)
+			if err != nil {
+				return err
+			}
+
+			var assets []string
+			err = json.Unmarshal(content, &assets)
+			if err != nil {
+				return err
+			}
+
+			for _, assetId := range assets {
+				randomAddresses, err := walletInstance.Daemon.GetRandomAddresses(nil)
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+
+				transfer = rpc.Transfer{
+					SCID:        crypto.HashHexToHash(assetId),
+					Burn:        lRateAmount,
+					Destination: randomAddresses.Address[0],
+				}
+
+			retry:
+				txId, err := walletInstance.CallSmartContract(2, scid, "CreateOrder", []rpc.Argument{
+					{Name: "odType", DataType: rpc.DataString, Value: "sell"},
+					{Name: "lAssetId", DataType: rpc.DataString, Value: assetId},
+					{Name: "rAssetId", DataType: rpc.DataString, Value: rAssetId},
+					{Name: "lRateAmount", DataType: rpc.DataUint64, Value: lRateAmount},
+					{Name: "rRateAmount", DataType: rpc.DataUint64, Value: rRateAmount},
+					{Name: "expireTimestamp", DataType: rpc.DataUint64, Value: expireTimestamp},
+					{Name: "oneTxOnly", DataType: rpc.DataUint64, Value: uOneTx},
+				}, []rpc.Transfer{
+					transfer,
+				}, false)
+
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+
+				err = walletInstance.WaitTransaction(txId)
+				if err != nil {
+					fmt.Println(err)
+					goto retry
+				}
+			}
+
+			return nil
+		},
+	}
+}
+
 func CommandBuyOrSell() *cli.Command {
 	return &cli.Command{
 		Name:    "buysell-order",
@@ -1202,6 +1313,7 @@ func App() *cli.App {
 			CommandCheckoutAuction(),
 			CommandRetrieveLockedFundsAuction(),
 			CommandViewAsset(),
+			CommandCreateSellOrdersFromFile(),
 		},
 		Authors: []*cli.Author{
 			{Name: "g45t345rt"},

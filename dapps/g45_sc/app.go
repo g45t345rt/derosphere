@@ -1225,7 +1225,7 @@ func G45_C_SetAssets(scId string, assets map[string]uint64, promptFees bool) err
 		return nil
 	}
 
-	maxAssetsPerEntry, err := app.PromptUInt("Assets per TX", 200)
+	maxAssetsPerEntry, err := app.PromptUInt("Assets per TX", 100)
 	if app.HandlePromptErr(err) {
 		return nil
 	}

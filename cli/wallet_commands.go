@@ -571,6 +571,32 @@ func CommandWalletTransferFromFile() *cli.Command {
 				return nil
 			}
 
+			for _, t := range transfer.Transfers {
+				addr := t.Destination
+
+				if !strings.HasPrefix(addr, "dero") {
+					result, err := walletInstance.Daemon.NameToAddress(&rpc.NameToAddress_Params{
+						Name: addr,
+					})
+					if err != nil {
+						fmt.Println(addr, err)
+						return nil
+					}
+					fmt.Println(addr, "->", result.Address)
+				} else {
+					_, err = walletInstance.Daemon.GetEncrypedBalance(&rpc.GetEncryptedBalance_Params{
+						Address:    t.Destination,
+						TopoHeight: -1,
+					})
+
+					if err != nil {
+						fmt.Println(addr, err)
+						return nil
+					}
+					fmt.Println(addr)
+				}
+			}
+
 			txid, err := walletInstance.Transfer(transfer)
 
 			if err != nil {
@@ -939,6 +965,34 @@ func CommandClearCommitCount() *cli.Command {
 	}
 }
 
+func CommandAccountExists() *cli.Command {
+	return &cli.Command{
+		Name:    "wallet-exists",
+		Usage:   "Check if wallet address as balance",
+		Aliases: []string{"we"},
+		Action: func(ctx *cli.Context) error {
+
+			addr, err := app.Prompt("Enter wallet address", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			result, err := app.Context.WalletInstance.Daemon.GetEncrypedBalance(&rpc.GetEncryptedBalance_Params{
+				Address:    addr,
+				TopoHeight: -1,
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(result)
+			return nil
+		},
+	}
+}
+
 func DAppApp(dapp *cli.App) *cli.App {
 	return &cli.App{
 		Name:                  dapp.Name,
@@ -1018,6 +1072,7 @@ func WalletApp() *cli.App {
 			CommandWalletSeed(),
 			CommandRegisterWallet(),
 			CommandSwitchWallet(),
+			CommandAccountExists(),
 			SCCommands(),
 			CommandCloseWallet(),
 			CommandExit(),

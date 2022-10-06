@@ -324,17 +324,22 @@ func (w *WalletInstance) Transfer(params *rpc.Transfer_Params) (string, error) {
 }
 
 func (w *WalletInstance) EstimateFeesAndTransfer(transfer *rpc.Transfer_Params) (string, error) {
-	signer, err := w.GetAddress()
-	if err != nil {
-		return "", err
-	}
 
-	estimate, err := w.Daemon.GetGasEstimate(&rpc.GasEstimate_Params{
+	params := rpc.GasEstimate_Params{
 		Ringsize:  transfer.Ringsize,
-		Signer:    signer,
 		Transfers: transfer.Transfers,
 		SC_RPC:    transfer.SC_RPC,
-	})
+	}
+
+	if params.Ringsize == 2 {
+		signer, err := w.GetAddress()
+		if err != nil {
+			return "", err
+		}
+		params.Signer = signer
+	}
+
+	estimate, err := w.Daemon.GetGasEstimate(&params)
 
 	if err != nil {
 		return "", err
