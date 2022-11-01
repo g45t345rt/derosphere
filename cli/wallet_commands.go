@@ -1045,6 +1045,41 @@ func DAppWalletCommands() *cli.Command {
 	}
 }
 
+func CommandGetEncrypedBalance() *cli.Command {
+	return &cli.Command{
+		Name:    "get-encrypted-balance",
+		Aliases: []string{"geb"},
+		Usage:   "Get encrupted balance for wallet token",
+		Action: func(ctx *cli.Context) error {
+			walletInstance := app.Context.WalletInstance
+
+			walletAddress, err := app.Prompt("Wallet Address", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			scid, err := app.Prompt("Token ID (SCID)", "")
+			if app.HandlePromptErr(err) {
+				return nil
+			}
+
+			result, err := walletInstance.Daemon.GetEncrypedBalance(&rpc.GetEncryptedBalance_Params{
+				Address:    walletAddress,
+				SCID:       crypto.HashHexToHash(scid),
+				TopoHeight: -1,
+			})
+
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(result)
+			return nil
+		},
+	}
+}
+
 func WalletApp() *cli.App {
 	return &cli.App{
 		Name:                  "",
@@ -1073,6 +1108,7 @@ func WalletApp() *cli.App {
 			CommandRegisterWallet(),
 			CommandSwitchWallet(),
 			CommandAccountExists(),
+			CommandGetEncrypedBalance(),
 			SCCommands(),
 			CommandCloseWallet(),
 			CommandExit(),

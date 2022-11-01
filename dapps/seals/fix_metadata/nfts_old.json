@@ -4,12 +4,12 @@
     "name": "Dero Seals #1445",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1445.jpg",
     "attributes": {
-      "Eyes": "Green Eyes",
+      "Eyes": "Blue Eyes",
       "Hair And Hats": "Mckees Hat",
       "Shirts": "Dero Man Suit",
       "Tattoo": "Onward"
     },
-    "score": 55.68
+    "score": 55.94
   },
   {
     "id": 2736,
@@ -36,6 +36,19 @@
     "score": 52.17
   },
   {
+    "id": 2374,
+    "name": "Dero Seals #2374",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2374.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Sombrero",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring",
+      "Tattoo": "Onward"
+    },
+    "score": 51.41
+  },
+  {
     "id": 1153,
     "name": "Dero Seals #1153",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1153.jpg",
@@ -60,19 +73,6 @@
       "Tattoo": "Onward"
     },
     "score": 51.26
-  },
-  {
-    "id": 2374,
-    "name": "Dero Seals #2374",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2374.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Sombrero",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring",
-      "Tattoo": "Onward"
-    },
-    "score": 51.15
   },
   {
     "id": 2685,
@@ -116,13 +116,13 @@
     "name": "Dero Seals #106",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/106.jpg",
     "attributes": {
-      "Eyes": "Red Eyes",
+      "Eyes": "Blue Eyes",
       "Hair And Hats": "Sombrero",
       "Shirts": "Dero Man Suit",
       "Facial Hair": "Beard",
       "Tattoo": "Launch Date"
     },
-    "score": 50.38
+    "score": 50.59
   },
   {
     "id": 262,
@@ -162,6 +162,18 @@
     "score": 50.06
   },
   {
+    "id": 3180,
+    "name": "Dero Seals #3180",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3180.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Top Hat",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Launch Date"
+    },
+    "score": 50.01
+  },
+  {
     "id": 3475,
     "name": "Dero Seals #3475",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3475.jpg",
@@ -185,18 +197,6 @@
       "Tattoo": "Launch Date"
     },
     "score": 49.76
-  },
-  {
-    "id": 3180,
-    "name": "Dero Seals #3180",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3180.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Top Hat",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Launch Date"
-    },
-    "score": 49.75
   },
   {
     "id": 2452,
@@ -264,6 +264,18 @@
     "score": 49.32
   },
   {
+    "id": 1022,
+    "name": "Dero Seals #1022",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1022.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Cowboy Hat",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "I Love Captain"
+    },
+    "score": 49.25
+  },
+  {
     "id": 128,
     "name": "Dero Seals #128",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/128.jpg",
@@ -287,18 +299,6 @@
       "Tattoo": "Launch Date"
     },
     "score": 49.17
-  },
-  {
-    "id": 1022,
-    "name": "Dero Seals #1022",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1022.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Cowboy Hat",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "I Love Captain"
-    },
-    "score": 49.04
   },
   {
     "id": 372,
@@ -357,25 +357,25 @@
     "name": "Dero Seals #49",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/49.jpg",
     "attributes": {
-      "Eyes": "Red Eyes",
+      "Eyes": "Blue Eyes",
       "Hair And Hats": "Cowboy Hat",
       "Shirts": "Dero Man Suit",
       "Tattoo": "Dero Life"
     },
-    "score": 48.34
+    "score": 48.55
   },
   {
     "id": 2299,
     "name": "Dero Seals #2299",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2299.jpg",
     "attributes": {
-      "Eyes": "Red Eyes",
+      "Eyes": "Blue Eyes",
       "Hair And Hats": "Black Hair",
       "Shirts": "Dero Man Suit",
       "Facial Hair": "Beard",
       "Tattoo": "Dero Life"
     },
-    "score": 48.32
+    "score": 48.53
   },
   {
     "id": 1280,
@@ -463,6 +463,17 @@
     "score": 47.53
   },
   {
+    "id": 1292,
+    "name": "Dero Seals #1292",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1292.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Mckees Hat",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 47.53
+  },
+  {
     "id": 411,
     "name": "Dero Seals #411",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/411.jpg",
@@ -502,17 +513,6 @@
     "score": 47.36
   },
   {
-    "id": 1292,
-    "name": "Dero Seals #1292",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1292.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Mckees Hat",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 47.32
-  },
-  {
     "id": 52,
     "name": "Dero Seals #52",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/52.jpg",
@@ -550,6 +550,18 @@
     "score": 47.2
   },
   {
+    "id": 3245,
+    "name": "Dero Seals #3245",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3245.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Top Hat",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring"
+    },
+    "score": 47.2
+  },
+  {
     "id": 440,
     "name": "Dero Seals #440",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/440.jpg",
@@ -573,18 +585,6 @@
       "Tattoo": "Dero Life"
     },
     "score": 47.06
-  },
-  {
-    "id": 3245,
-    "name": "Dero Seals #3245",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3245.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Top Hat",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
-    },
-    "score": 46.94
   },
   {
     "id": 1803,
@@ -812,6 +812,18 @@
     "score": 46.19
   },
   {
+    "id": 159,
+    "name": "Dero Seals #159",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/159.jpg",
+    "attributes": {
+      "Hair And Hats": "Sombrero",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "I Love Captain",
+      "Eyes": "Blue Eyes"
+    },
+    "score": 46.14
+  },
+  {
     "id": 932,
     "name": "Dero Seals #932",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/932.jpg",
@@ -859,6 +871,18 @@
       "Tattoo": "Launch Date"
     },
     "score": 46.06
+  },
+  {
+    "id": 556,
+    "name": "Dero Seals #556",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/556.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Sailors Hat",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Dero Life"
+    },
+    "score": 45.98
   },
   {
     "id": 290,
@@ -935,18 +959,6 @@
     "score": 45.77
   },
   {
-    "id": 556,
-    "name": "Dero Seals #556",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/556.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Sailors Hat",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Dero Life"
-    },
-    "score": 45.72
-  },
-  {
     "id": 2909,
     "name": "Dero Seals #2909",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2909.jpg",
@@ -983,9 +995,31 @@
     "score": 45.6
   },
   {
+    "id": 1226,
+    "name": "Dero Seals #1226",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1226.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "3rd Eye",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 45.56
+  },
+  {
     "id": 3250,
     "name": "Dero Seals #3250",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3250.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "3rd Eye",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 45.56
+  },
+  {
+    "id": 3410,
+    "name": "Dero Seals #3410",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3410.jpg",
     "attributes": {
       "Eyes": "Blue Eyes",
       "Hair And Hats": "3rd Eye",
@@ -1017,28 +1051,6 @@
       "Tattoo": "I Love Captain"
     },
     "score": 45.46
-  },
-  {
-    "id": 3410,
-    "name": "Dero Seals #3410",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3410.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "3rd Eye",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 45.35
-  },
-  {
-    "id": 1226,
-    "name": "Dero Seals #1226",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1226.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "3rd Eye",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 45.3
   },
   {
     "id": 1610,
@@ -1101,6 +1113,30 @@
     "score": 45.22
   },
   {
+    "id": 148,
+    "name": "Dero Seals #148",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/148.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Mohawk",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Onward"
+    },
+    "score": 45.21
+  },
+  {
+    "id": 3322,
+    "name": "Dero Seals #3322",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3322.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Mohawk",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Onward"
+    },
+    "score": 45.21
+  },
+  {
     "id": 1196,
     "name": "Dero Seals #1196",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1196.jpg",
@@ -1134,6 +1170,18 @@
       "Hair And Hats": "Soldiers helmet",
       "Shirts": "Dero Man Suit",
       "Tattoo": "Onward"
+    },
+    "score": 45.17
+  },
+  {
+    "id": 647,
+    "name": "Dero Seals #647",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/647.jpg",
+    "attributes": {
+      "Hair And Hats": "Soldiers helmet",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Onward",
+      "Eyes": "Blue Eyes"
     },
     "score": 45.17
   },
@@ -1249,18 +1297,6 @@
     "score": 45.02
   },
   {
-    "id": 148,
-    "name": "Dero Seals #148",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/148.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Mohawk",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Onward"
-    },
-    "score": 45.0
-  },
-  {
     "id": 1237,
     "name": "Dero Seals #1237",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1237.jpg",
@@ -1299,16 +1335,16 @@
     "score": 44.97
   },
   {
-    "id": 3322,
-    "name": "Dero Seals #3322",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3322.jpg",
+    "id": 1376,
+    "name": "Dero Seals #1376",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1376.jpg",
     "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Mohawk",
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Soldiers helmet",
       "Shirts": "Dero Man Suit",
-      "Tattoo": "Onward"
+      "Tattoo": "I Love Captain"
     },
-    "score": 44.95
+    "score": 44.94
   },
   {
     "id": 3126,
@@ -1386,16 +1422,40 @@
     "score": 44.81
   },
   {
-    "id": 1376,
-    "name": "Dero Seals #1376",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1376.jpg",
+    "id": 296,
+    "name": "Dero Seals #296",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/296.jpg",
     "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Soldiers helmet",
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Blonde Hair",
       "Shirts": "Dero Man Suit",
-      "Tattoo": "I Love Captain"
+      "Tattoo": "Onward"
     },
-    "score": 44.73
+    "score": 44.79
+  },
+  {
+    "id": 1967,
+    "name": "Dero Seals #1967",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1967.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Blonde Hair",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Onward"
+    },
+    "score": 44.79
+  },
+  {
+    "id": 2757,
+    "name": "Dero Seals #2757",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2757.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Dad Hat",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Launch Date"
+    },
+    "score": 44.72
   },
   {
     "id": 1078,
@@ -1418,6 +1478,18 @@
       "Shirts": "Leather Jacket",
       "Facial Hair": "Nose Ring",
       "Tattoo": "I Love Captain"
+    },
+    "score": 44.68
+  },
+  {
+    "id": 2808,
+    "name": "Dero Seals #2808",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2808.jpg",
+    "attributes": {
+      "Hair And Hats": "Black Hair",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Onward",
+      "Eyes": "Blue Eyes"
     },
     "score": 44.68
   },
@@ -1495,28 +1567,28 @@
     "score": 44.6
   },
   {
-    "id": 1967,
-    "name": "Dero Seals #1967",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1967.jpg",
+    "id": 699,
+    "name": "Dero Seals #699",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/699.jpg",
     "attributes": {
-      "Eyes": "Red Eyes",
+      "Eyes": "Blue Eyes",
       "Hair And Hats": "Blonde Hair",
       "Shirts": "Dero Man Suit",
-      "Tattoo": "Onward"
+      "Tattoo": "I Love Captain"
     },
-    "score": 44.58
+    "score": 44.56
   },
   {
-    "id": 296,
-    "name": "Dero Seals #296",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/296.jpg",
+    "id": 974,
+    "name": "Dero Seals #974",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/974.jpg",
     "attributes": {
-      "Eyes": "Green Eyes",
       "Hair And Hats": "Blonde Hair",
       "Shirts": "Dero Man Suit",
-      "Tattoo": "Onward"
+      "Tattoo": "I Love Captain",
+      "Eyes": "Blue Eyes"
     },
-    "score": 44.53
+    "score": 44.56
   },
   {
     "id": 2748,
@@ -1540,18 +1612,6 @@
       "Hair And Hats": "3rd Eye",
       "Shirts": "Real Gold Chain",
       "Facial Hair": "Beard"
-    },
-    "score": 44.51
-  },
-  {
-    "id": 2757,
-    "name": "Dero Seals #2757",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2757.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Dad Hat",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Launch Date"
     },
     "score": 44.51
   },
@@ -1591,6 +1651,30 @@
       "Tattoo": "Dero Life"
     },
     "score": 44.46
+  },
+  {
+    "id": 420,
+    "name": "Dero Seals #420",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/420.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Black Hair",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "I Love Captain"
+    },
+    "score": 44.45
+  },
+  {
+    "id": 1638,
+    "name": "Dero Seals #1638",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1638.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Black Hair",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "I Love Captain"
+    },
+    "score": 44.45
   },
   {
     "id": 1043,
@@ -1644,6 +1728,18 @@
     "score": 44.36
   },
   {
+    "id": 225,
+    "name": "Dero Seals #225",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/225.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Dad Hat",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Dero Life"
+    },
+    "score": 44.35
+  },
+  {
     "id": 997,
     "name": "Dero Seals #997",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/997.jpg",
@@ -1652,6 +1748,18 @@
       "Hair And Hats": "Top Hat",
       "Shirts": "Red Polo",
       "Facial Hair": "Beard",
+      "Tattoo": "Dero Life"
+    },
+    "score": 44.35
+  },
+  {
+    "id": 1065,
+    "name": "Dero Seals #1065",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1065.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Dad Hat",
+      "Shirts": "Dero Man Suit",
       "Tattoo": "Dero Life"
     },
     "score": 44.35
@@ -1680,18 +1788,6 @@
       "Tattoo": "Onward"
     },
     "score": 44.33
-  },
-  {
-    "id": 699,
-    "name": "Dero Seals #699",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/699.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Blonde Hair",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "I Love Captain"
-    },
-    "score": 44.3
   },
   {
     "id": 1186,
@@ -1733,18 +1829,6 @@
     "score": 44.25
   },
   {
-    "id": 1638,
-    "name": "Dero Seals #1638",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1638.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Black Hair",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "I Love Captain"
-    },
-    "score": 44.24
-  },
-  {
     "id": 1750,
     "name": "Dero Seals #1750",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1750.jpg",
@@ -1758,30 +1842,6 @@
     "score": 44.24
   },
   {
-    "id": 420,
-    "name": "Dero Seals #420",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/420.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Black Hair",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "I Love Captain"
-    },
-    "score": 44.19
-  },
-  {
-    "id": 225,
-    "name": "Dero Seals #225",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/225.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Dad Hat",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Dero Life"
-    },
-    "score": 44.14
-  },
-  {
     "id": 1736,
     "name": "Dero Seals #1736",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1736.jpg",
@@ -1791,6 +1851,18 @@
       "Shirts": "Real Gold Chain",
       "Facial Hair": "Beard",
       "Tattoo": "Onward"
+    },
+    "score": 44.12
+  },
+  {
+    "id": 2941,
+    "name": "Dero Seals #2941",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2941.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Black Hair",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Launch Date"
     },
     "score": 44.12
   },
@@ -1829,18 +1901,6 @@
       "Shirts": "Dero Man Chest",
       "Facial Hair": "Beard",
       "Tattoo": "Launch Date"
-    },
-    "score": 44.09
-  },
-  {
-    "id": 1065,
-    "name": "Dero Seals #1065",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1065.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Dad Hat",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Dero Life"
     },
     "score": 44.09
   },
@@ -1947,14 +2007,26 @@
     "score": 43.88
   },
   {
-    "id": 2941,
-    "name": "Dero Seals #2941",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2941.jpg",
+    "id": 249,
+    "name": "Dero Seals #249",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/249.jpg",
     "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Black Hair",
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Viking Helmet",
       "Shirts": "Dero Man Suit",
-      "Tattoo": "Launch Date"
+      "Facial Hair": "Nose Ring"
+    },
+    "score": 43.86
+  },
+  {
+    "id": 2204,
+    "name": "Dero Seals #2204",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2204.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Viking Helmet",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring"
     },
     "score": 43.86
   },
@@ -1994,6 +2066,18 @@
       "Facial Hair": "Beard"
     },
     "score": 43.82
+  },
+  {
+    "id": 2782,
+    "name": "Dero Seals #2782",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2782.jpg",
+    "attributes": {
+      "Hair And Hats": "Afro",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Dero Life",
+      "Eyes": "Blue Eyes"
+    },
+    "score": 43.79
   },
   {
     "id": 210,
@@ -2060,18 +2144,6 @@
     "score": 43.67
   },
   {
-    "id": 2204,
-    "name": "Dero Seals #2204",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2204.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Viking Helmet",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
-    },
-    "score": 43.65
-  },
-  {
     "id": 1753,
     "name": "Dero Seals #1753",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1753.jpg",
@@ -2109,14 +2181,14 @@
     "score": 43.63
   },
   {
-    "id": 249,
-    "name": "Dero Seals #249",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/249.jpg",
+    "id": 1360,
+    "name": "Dero Seals #1360",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1360.jpg",
     "attributes": {
-      "Eyes": "Green Eyes",
       "Hair And Hats": "Viking Helmet",
       "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
+      "Facial Hair": "Beard",
+      "Eyes": "Blue Eyes"
     },
     "score": 43.6
   },
@@ -2124,6 +2196,18 @@
     "id": 2139,
     "name": "Dero Seals #2139",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2139.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Viking Helmet",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Beard"
+    },
+    "score": 43.6
+  },
+  {
+    "id": 2585,
+    "name": "Dero Seals #2585",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2585.jpg",
     "attributes": {
       "Eyes": "Blue Eyes",
       "Hair And Hats": "Viking Helmet",
@@ -2144,6 +2228,18 @@
       "Tattoo": "I Love Captain"
     },
     "score": 43.55
+  },
+  {
+    "id": 678,
+    "name": "Dero Seals #678",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/678.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Sailors Hat",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring"
+    },
+    "score": 43.54
   },
   {
     "id": 3332,
@@ -2268,18 +2364,6 @@
     "score": 43.39
   },
   {
-    "id": 2585,
-    "name": "Dero Seals #2585",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2585.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Viking Helmet",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
-    },
-    "score": 43.34
-  },
-  {
     "id": 3109,
     "name": "Dero Seals #3109",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3109.jpg",
@@ -2339,18 +2423,6 @@
       "Tattoo": "I Love Captain"
     },
     "score": 43.3
-  },
-  {
-    "id": 678,
-    "name": "Dero Seals #678",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/678.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Sailors Hat",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
-    },
-    "score": 43.28
   },
   {
     "id": 923,
@@ -2572,6 +2644,18 @@
     "score": 43.0
   },
   {
+    "id": 3329,
+    "name": "Dero Seals #3329",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3329.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Sombrero",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring"
+    },
+    "score": 43.0
+  },
+  {
     "id": 800,
     "name": "Dero Seals #800",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/800.jpg",
@@ -2707,6 +2791,18 @@
     "score": 42.76
   },
   {
+    "id": 160,
+    "name": "Dero Seals #160",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/160.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Sombrero",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Beard"
+    },
+    "score": 42.74
+  },
+  {
     "id": 1429,
     "name": "Dero Seals #1429",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1429.jpg",
@@ -2728,18 +2824,6 @@
       "Shirts": "Real Gold Chain",
       "Facial Hair": "Beard",
       "Tattoo": "Dero Life"
-    },
-    "score": 42.74
-  },
-  {
-    "id": 3329,
-    "name": "Dero Seals #3329",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3329.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Sombrero",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
     },
     "score": 42.74
   },
@@ -2877,18 +2961,6 @@
       "Tattoo": "Onward"
     },
     "score": 42.52
-  },
-  {
-    "id": 160,
-    "name": "Dero Seals #160",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/160.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Sombrero",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
-    },
-    "score": 42.48
   },
   {
     "id": 240,
@@ -3176,9 +3248,31 @@
     "score": 42.17
   },
   {
+    "id": 146,
+    "name": "Dero Seals #146",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/146.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Top Hat",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 42.16
+  },
+  {
     "id": 664,
     "name": "Dero Seals #664",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/664.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Top Hat",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 42.16
+  },
+  {
+    "id": 3248,
+    "name": "Dero Seals #3248",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3248.jpg",
     "attributes": {
       "Eyes": "Blue Eyes",
       "Hair And Hats": "Top Hat",
@@ -3433,17 +3527,6 @@
     "score": 41.96
   },
   {
-    "id": 3248,
-    "name": "Dero Seals #3248",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3248.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Top Hat",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 41.95
-  },
-  {
     "id": 2015,
     "name": "Dero Seals #2015",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2015.jpg",
@@ -3494,6 +3577,18 @@
     "score": 41.92
   },
   {
+    "id": 507,
+    "name": "Dero Seals #507",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/507.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Dad Hat",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring"
+    },
+    "score": 41.91
+  },
+  {
     "id": 1011,
     "name": "Dero Seals #1011",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1011.jpg",
@@ -3505,15 +3600,28 @@
     "score": 41.91
   },
   {
-    "id": 146,
-    "name": "Dero Seals #146",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/146.jpg",
+    "id": 1232,
+    "name": "Dero Seals #1232",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1232.jpg",
     "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Top Hat",
-      "Shirts": "Dero Man Suit"
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Dad Hat",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring"
     },
-    "score": 41.9
+    "score": 41.91
+  },
+  {
+    "id": 2605,
+    "name": "Dero Seals #2605",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2605.jpg",
+    "attributes": {
+      "Hair And Hats": "Dad Hat",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring",
+      "Eyes": "Blue Eyes"
+    },
+    "score": 41.91
   },
   {
     "id": 2033,
@@ -3687,6 +3795,18 @@
     "score": 41.81
   },
   {
+    "id": 559,
+    "name": "Dero Seals #559",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/559.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Soldiers helmet",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring"
+    },
+    "score": 41.8
+  },
+  {
     "id": 1414,
     "name": "Dero Seals #1414",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1414.jpg",
@@ -3799,18 +3919,6 @@
     "score": 41.72
   },
   {
-    "id": 507,
-    "name": "Dero Seals #507",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/507.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Dad Hat",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
-    },
-    "score": 41.7
-  },
-  {
     "id": 1792,
     "name": "Dero Seals #1792",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1792.jpg",
@@ -3858,6 +3966,18 @@
     "score": 41.66
   },
   {
+    "id": 301,
+    "name": "Dero Seals #301",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/301.jpg",
+    "attributes": {
+      "Hair And Hats": "Dad Hat",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Beard",
+      "Eyes": "Blue Eyes"
+    },
+    "score": 41.65
+  },
+  {
     "id": 833,
     "name": "Dero Seals #833",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/833.jpg",
@@ -3877,18 +3997,6 @@
       "Hair And Hats": "Cowboy Hat",
       "Shirts": "Dero Man Chest",
       "Facial Hair": "Beard"
-    },
-    "score": 41.65
-  },
-  {
-    "id": 1232,
-    "name": "Dero Seals #1232",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1232.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Dad Hat",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
     },
     "score": 41.65
   },
@@ -3953,6 +4061,18 @@
     "score": 41.61
   },
   {
+    "id": 3159,
+    "name": "Dero Seals #3159",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3159.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Mohawk",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Beard"
+    },
+    "score": 41.58
+  },
+  {
     "id": 2894,
     "name": "Dero Seals #2894",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2894.jpg",
@@ -4002,14 +4122,14 @@
     "score": 41.55
   },
   {
-    "id": 559,
-    "name": "Dero Seals #559",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/559.jpg",
+    "id": 1171,
+    "name": "Dero Seals #1171",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1171.jpg",
     "attributes": {
-      "Eyes": "Green Eyes",
+      "Eyes": "Blue Eyes",
       "Hair And Hats": "Soldiers helmet",
       "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
+      "Facial Hair": "Beard"
     },
     "score": 41.54
   },
@@ -4109,6 +4229,18 @@
       "Tattoo": "Launch Date"
     },
     "score": 41.43
+  },
+  {
+    "id": 2131,
+    "name": "Dero Seals #2131",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2131.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Blonde Hair",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring"
+    },
+    "score": 41.42
   },
   {
     "id": 3497,
@@ -4259,6 +4391,18 @@
     "score": 41.35
   },
   {
+    "id": 2490,
+    "name": "Dero Seals #2490",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2490.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Afro",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Nose Ring"
+    },
+    "score": 41.35
+  },
+  {
     "id": 3054,
     "name": "Dero Seals #3054",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3054.jpg",
@@ -4309,18 +4453,6 @@
     "score": 41.32
   },
   {
-    "id": 3159,
-    "name": "Dero Seals #3159",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3159.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Mohawk",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
-    },
-    "score": 41.32
-  },
-  {
     "id": 1832,
     "name": "Dero Seals #1832",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1832.jpg",
@@ -4331,18 +4463,6 @@
       "Tattoo": "Launch Date"
     },
     "score": 41.29
-  },
-  {
-    "id": 1171,
-    "name": "Dero Seals #1171",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1171.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Soldiers helmet",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
-    },
-    "score": 41.28
   },
   {
     "id": 1433,
@@ -4460,6 +4580,18 @@
     "score": 41.17
   },
   {
+    "id": 1458,
+    "name": "Dero Seals #1458",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1458.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Blonde Hair",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Beard"
+    },
+    "score": 41.16
+  },
+  {
     "id": 1850,
     "name": "Dero Seals #1850",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1850.jpg",
@@ -4484,14 +4616,14 @@
     "score": 41.16
   },
   {
-    "id": 2131,
-    "name": "Dero Seals #2131",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2131.jpg",
+    "id": 2301,
+    "name": "Dero Seals #2301",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2301.jpg",
     "attributes": {
-      "Eyes": "Green Eyes",
+      "Eyes": "Blue Eyes",
       "Hair And Hats": "Blonde Hair",
       "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
+      "Facial Hair": "Beard"
     },
     "score": 41.16
   },
@@ -4543,14 +4675,26 @@
     "score": 41.1
   },
   {
-    "id": 2490,
-    "name": "Dero Seals #2490",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2490.jpg",
+    "id": 2365,
+    "name": "Dero Seals #2365",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2365.jpg",
     "attributes": {
-      "Eyes": "Green Eyes",
+      "Eyes": "Blue Eyes",
       "Hair And Hats": "Afro",
       "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
+      "Facial Hair": "Beard"
+    },
+    "score": 41.09
+  },
+  {
+    "id": 2653,
+    "name": "Dero Seals #2653",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2653.jpg",
+    "attributes": {
+      "Hair And Hats": "Afro",
+      "Shirts": "Dero Man Suit",
+      "Facial Hair": "Beard",
+      "Eyes": "Blue Eyes"
     },
     "score": 41.09
   },
@@ -4591,6 +4735,28 @@
       "Tattoo": "Onward"
     },
     "score": 41.08
+  },
+  {
+    "id": 1415,
+    "name": "Dero Seals #1415",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1415.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Cowboy Hat",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 41.07
+  },
+  {
+    "id": 1556,
+    "name": "Dero Seals #1556",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1556.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Cowboy Hat",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 41.07
   },
   {
     "id": 1602,
@@ -4693,18 +4859,6 @@
     "score": 40.97
   },
   {
-    "id": 1458,
-    "name": "Dero Seals #1458",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1458.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Blonde Hair",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
-    },
-    "score": 40.95
-  },
-  {
     "id": 806,
     "name": "Dero Seals #806",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/806.jpg",
@@ -4731,30 +4885,6 @@
     "score": 40.91
   },
   {
-    "id": 2301,
-    "name": "Dero Seals #2301",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2301.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Blonde Hair",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
-    },
-    "score": 40.9
-  },
-  {
-    "id": 2365,
-    "name": "Dero Seals #2365",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2365.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Afro",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
-    },
-    "score": 40.88
-  },
-  {
     "id": 2719,
     "name": "Dero Seals #2719",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2719.jpg",
@@ -4779,17 +4909,6 @@
       "Tattoo": "I Love Captain"
     },
     "score": 40.87
-  },
-  {
-    "id": 1415,
-    "name": "Dero Seals #1415",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1415.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Cowboy Hat",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 40.86
   },
   {
     "id": 880,
@@ -4840,17 +4959,6 @@
       "Tattoo": "Onward"
     },
     "score": 40.82
-  },
-  {
-    "id": 1556,
-    "name": "Dero Seals #1556",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1556.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Cowboy Hat",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 40.81
   },
   {
     "id": 3418,
@@ -7790,17 +7898,6 @@
     "score": 38.83
   },
   {
-    "id": 159,
-    "name": "Dero Seals #159",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/159.jpg",
-    "attributes": {
-      "Hair And Hats": "Sombrero",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "I Love Captain"
-    },
-    "score": 38.82
-  },
-  {
     "id": 274,
     "name": "Dero Seals #274",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/274.jpg",
@@ -7833,6 +7930,28 @@
       "Hair And Hats": "3rd Eye",
       "Shirts": "Dero Man Chest",
       "Facial Hair": "Beard"
+    },
+    "score": 38.82
+  },
+  {
+    "id": 2293,
+    "name": "Dero Seals #2293",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2293.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Viking Helmet",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 38.82
+  },
+  {
+    "id": 2521,
+    "name": "Dero Seals #2521",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2521.jpg",
+    "attributes": {
+      "Hair And Hats": "Viking Helmet",
+      "Shirts": "Dero Man Suit",
+      "Eyes": "Blue Eyes"
     },
     "score": 38.82
   },
@@ -8332,17 +8451,6 @@
     "score": 38.58
   },
   {
-    "id": 2293,
-    "name": "Dero Seals #2293",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2293.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Viking Helmet",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 38.56
-  },
-  {
     "id": 2246,
     "name": "Dero Seals #2246",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2246.jpg",
@@ -8480,9 +8588,42 @@
     "score": 38.51
   },
   {
+    "id": 670,
+    "name": "Dero Seals #670",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/670.jpg",
+    "attributes": {
+      "Hair And Hats": "Sailors Hat",
+      "Shirts": "Dero Man Suit",
+      "Eyes": "Blue Eyes"
+    },
+    "score": 38.5
+  },
+  {
     "id": 1230,
     "name": "Dero Seals #1230",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1230.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Sailors Hat",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 38.5
+  },
+  {
+    "id": 3255,
+    "name": "Dero Seals #3255",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3255.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Sailors Hat",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 38.5
+  },
+  {
+    "id": 3421,
+    "name": "Dero Seals #3421",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3421.jpg",
     "attributes": {
       "Eyes": "Blue Eyes",
       "Hair And Hats": "Sailors Hat",
@@ -9043,17 +9184,6 @@
     "score": 38.29
   },
   {
-    "id": 3255,
-    "name": "Dero Seals #3255",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3255.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Sailors Hat",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 38.29
-  },
-  {
     "id": 467,
     "name": "Dero Seals #467",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/467.jpg",
@@ -9087,17 +9217,6 @@
       "Hair And Hats": "Black Hair",
       "Shirts": "Real Gold Chain",
       "Tattoo": "Launch Date"
-    },
-    "score": 38.24
-  },
-  {
-    "id": 3421,
-    "name": "Dero Seals #3421",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3421.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Sailors Hat",
-      "Shirts": "Dero Man Suit"
     },
     "score": 38.24
   },
@@ -9593,6 +9712,17 @@
     "score": 37.98
   },
   {
+    "id": 866,
+    "name": "Dero Seals #866",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/866.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Sombrero",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 37.96
+  },
+  {
     "id": 1482,
     "name": "Dero Seals #1482",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1482.jpg",
@@ -9601,6 +9731,17 @@
       "Hair And Hats": "Cowboy Hat",
       "Shirts": "Leather Jacket",
       "Tattoo": "Launch Date"
+    },
+    "score": 37.96
+  },
+  {
+    "id": 2203,
+    "name": "Dero Seals #2203",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2203.jpg",
+    "attributes": {
+      "Hair And Hats": "Sombrero",
+      "Shirts": "Dero Man Suit",
+      "Eyes": "Blue Eyes"
     },
     "score": 37.96
   },
@@ -9623,6 +9764,17 @@
       "Eyes": "Blue Eyes",
       "Hair And Hats": "Top Hat",
       "Shirts": "Dero Man Chest"
+    },
+    "score": 37.96
+  },
+  {
+    "id": 3271,
+    "name": "Dero Seals #3271",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3271.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Sombrero",
+      "Shirts": "Dero Man Suit"
     },
     "score": 37.96
   },
@@ -9823,17 +9975,6 @@
     "score": 37.85
   },
   {
-    "id": 647,
-    "name": "Dero Seals #647",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/647.jpg",
-    "attributes": {
-      "Hair And Hats": "Soldiers helmet",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Onward"
-    },
-    "score": 37.85
-  },
-  {
     "id": 1710,
     "name": "Dero Seals #1710",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1710.jpg",
@@ -9968,17 +10109,6 @@
     "score": 37.75
   },
   {
-    "id": 3271,
-    "name": "Dero Seals #3271",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3271.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Sombrero",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 37.75
-  },
-  {
     "id": 2392,
     "name": "Dero Seals #2392",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2392.jpg",
@@ -10039,17 +10169,6 @@
       "Tattoo": "I Love Captain"
     },
     "score": 37.71
-  },
-  {
-    "id": 866,
-    "name": "Dero Seals #866",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/866.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Sombrero",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 37.7
   },
   {
     "id": 2621,
@@ -10478,17 +10597,6 @@
     "score": 37.36
   },
   {
-    "id": 2808,
-    "name": "Dero Seals #2808",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2808.jpg",
-    "attributes": {
-      "Hair And Hats": "Black Hair",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Onward"
-    },
-    "score": 37.36
-  },
-  {
     "id": 1202,
     "name": "Dero Seals #1202",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1202.jpg",
@@ -10666,17 +10774,6 @@
       "Hair And Hats": "Top Hat",
       "Shirts": "Tie & Shirt",
       "Tattoo": "Onward"
-    },
-    "score": 37.24
-  },
-  {
-    "id": 974,
-    "name": "Dero Seals #974",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/974.jpg",
-    "attributes": {
-      "Hair And Hats": "Blonde Hair",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "I Love Captain"
     },
     "score": 37.24
   },
@@ -11518,6 +11615,17 @@
     "score": 36.89
   },
   {
+    "id": 976,
+    "name": "Dero Seals #976",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/976.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Dad Hat",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 36.87
+  },
+  {
     "id": 1905,
     "name": "Dero Seals #1905",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1905.jpg",
@@ -11538,6 +11646,17 @@
       "Eyes": "Blue Eyes",
       "Hair And Hats": "Dad Hat",
       "Shirts": "Dero Man Suit"
+    },
+    "score": 36.87
+  },
+  {
+    "id": 2101,
+    "name": "Dero Seals #2101",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2101.jpg",
+    "attributes": {
+      "Hair And Hats": "Dad Hat",
+      "Shirts": "Dero Man Suit",
+      "Eyes": "Blue Eyes"
     },
     "score": 36.87
   },
@@ -11695,6 +11814,17 @@
     "score": 36.81
   },
   {
+    "id": 1060,
+    "name": "Dero Seals #1060",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1060.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Mohawk",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 36.8
+  },
+  {
     "id": 1396,
     "name": "Dero Seals #1396",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1396.jpg",
@@ -11711,6 +11841,28 @@
     "id": 1515,
     "name": "Dero Seals #1515",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1515.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Mohawk",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 36.8
+  },
+  {
+    "id": 1621,
+    "name": "Dero Seals #1621",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1621.jpg",
+    "attributes": {
+      "Hair And Hats": "Mohawk",
+      "Shirts": "Dero Man Suit",
+      "Eyes": "Blue Eyes"
+    },
+    "score": 36.8
+  },
+  {
+    "id": 2040,
+    "name": "Dero Seals #2040",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2040.jpg",
     "attributes": {
       "Eyes": "Blue Eyes",
       "Hair And Hats": "Mohawk",
@@ -11826,6 +11978,28 @@
     "score": 36.77
   },
   {
+    "id": 753,
+    "name": "Dero Seals #753",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/753.jpg",
+    "attributes": {
+      "Hair And Hats": "Soldiers helmet",
+      "Shirts": "Dero Man Suit",
+      "Eyes": "Blue Eyes"
+    },
+    "score": 36.76
+  },
+  {
+    "id": 1143,
+    "name": "Dero Seals #1143",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1143.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Soldiers helmet",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 36.76
+  },
+  {
     "id": 1883,
     "name": "Dero Seals #1883",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1883.jpg",
@@ -11842,6 +12016,17 @@
     "id": 2053,
     "name": "Dero Seals #2053",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2053.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Soldiers helmet",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 36.76
+  },
+  {
+    "id": 3009,
+    "name": "Dero Seals #3009",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3009.jpg",
     "attributes": {
       "Eyes": "Blue Eyes",
       "Hair And Hats": "Soldiers helmet",
@@ -12130,17 +12315,6 @@
     "score": 36.67
   },
   {
-    "id": 976,
-    "name": "Dero Seals #976",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/976.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Dad Hat",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 36.66
-  },
-  {
     "id": 1228,
     "name": "Dero Seals #1228",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1228.jpg",
@@ -12346,17 +12520,6 @@
     "score": 36.6
   },
   {
-    "id": 2040,
-    "name": "Dero Seals #2040",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2040.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Mohawk",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 36.59
-  },
-  {
     "id": 3021,
     "name": "Dero Seals #3021",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3021.jpg",
@@ -12416,17 +12579,6 @@
     "score": 36.56
   },
   {
-    "id": 3009,
-    "name": "Dero Seals #3009",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3009.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Soldiers helmet",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 36.55
-  },
-  {
     "id": 1034,
     "name": "Dero Seals #1034",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1034.jpg",
@@ -12435,17 +12587,6 @@
       "Hair And Hats": "Viking Helmet",
       "Shirts": "White Muscle Shirt",
       "Tattoo": "Onward"
-    },
-    "score": 36.54
-  },
-  {
-    "id": 1060,
-    "name": "Dero Seals #1060",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1060.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Mohawk",
-      "Shirts": "Dero Man Suit"
     },
     "score": 36.54
   },
@@ -12547,17 +12688,6 @@
     "score": 36.51
   },
   {
-    "id": 1143,
-    "name": "Dero Seals #1143",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1143.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Soldiers helmet",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 36.5
-  },
-  {
     "id": 1147,
     "name": "Dero Seals #1147",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1147.jpg",
@@ -12652,17 +12782,6 @@
       "Hair And Hats": "Top Hat",
       "Shirts": "Leather Jacket",
       "Tattoo": "Launch Date"
-    },
-    "score": 36.47
-  },
-  {
-    "id": 2782,
-    "name": "Dero Seals #2782",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2782.jpg",
-    "attributes": {
-      "Hair And Hats": "Afro",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Dero Life"
     },
     "score": 36.47
   },
@@ -12917,6 +13036,17 @@
     "score": 36.39
   },
   {
+    "id": 1678,
+    "name": "Dero Seals #1678",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1678.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Blonde Hair",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 36.38
+  },
+  {
     "id": 2091,
     "name": "Dero Seals #2091",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2091.jpg",
@@ -12936,6 +13066,28 @@
       "Eyes": "Blue Eyes",
       "Hair And Hats": "Blonde Hair",
       "Shirts": "Dero Man Suit"
+    },
+    "score": 36.38
+  },
+  {
+    "id": 2472,
+    "name": "Dero Seals #2472",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2472.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Blonde Hair",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 36.38
+  },
+  {
+    "id": 3103,
+    "name": "Dero Seals #3103",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3103.jpg",
+    "attributes": {
+      "Hair And Hats": "Blonde Hair",
+      "Shirts": "Dero Man Suit",
+      "Eyes": "Blue Eyes"
     },
     "score": 36.38
   },
@@ -13077,6 +13229,17 @@
     "score": 36.33
   },
   {
+    "id": 256,
+    "name": "Dero Seals #256",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/256.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Afro",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 36.31
+  },
+  {
     "id": 1631,
     "name": "Dero Seals #1631",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1631.jpg",
@@ -13085,6 +13248,17 @@
       "Hair And Hats": "Sailors Hat",
       "Shirts": "Red Polo",
       "Facial Hair": "Nose Ring"
+    },
+    "score": 36.31
+  },
+  {
+    "id": 2271,
+    "name": "Dero Seals #2271",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2271.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Afro",
+      "Shirts": "Dero Man Suit"
     },
     "score": 36.31
   },
@@ -13173,17 +13347,6 @@
     "score": 36.28
   },
   {
-    "id": 1360,
-    "name": "Dero Seals #1360",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1360.jpg",
-    "attributes": {
-      "Hair And Hats": "Viking Helmet",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
-    },
-    "score": 36.28
-  },
-  {
     "id": 2151,
     "name": "Dero Seals #2151",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2151.jpg",
@@ -13208,6 +13371,28 @@
     "score": 36.27
   },
   {
+    "id": 1040,
+    "name": "Dero Seals #1040",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1040.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Black Hair",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 36.27
+  },
+  {
+    "id": 1718,
+    "name": "Dero Seals #1718",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1718.jpg",
+    "attributes": {
+      "Hair And Hats": "Black Hair",
+      "Shirts": "Dero Man Suit",
+      "Eyes": "Blue Eyes"
+    },
+    "score": 36.27
+  },
+  {
     "id": 2051,
     "name": "Dero Seals #2051",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2051.jpg",
@@ -13216,6 +13401,17 @@
       "Hair And Hats": "Sombrero",
       "Shirts": "Red Polo",
       "Tattoo": "Onward"
+    },
+    "score": 36.27
+  },
+  {
+    "id": 2820,
+    "name": "Dero Seals #2820",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2820.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Hair And Hats": "Black Hair",
+      "Shirts": "Dero Man Suit"
     },
     "score": 36.27
   },
@@ -13578,17 +13774,6 @@
     "score": 36.18
   },
   {
-    "id": 2472,
-    "name": "Dero Seals #2472",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2472.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Blonde Hair",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 36.17
-  },
-  {
     "id": 3205,
     "name": "Dero Seals #3205",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3205.jpg",
@@ -13748,17 +13933,6 @@
     "score": 36.12
   },
   {
-    "id": 1678,
-    "name": "Dero Seals #1678",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1678.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Blonde Hair",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 36.12
-  },
-  {
     "id": 2582,
     "name": "Dero Seals #2582",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2582.jpg",
@@ -13781,17 +13955,6 @@
       "Tattoo": "Launch Date"
     },
     "score": 36.12
-  },
-  {
-    "id": 256,
-    "name": "Dero Seals #256",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/256.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Afro",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 36.1
   },
   {
     "id": 2980,
@@ -13906,17 +14069,6 @@
     "score": 36.06
   },
   {
-    "id": 2820,
-    "name": "Dero Seals #2820",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2820.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Hair And Hats": "Black Hair",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 36.06
-  },
-  {
     "id": 497,
     "name": "Dero Seals #497",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/497.jpg",
@@ -13924,17 +14076,6 @@
       "Hair And Hats": "3rd Eye",
       "Shirts": "Red Polo",
       "Facial Hair": "Nose Ring"
-    },
-    "score": 36.05
-  },
-  {
-    "id": 2271,
-    "name": "Dero Seals #2271",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2271.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Afro",
-      "Shirts": "Dero Man Suit"
     },
     "score": 36.05
   },
@@ -14071,17 +14212,6 @@
       "Tattoo": "Onward"
     },
     "score": 36.02
-  },
-  {
-    "id": 1040,
-    "name": "Dero Seals #1040",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1040.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Hair And Hats": "Black Hair",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 36.01
   },
   {
     "id": 1812,
@@ -17416,17 +17546,6 @@
     "score": 34.59
   },
   {
-    "id": 2605,
-    "name": "Dero Seals #2605",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2605.jpg",
-    "attributes": {
-      "Hair And Hats": "Dad Hat",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Nose Ring"
-    },
-    "score": 34.59
-  },
-  {
     "id": 525,
     "name": "Dero Seals #525",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/525.jpg",
@@ -18064,17 +18183,6 @@
       "Facial Hair": "Nose Ring"
     },
     "score": 34.35
-  },
-  {
-    "id": 301,
-    "name": "Dero Seals #301",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/301.jpg",
-    "attributes": {
-      "Hair And Hats": "Dad Hat",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
-    },
-    "score": 34.33
   },
   {
     "id": 323,
@@ -20086,17 +20194,6 @@
       "Hair And Hats": "Black Hair",
       "Shirts": "Leather Jacket",
       "Tattoo": "Onward"
-    },
-    "score": 33.77
-  },
-  {
-    "id": 2653,
-    "name": "Dero Seals #2653",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2653.jpg",
-    "attributes": {
-      "Hair And Hats": "Afro",
-      "Shirts": "Dero Man Suit",
-      "Facial Hair": "Beard"
     },
     "score": 33.77
   },
@@ -22690,6 +22787,17 @@
     "score": 32.95
   },
   {
+    "id": 688,
+    "name": "Dero Seals #688",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/688.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Shirts": "Dero Man Suit",
+      "Tattoo": "Launch Date"
+    },
+    "score": 32.94
+  },
+  {
     "id": 1699,
     "name": "Dero Seals #1699",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1699.jpg",
@@ -23232,17 +23340,6 @@
       "Hair And Hats": "Sailors Hat",
       "Shirts": "Black Muscle Shirt",
       "Facial Hair": "Beard"
-    },
-    "score": 32.73
-  },
-  {
-    "id": 688,
-    "name": "Dero Seals #688",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/688.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Shirts": "Dero Man Suit",
-      "Tattoo": "Launch Date"
     },
     "score": 32.73
   },
@@ -25704,16 +25801,6 @@
     "score": 31.51
   },
   {
-    "id": 2521,
-    "name": "Dero Seals #2521",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2521.jpg",
-    "attributes": {
-      "Hair And Hats": "Viking Helmet",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 31.5
-  },
-  {
     "id": 970,
     "name": "Dero Seals #970",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/970.jpg",
@@ -26795,16 +26882,6 @@
       "Eyes": "Blue Eyes",
       "Hair And Hats": "Mohawk",
       "Shirts": "Real Gold Chain"
-    },
-    "score": 31.18
-  },
-  {
-    "id": 670,
-    "name": "Dero Seals #670",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/670.jpg",
-    "attributes": {
-      "Hair And Hats": "Sailors Hat",
-      "Shirts": "Dero Man Suit"
     },
     "score": 31.18
   },
@@ -28983,16 +29060,6 @@
     "score": 30.65
   },
   {
-    "id": 2203,
-    "name": "Dero Seals #2203",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2203.jpg",
-    "attributes": {
-      "Hair And Hats": "Sombrero",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 30.64
-  },
-  {
     "id": 3349,
     "name": "Dero Seals #3349",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3349.jpg",
@@ -31121,16 +31188,6 @@
     "score": 29.55
   },
   {
-    "id": 2101,
-    "name": "Dero Seals #2101",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2101.jpg",
-    "attributes": {
-      "Hair And Hats": "Dad Hat",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 29.55
-  },
-  {
     "id": 1628,
     "name": "Dero Seals #1628",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1628.jpg",
@@ -31186,16 +31243,6 @@
     "score": 29.49
   },
   {
-    "id": 1621,
-    "name": "Dero Seals #1621",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1621.jpg",
-    "attributes": {
-      "Hair And Hats": "Mohawk",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 29.48
-  },
-  {
     "id": 229,
     "name": "Dero Seals #229",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/229.jpg",
@@ -31217,16 +31264,6 @@
       "Facial Hair": "Nose Ring"
     },
     "score": 29.46
-  },
-  {
-    "id": 753,
-    "name": "Dero Seals #753",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/753.jpg",
-    "attributes": {
-      "Hair And Hats": "Soldiers helmet",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 29.44
   },
   {
     "id": 1955,
@@ -31655,16 +31692,6 @@
     "score": 29.08
   },
   {
-    "id": 3103,
-    "name": "Dero Seals #3103",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/3103.jpg",
-    "attributes": {
-      "Hair And Hats": "Blonde Hair",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 29.06
-  },
-  {
     "id": 2445,
     "name": "Dero Seals #2445",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2445.jpg",
@@ -31727,16 +31754,6 @@
       "Eyes": "Red Eyes",
       "Hair And Hats": "Dad Hat",
       "Shirts": "Blue Polo"
-    },
-    "score": 28.95
-  },
-  {
-    "id": 1718,
-    "name": "Dero Seals #1718",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/1718.jpg",
-    "attributes": {
-      "Hair And Hats": "Black Hair",
-      "Shirts": "Dero Man Suit"
     },
     "score": 28.95
   },
@@ -36848,6 +36865,26 @@
     "score": 25.11
   },
   {
+    "id": 547,
+    "name": "Dero Seals #547",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/547.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 25.09
+  },
+  {
+    "id": 2430,
+    "name": "Dero Seals #2430",
+    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2430.jpg",
+    "attributes": {
+      "Eyes": "Blue Eyes",
+      "Shirts": "Dero Man Suit"
+    },
+    "score": 25.09
+  },
+  {
     "id": 2804,
     "name": "Dero Seals #2804",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2804.jpg",
@@ -37000,16 +37037,6 @@
     "score": 24.92
   },
   {
-    "id": 547,
-    "name": "Dero Seals #547",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/547.jpg",
-    "attributes": {
-      "Eyes": "Red Eyes",
-      "Shirts": "Dero Man Suit"
-    },
-    "score": 24.88
-  },
-  {
     "id": 489,
     "name": "Dero Seals #489",
     "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/489.jpg",
@@ -37027,16 +37054,6 @@
       "Eyes": "Pit Vipers",
       "Hair And Hats": "Sombrero",
       "Tattoo": "Dero Life"
-    },
-    "score": 24.83
-  },
-  {
-    "id": 2430,
-    "name": "Dero Seals #2430",
-    "image": "ipfs://QmP3HnzWpiaBA6ZE8c3dy5ExeG7hnYjSqkNfVbeVW5iEp6/low/2430.jpg",
-    "attributes": {
-      "Eyes": "Green Eyes",
-      "Shirts": "Dero Man Suit"
     },
     "score": 24.83
   },

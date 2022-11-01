@@ -1,0 +1,21 @@
+{
+  "maxNumber": 55,
+  "types": {
+    "Ultra Rare": {
+      "max": 55,
+      "min": 41.58
+    },
+    "Rare": {
+      "max": 41.57,
+      "min": 34.76
+    },
+    "Common": {
+      "max": 34.75,
+      "min": 0
+    },
+    "Special": {
+      "max": 100,
+      "min": 100
+    }
+  }
+}

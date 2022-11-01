@@ -1,0 +1,222 @@
+{
+  "Hair And Hats": {
+    "count": 3370,
+    "attributes": {
+      "Dad Hat": {
+        "count": 297,
+        "percentage": 8.49,
+        "score": 11.78
+      },
+      "Sombrero": {
+        "count": 272,
+        "percentage": 7.77,
+        "score": 12.87
+      },
+      "Afro": {
+        "count": 312,
+        "percentage": 8.91,
+        "score": 11.22
+      },
+      "Sailors Hat": {
+        "count": 261,
+        "percentage": 7.46,
+        "score": 13.41
+      },
+      "Blonde Hair": {
+        "count": 310,
+        "percentage": 8.86,
+        "score": 11.29
+      },
+      "Mckees Hat": {
+        "count": 156,
+        "percentage": 4.46,
+        "score": 22.44
+      },
+      "Soldiers helmet": {
+        "count": 300,
+        "percentage": 8.57,
+        "score": 11.67
+      },
+      "Black Hair": {
+        "count": 313,
+        "percentage": 8.94,
+        "score": 11.18
+      },
+      "Mohawk": {
+        "count": 299,
+        "percentage": 8.54,
+        "score": 11.71
+      },
+      "Cowboy Hat": {
+        "count": 219,
+        "percentage": 6.26,
+        "score": 15.98
+      },
+      "Top Hat": {
+        "count": 205,
+        "percentage": 5.86,
+        "score": 17.07
+      },
+      "3rd Eye": {
+        "count": 171,
+        "percentage": 4.89,
+        "score": 20.47
+      },
+      "Viking Helmet": {
+        "count": 255,
+        "percentage": 7.29,
+        "score": 13.73
+      },
+      "None": {
+        "count": 130,
+        "percentage": 3.71,
+        "score": 0
+      }
+    },
+    "percentage": 96.29
+  },
+  "Shirts": {
+    "count": 3364,
+    "attributes": {
+      "Dero Man Chest": {
+        "count": 258,
+        "percentage": 7.37,
+        "score": 13.57
+      },
+      "Real Gold Chain": {
+        "count": 288,
+        "percentage": 8.23,
+        "score": 12.15
+      },
+      "Red Polo": {
+        "count": 332,
+        "percentage": 9.49,
+        "score": 10.54
+      },
+      "Tie & Shirt": {
+        "count": 481,
+        "percentage": 13.74,
+        "score": 7.28
+      },
+      "White Muscle Shirt": {
+        "count": 480,
+        "percentage": 13.71,
+        "score": 7.29
+      },
+      "Black Muscle Shirt": {
+        "count": 485,
+        "percentage": 13.86,
+        "score": 7.22
+      },
+      "Leather Jacket": {
+        "count": 495,
+        "percentage": 14.14,
+        "score": 7.07
+      },
+      "Blue Polo": {
+        "count": 348,
+        "percentage": 9.94,
+        "score": 10.06
+      },
+      "Dero Man Suit": {
+        "count": 197,
+        "percentage": 5.63,
+        "score": 17.77
+      },
+      "None": {
+        "count": 136,
+        "percentage": 3.89,
+        "score": 0
+      }
+    },
+    "percentage": 96.11
+  },
+  "Eyes": {
+    "count": 3034,
+    "attributes": {
+      "Blue Eyes": {
+        "count": 478,
+        "percentage": 13.66,
+        "score": 7.32
+      },
+      "Pit Vipers": {
+        "count": 781,
+        "percentage": 22.31,
+        "score": 4.48
+      },
+      "Red Eyes": {
+        "count": 492,
+        "percentage": 14.06,
+        "score": 7.11
+      },
+      "Green Eyes": {
+        "count": 496,
+        "percentage": 14.17,
+        "score": 7.06
+      },
+      "Reading Glasses": {
+        "count": 787,
+        "percentage": 22.49,
+        "score": 4.45
+      },
+      "None": {
+        "count": 466,
+        "percentage": 13.31,
+        "score": 0
+      }
+    },
+    "percentage": 86.69
+  },
+  "Tattoo": {
+    "count": 1758,
+    "attributes": {
+      "Onward": {
+        "count": 416,
+        "percentage": 11.89,
+        "score": 8.41
+      },
+      "Dero Life": {
+        "count": 468,
+        "percentage": 13.37,
+        "score": 7.48
+      },
+      "I Love Captain": {
+        "count": 428,
+        "percentage": 12.23,
+        "score": 8.18
+      },
+      "Launch Date": {
+        "count": 446,
+        "percentage": 12.74,
+        "score": 7.85
+      },
+      "None": {
+        "count": 1742,
+        "percentage": 49.77,
+        "score": 0
+      }
+    },
+    "percentage": 50.23
+  },
+  "Facial Hair": {
+    "count": 1426,
+    "attributes": {
+      "Beard": {
+        "count": 732,
+        "percentage": 20.91,
+        "score": 4.78
+      },
+      "Nose Ring": {
+        "count": 694,
+        "percentage": 19.83,
+        "score": 5.04
+      },
+      "None": {
+        "count": 2074,
+        "percentage": 59.26,
+        "score": 0
+      }
+    },
+    "percentage": 40.74
+  }
+}
