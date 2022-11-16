@@ -12,7 +12,8 @@ import (
 	"github.com/deroproject/derohe/cryptography/crypto"
 	"github.com/deroproject/derohe/globals"
 	"github.com/deroproject/derohe/rpc"
-	deroWallet "github.com/deroproject/derohe/walletapi"
+	"github.com/deroproject/derohe/transaction"
+	"github.com/deroproject/derohe/walletapi"
 	"github.com/g45t345rt/derosphere/rpc_client"
 )
 
@@ -24,7 +25,7 @@ type WalletInstance struct {
 	WalletPath    string
 	Daemon        *rpc_client.Daemon
 	WalletRPC     *rpc_client.Wallet
-	WalletDisk    *deroWallet.Wallet_Disk
+	WalletDisk    *walletapi.Wallet_Disk
 }
 
 func (w *WalletInstance) SetupDaemon() error {
@@ -104,7 +105,7 @@ func (w *WalletInstance) Open() error {
 			return err
 		}
 
-		wallet, err := deroWallet.Open_Encrypted_Wallet(w.WalletPath, password)
+		wallet, err := walletapi.Open_Encrypted_Wallet(w.WalletPath, password)
 		if err != nil {
 			if err.Error() == "Invalid Password" {
 				fmt.Println("Invalid password")
@@ -124,7 +125,7 @@ func (w *WalletInstance) Open() error {
 		globals.Arguments["--daemon-address"] = httpKey.ReplaceAllString(w.DaemonAddress, "")
 		w.WalletDisk.SetNetwork(globals.IsMainnet())
 		w.WalletDisk.SetOnlineMode()
-		go deroWallet.Keep_Connectivity()
+		go walletapi.Keep_Connectivity()
 	}
 
 	return nil
@@ -298,16 +299,42 @@ func (w *WalletInstance) GetTransfers(params *rpc.Get_Transfers_Params) ([]rpc.E
 	return nil, nil
 }
 
-func (w *WalletInstance) Transfer(params *rpc.Transfer_Params) (string, error) {
+func (w *WalletInstance) Transfer(p *rpc.Transfer_Params) (string, error) {
 	if w.WalletRPC != nil {
-		result, err := w.WalletRPC.Transfer(params)
+		result, err := w.WalletRPC.Transfer(p)
 		if err != nil {
 			return "", err
 		}
 
 		return result.TXID, nil
 	} else if w.WalletDisk != nil {
-		tx, err := w.WalletDisk.TransferPayload0(params.Transfers, params.Ringsize, false, params.SC_RPC, params.Fees, false)
+		for _, t := range p.Transfers {
+			_, err := t.Payload_RPC.CheckPack(transaction.PAYLOAD0_LIMIT)
+			if err != nil {
+				return "", err
+			}
+		}
+
+		if len(p.SC_Code) >= 1 {
+			if sc, err := base64.StdEncoding.DecodeString(p.SC_Code); err == nil {
+				p.SC_Code = string(sc)
+			}
+		}
+
+		if p.SC_Code != "" && p.SC_ID == "" {
+			p.SC_RPC = append(p.SC_RPC, rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: uint64(rpc.SC_INSTALL)})
+			p.SC_RPC = append(p.SC_RPC, rpc.Argument{Name: rpc.SCCODE, DataType: rpc.DataString, Value: p.SC_Code})
+		}
+
+		if p.SC_ID != "" {
+			p.SC_RPC = append(p.SC_RPC, rpc.Argument{Name: rpc.SCACTION, DataType: rpc.DataUint64, Value: uint64(rpc.SC_CALL)})
+			p.SC_RPC = append(p.SC_RPC, rpc.Argument{Name: rpc.SCID, DataType: rpc.DataHash, Value: crypto.HashHexToHash(p.SC_ID)})
+			if p.SC_Code != "" {
+				p.SC_RPC = append(p.SC_RPC, rpc.Argument{Name: rpc.SCCODE, DataType: rpc.DataString, Value: p.SC_Code})
+			}
+		}
+
+		tx, err := w.WalletDisk.TransferPayload0(p.Transfers, p.Ringsize, false, p.SC_RPC, p.Fees, false)
 		if err != nil {
 			return "", err
 		}

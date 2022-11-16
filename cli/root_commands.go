@@ -10,7 +10,7 @@ import (
 	"github.com/blang/semver/v4"
 	deroConfig "github.com/deroproject/derohe/config"
 	"github.com/deroproject/derohe/cryptography/crypto"
-	deroWallet "github.com/deroproject/derohe/walletapi"
+	"github.com/deroproject/derohe/walletapi"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/utils"
@@ -391,7 +391,7 @@ func CommandCreateWallet() *cli.Command {
 					return nil
 				}
 
-				wallet, err := deroWallet.Create_Encrypted_Wallet_Random(filePath, password)
+				wallet, err := walletapi.Create_Encrypted_Wallet_Random(filePath, password)
 				if err != nil {
 					fmt.Println(err)
 					return nil
@@ -417,7 +417,7 @@ func CommandCreateWallet() *cli.Command {
 					return nil
 				}
 
-				wallet, err := deroWallet.Create_Encrypted_Wallet_From_Recovery_Words(filePath, password, seed)
+				wallet, err := walletapi.Create_Encrypted_Wallet_From_Recovery_Words(filePath, password, seed)
 				if err != nil {
 					fmt.Println(err)
 					return nil
@@ -450,7 +450,7 @@ func CommandCreateWallet() *cli.Command {
 					return nil
 				}
 
-				wallet, err := deroWallet.Create_Encrypted_Wallet(filePath, password, new(crypto.BNRed).SetBytes(seedRaw))
+				wallet, err := walletapi.Create_Encrypted_Wallet(filePath, password, new(crypto.BNRed).SetBytes(seedRaw))
 				if err != nil {
 					fmt.Println(err)
 					return nil

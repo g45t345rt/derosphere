@@ -99,7 +99,7 @@ func Command_G45_AT_Deploy() *cli.Command {
 				return nil
 			}
 
-			uFreezeMetadata := 0
+			uFreezeMetadata := uint64(0)
 			if freezeMetadata {
 				uFreezeMetadata = 1
 			}
@@ -109,7 +109,7 @@ func Command_G45_AT_Deploy() *cli.Command {
 				return nil
 			}
 
-			uFreezeMint := 0
+			uFreezeMint := uint64(0)
 			if freezeMint {
 				uFreezeMint = 1
 			}
@@ -119,7 +119,7 @@ func Command_G45_AT_Deploy() *cli.Command {
 				return nil
 			}
 
-			uFreezeCollection := 0
+			uFreezeCollection := uint64(0)
 			if freezeCollection {
 				uFreezeCollection = 1
 			}
@@ -231,7 +231,7 @@ func Command_G45_AT_Freeze() *cli.Command {
 				return nil
 			}
 
-			uFreezeMint := 0
+			uFreezeMint := uint64(0)
 			freezeMint, err := app.PromptYesNo("Freeze minting?", false)
 			if app.HandlePromptErr(err) {
 				return nil
@@ -241,7 +241,7 @@ func Command_G45_AT_Freeze() *cli.Command {
 				uFreezeMint = 1
 			}
 
-			uFreezeMetadata := 0
+			uFreezeMetadata := uint64(0)
 			freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
 			if app.HandlePromptErr(err) {
 				return nil
@@ -251,7 +251,7 @@ func Command_G45_AT_Freeze() *cli.Command {
 				uFreezeMetadata = 1
 			}
 
-			uFreezeCollection := 0
+			uFreezeCollection := uint64(0)
 			freezeCollection, err := app.PromptYesNo("Freeze collection?", false)
 			if app.HandlePromptErr(err) {
 				return nil
@@ -624,7 +624,7 @@ func Command_G45_FAT_Deploy() *cli.Command {
 				return nil
 			}
 
-			uFreezeMetadata := 0
+			uFreezeMetadata := uint64(0)
 			if freezeMetadata {
 				uFreezeMetadata = 1
 			}
@@ -634,7 +634,7 @@ func Command_G45_FAT_Deploy() *cli.Command {
 				return nil
 			}
 
-			uFreezeCollection := 0
+			uFreezeCollection := uint64(0)
 			if freezeCollection {
 				uFreezeCollection = 1
 			}
@@ -800,7 +800,7 @@ func Command_G45_FAT_Freeze() *cli.Command {
 				return nil
 			}
 
-			uFreezeMetadata := 0
+			uFreezeMetadata := uint64(0)
 			freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
 			if app.HandlePromptErr(err) {
 				return nil
@@ -810,7 +810,7 @@ func Command_G45_FAT_Freeze() *cli.Command {
 				uFreezeMetadata = 1
 			}
 
-			uFreezeCollection := 0
+			uFreezeCollection := uint64(0)
 			freezeCollection, err := app.PromptYesNo("Freeze collection?", false)
 			if app.HandlePromptErr(err) {
 				return nil
@@ -1133,7 +1133,7 @@ func G45_C_Deploy() (string, error) {
 		return "", err
 	}
 
-	uFreezeMetadata := 0
+	uFreezeMetadata := uint64(0)
 	freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
 	if err != nil {
 		return "", err
@@ -1182,7 +1182,7 @@ func Command_G45_C_Freeze() *cli.Command {
 				return nil
 			}
 
-			uFreezeAssets := 0
+			uFreezeAssets := uint64(0)
 			freezeAssets, err := app.PromptYesNo("Freeze assets/nfts?", false)
 			if app.HandlePromptErr(err) {
 				return nil
@@ -1192,7 +1192,7 @@ func Command_G45_C_Freeze() *cli.Command {
 				uFreezeAssets = 1
 			}
 
-			uFreezeMetadata := 0
+			uFreezeMetadata := uint64(0)
 			freezeMetadata, err := app.PromptYesNo("Freeze metadata?", false)
 			if app.HandlePromptErr(err) {
 				return nil
@@ -1231,13 +1231,13 @@ func G45_C_SetAssets(scId string, assets map[string]uint64, promptFees bool) err
 	}
 
 	var entries []map[string]uint64
-	index := 0
+	index := uint64(0)
 	assetsEntry := make(map[string]uint64)
 	for key, v := range assets {
 		assetsEntry[key] = v
 		index++
 
-		if index >= int(maxAssetsPerEntry) {
+		if index >= maxAssetsPerEntry {
 			entries = append(entries, assetsEntry)
 			assetsEntry = make(map[string]uint64)
 			index = 0

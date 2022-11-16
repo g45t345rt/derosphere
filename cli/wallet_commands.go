@@ -15,6 +15,7 @@ import (
 	"github.com/deroproject/derohe/globals"
 	"github.com/deroproject/derohe/rpc"
 	"github.com/deroproject/derohe/transaction"
+	"github.com/deroproject/derohe/walletapi"
 	"github.com/g45t345rt/derosphere/app"
 	"github.com/g45t345rt/derosphere/config"
 	"github.com/g45t345rt/derosphere/dapps"
@@ -1081,6 +1082,9 @@ func CommandGetEncrypedBalance() *cli.Command {
 }
 
 func WalletApp() *cli.App {
+	fmt.Println(`Initializing lookup table...`)
+	walletapi.Initialize_LookupTable(1, 1<<19)
+
 	return &cli.App{
 		Name:                  "",
 		CustomAppHelpTemplate: utils.AppTemplate,

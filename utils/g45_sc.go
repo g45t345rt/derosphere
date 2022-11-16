@@ -46,6 +46,10 @@ func formatMetadata(format string, value string) (map[string]interface{}, error)
 	return metadata, nil
 }
 
+func trimCode(code string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(code, "\r", ""), "\n", "")
+}
+
 /** G45-FAT **/
 
 type G45_FAT struct {
@@ -83,20 +87,25 @@ func (asset *G45_FAT) JsonMetadata() (map[string]interface{}, error) {
 	return formatMetadata(asset.MetadataFormat, asset.Metadata)
 }
 
+func (asset *G45_FAT) Validate(code string) (bool, error) {
+	switch trimCode(code) {
+	case trimCode(G45_FAT_PUBLIC_CODE):
+		asset.Private = false
+	case trimCode(G45_FAT_PRIVATE_CODE):
+		asset.Private = true
+	default:
+		return false, fmt.Errorf("not a valid G45-FAT")
+	}
+
+	return true, nil
+}
+
 func (asset *G45_FAT) Parse(scId string, result *rpc.GetSC_Result) error {
 	values := result.VariableStringKeys
 
-	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_fat_public_code := strings.ReplaceAll(strings.ReplaceAll(G45_FAT_PUBLIC_CODE, "\r", ""), "\n", "")
-	g45_fat_private_code := strings.ReplaceAll(strings.ReplaceAll(G45_FAT_PRIVATE_CODE, "\r", ""), "\n", "")
-
-	switch code {
-	case g45_fat_public_code:
-		asset.Private = false
-	case g45_fat_private_code:
-		asset.Private = true
-	default:
-		return fmt.Errorf("not a valid G45-FAT")
+	_, err := asset.Validate(result.Code)
+	if err != nil {
+		return err
 	}
 
 	asset.SCID = scId
@@ -180,12 +189,20 @@ func (asset *G45_C) JsonMetadata() (map[string]interface{}, error) {
 	return formatMetadata(asset.MetadataFormat, asset.Metadata)
 }
 
+func (asset *G45_C) Validate(code string) (bool, error) {
+	if trimCode(G45_C_CODE) != trimCode(code) {
+		return false, fmt.Errorf("not a valid G45-C")
+	}
+
+	return true, nil
+}
+
 func (collection *G45_C) Parse(scId string, result *rpc.GetSC_Result) error {
 	values := result.VariableStringKeys
-	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_c_code := strings.ReplaceAll(strings.ReplaceAll(G45_C_CODE, "\r", ""), "\n", "")
-	if code != g45_c_code {
-		return fmt.Errorf("not a valid G45-C")
+
+	_, err := collection.Validate(result.Code)
+	if err != nil {
+		return err
 	}
 
 	collection.SCID = scId
@@ -289,19 +306,25 @@ func (asset *G45_AT) JsonMetadata() (map[string]interface{}, error) {
 	return formatMetadata(asset.MetadataFormat, asset.Metadata)
 }
 
-func (asset *G45_AT) Parse(scId string, result *rpc.GetSC_Result) error {
-	values := result.VariableStringKeys
-	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_at_public_code := strings.ReplaceAll(strings.ReplaceAll(G45_AT_PUBLIC_CODE, "\r", ""), "\n", "")
-	g45_at_private_code := strings.ReplaceAll(strings.ReplaceAll(G45_AT_PRIVATE_CODE, "\r", ""), "\n", "")
-
-	switch code {
-	case g45_at_public_code:
+func (asset *G45_AT) Validate(code string) (bool, error) {
+	switch trimCode(code) {
+	case trimCode(G45_AT_PUBLIC_CODE):
 		asset.Private = false
-	case g45_at_private_code:
+	case trimCode(G45_AT_PRIVATE_CODE):
 		asset.Private = true
 	default:
-		return fmt.Errorf("not a valid G45-AT")
+		return false, fmt.Errorf("not a valid G45-AT")
+	}
+
+	return true, nil
+}
+
+func (asset *G45_AT) Parse(scId string, result *rpc.GetSC_Result) error {
+	values := result.VariableStringKeys
+
+	_, err := asset.Validate(result.Code)
+	if err != nil {
+		return err
 	}
 
 	asset.SCID = scId
@@ -386,20 +409,25 @@ func (asset *G45_NFT) JsonMetadata() (map[string]interface{}, error) {
 	return formatMetadata(asset.MetadataFormat, asset.Metadata)
 }
 
+func (asset *G45_NFT) Validate(code string) (bool, error) {
+	switch trimCode(code) {
+	case trimCode(G45_NFT_PUBLIC_CODE):
+		asset.Private = false
+	case trimCode(G45_NFT_PUBLIC_CODE):
+		asset.Private = true
+	default:
+		return false, fmt.Errorf("not a valid G45-NFT")
+	}
+
+	return true, nil
+}
+
 func (asset *G45_NFT) Parse(scId string, result *rpc.GetSC_Result) error {
 	values := result.VariableStringKeys
 
-	code := strings.ReplaceAll(strings.ReplaceAll(result.Code, "\r", ""), "\n", "")
-	g45_nft_public_code := strings.ReplaceAll(strings.ReplaceAll(G45_NFT_PUBLIC_CODE, "\r", ""), "\n", "")
-	g45_nft_private_code := strings.ReplaceAll(strings.ReplaceAll(G45_NFT_PRIVATE_CODE, "\r", ""), "\n", "")
-
-	switch code {
-	case g45_nft_public_code:
-		asset.Private = false
-	case g45_nft_private_code:
-		asset.Private = true
-	default:
-		return fmt.Errorf("not a valid G45-NFT")
+	_, err := asset.Validate(result.Code)
+	if err != nil {
+		return err
 	}
 
 	asset.SCID = scId
