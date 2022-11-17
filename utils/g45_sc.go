@@ -413,7 +413,7 @@ func (asset *G45_NFT) Validate(code string) (bool, error) {
 	switch trimCode(code) {
 	case trimCode(G45_NFT_PUBLIC_CODE):
 		asset.Private = false
-	case trimCode(G45_NFT_PUBLIC_CODE):
+	case trimCode(G45_NFT_PRIVATE_CODE):
 		asset.Private = true
 	default:
 		return false, fmt.Errorf("not a valid G45-NFT")
