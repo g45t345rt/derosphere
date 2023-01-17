@@ -1,4 +1,4 @@
-Function initStore()
+/*Function initStore()
 10 STORE("commit_ctr", 0)
 20 RETURN
 End Function
@@ -45,7 +45,7 @@ Function endStore()
 30 STORE("commit_" + ctr, MAPGET("commit") + "}")
 40 STORE("commit_ctr", ctr + 1)
 50 RETURN
-End Function
+End Function*/
 
 Function odKey(id Uint64, key String) String
 10 RETURN "od_" + id + "_" + key
@@ -55,9 +55,9 @@ Function Initialize() Uint64
 10 IF EXISTS("owner") == 0 THEN GOTO 30
 20 RETURN 1
 30 STORE("owner", SIGNER())
-40 STORE("fee_0000000000000000000000000000000000000000000000000000000000000000", 50) // 5%
-50 STORE("od_ctr", 2000)
-60 initStore()
+40 STORE("fee_0000000000000000000000000000000000000000000000000000000000000000", 25) // 2.5%
+50 STORE("od_ctr", 0)
+//60 initStore()
 70 RETURN 0
 End Function
 
@@ -67,37 +67,28 @@ Function CreateOrder(odType String, lAssetId String, rAssetId String, lRateAmoun
 30 IF oneTxOnly > 1 THEN GOTO 270
 40 IF odType != "sell" THEN GOTO 70
 50 LET amount = ASSETVALUE(HEXDECODE(lAssetId))
-60 IF odType != "buy" THEN GOTO 80
+60 IF odType != "buy" THEN GOTO 90
 70 LET amount = ASSETVALUE(HEXDECODE(rAssetId))
 80 IF amount == 0 THEN GOTO 270
-90 beginStore()
-100 storeUint64(odKey(odId, "amountSent"), 0)
-110 storeUint64(odKey(odId, "amount"), amount)
-120 storeString(odKey(odId, "lAssetId"), lAssetId)
-130 storeString(odKey(odId, "type"), odType)
-140 storeString(odKey(odId, "rAssetId"), rAssetId)
-150 storeUint64(odKey(odId, "lRateAmount"), lRateAmount)
-160 storeUint64(odKey(odId, "rRateAmount"), rRateAmount)
-170 storeString(odKey(odId, "creator"), ADDRESS_STRING(SIGNER()))
-180 storeUint64(odKey(odId, "close"), 0)
-190 storeUint64(odKey(odId, "timestamp"), BLOCK_TIMESTAMP())
-200 storeUint64(odKey(odId, "expireTimestamp"), expireTimestamp)
-210 storeUint64(odKey(odId, "oneTxOnly"), oneTxOnly)
-220 storeUint64(odKey(odId, "txCount"), 0)
-230 storeString(odKey(odId, "txId"), HEX(TXID()))
-240 endStore()
+// beginStore()
+100 STORE(odKey(odId, "amountSent"), 0)
+110 STORE(odKey(odId, "amount"), amount)
+120 STORE(odKey(odId, "lAssetId"), lAssetId)
+130 STORE(odKey(odId, "type"), odType)
+140 STORE(odKey(odId, "rAssetId"), rAssetId)
+150 STORE(odKey(odId, "lRateAmount"), lRateAmount)
+160 STORE(odKey(odId, "rRateAmount"), rRateAmount)
+170 STORE(odKey(odId, "creator"), SIGNER())
+180 STORE(odKey(odId, "close"), 0)
+// 190 STORE(odKey(odId, "timestamp"), BLOCK_TIMESTAMP())
+200 STORE(odKey(odId, "expireTimestamp"), expireTimestamp)
+210 STORE(odKey(odId, "oneTxOnly"), oneTxOnly)
+220 STORE(odKey(odId, "txCount"), 0)
+230 STORE(HEX(TXID()), odId)
+// endStore()
 250 STORE("od_ctr", odId + 1)
 260 RETURN 0
 270 RETURN 1
-End Function
-
-Function ChangeRate(odType String, lRateAmount Uint64, rRateAmount Uint64) Uint64
-IF ADDRESS_STRING(signer) != LOAD(odKey(odId, "creator")) THEN GOTO
-storeUint64(odKey(odId, "lRateAmount"), lRateAmount)
-storeUint64(odKey(odId, "rRateAmount"), rRateAmount)
-endStore()
-RETURN 0
-RETURN 1
 End Function
 
 Function CloseOrder(odId Uint64) Uint64
@@ -105,28 +96,28 @@ Function CloseOrder(odId Uint64) Uint64
 10 DIM signer, odType as String
 20 LET signer = SIGNER()
 30 LET odType = LOAD(odKey(odId, "type"))
-40 IF ADDRESS_STRING(signer) != LOAD(odKey(odId, "creator")) THEN GOTO 150
+40 IF signer != LOAD(odKey(odId, "creator")) THEN GOTO 150
 50 IF LOAD(odKey(odId, "close")) == 1 THEN GOTO 150
-60 beginStore()
+//60 beginStore()
 70 LET retrieveFunds = LOAD(odKey(odId, "amount")) - LOAD(odKey(odId, "amountSent"))
 80 IF odType != "sell" THEN GOTO 100
 90 SEND_ASSET_TO_ADDRESS(signer, retrieveFunds, HEXDECODE(LOAD(odKey(odId, "lAssetId"))))
 100 IF odType != "buy" THEN GOTO 120
 110 SEND_ASSET_TO_ADDRESS(signer, retrieveFunds, HEXDECODE(LOAD(odKey(odId, "rAssetId"))))
-120 storeUint64(odKey(odId, "close"), 1)
-130 endStore()
+120 STORE(odKey(odId, "close"), 1)
+//130 endStore()
 140 RETURN 0
 150 RETURN 1
 End Function
 
 Function Transact(odId Uint64) Uint64
 10 DIM lAssetId, rAssetId, creator, signer, odType as String
-20 DIM ctr, txAmountSent, lRateAmount, rRateAmount, txAmountReceived, priceCut, timestamp, amount, expireTimestamp, amountSent as Uint64
+20 DIM txCtr, txAmountSent, lRateAmount, rRateAmount, txAmountReceived, priceCut, timestamp, amount, expireTimestamp, amountSent as Uint64
 30 IF LOAD(odKey(odId, "close")) == 1 THEN GOTO 600
-40 LET timestamp = BLOCK_TIMESTAMP()
+//40 LET timestamp = BLOCK_TIMESTAMP()
 50 LET expireTimestamp = LOAD(odKey(odId, "expireTimestamp"))
 60 IF expireTimestamp == 0 THEN GOTO 80
-70 IF timestamp > expireTimestamp THEN GOTO 600
+70 IF BLOCK_TIMESTAMP() > expireTimestamp THEN GOTO 600
 80 LET lAssetId = LOAD(odKey(odId, "lAssetId"))
 90 LET amount = LOAD(odKey(odId, "amount"))
 100 LET rAssetId = LOAD(odKey(odId, "rAssetId"))
@@ -139,7 +130,7 @@ Function Transact(odId Uint64) Uint64
 170 LET priceCut = 0
 180 LET txAmountSent = 0
 190 LET txAmountReceived = 0
-200 beginStore()
+//200 beginStore()
 210 IF odType != "sell" THEN GOTO 330
 220 LET txAmountSent = ASSETVALUE(HEXDECODE(rAssetId))
 230 IF txAmountSent == 0 THEN GOTO 600
@@ -150,7 +141,7 @@ Function Transact(odId Uint64) Uint64
 280 IF txAmountReceived > amount - amountSent THEN GOTO 600
 290 IF EXISTS("fee_" + rAssetId) == 0 THEN GOTO 310
 300 LET priceCut = txAmountSent * LOAD("fee_" + rAssetId) / 1000
-310 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(creator), txAmountSent - priceCut, HEXDECODE(rAssetId))
+310 SEND_ASSET_TO_ADDRESS(creator, txAmountSent - priceCut, HEXDECODE(rAssetId))
 320 SEND_ASSET_TO_ADDRESS(signer, txAmountReceived, HEXDECODE(lAssetId))
 330 IF odType != "buy" THEN GOTO 450
 340 LET txAmountSent = ASSETVALUE(HEXDECODE(lAssetId))
@@ -162,22 +153,22 @@ Function Transact(odId Uint64) Uint64
 400 IF txAmountReceived > amount - amountSent THEN GOTO 600
 410 IF EXISTS("fee_" + rAssetId) == 0 THEN GOTO 430
 420 LET priceCut = txAmountReceived * LOAD("fee_" + rAssetId) / 1000
-430 SEND_ASSET_TO_ADDRESS(ADDRESS_RAW(creator), txAmountSent, HEXDECODE(lAssetId))
+430 SEND_ASSET_TO_ADDRESS(creator, txAmountSent, HEXDECODE(lAssetId))
 440 SEND_ASSET_TO_ADDRESS(signer, txAmountReceived - priceCut, HEXDECODE(rAssetId))
 450 LET amountSent = amountSent + txAmountReceived
-460 storeUint64(odKey(odId, "amountSent"), amountSent)
+460 STORE(odKey(odId, "amountSent"), amountSent)
 470 IF amountSent < amount THEN GOTO 490
-480 storeUint64(odKey(odId, "close"), 1)
+480 STORE(odKey(odId, "close"), 1)
 490 SEND_ASSET_TO_ADDRESS(LOAD("owner"), priceCut, HEXDECODE(rAssetId))
-500 LET ctr = LOAD(odKey(odId, "txCount"))
-510 storeString(odKey(odId, "tx_" + ctr + "_sender"), ADDRESS_STRING(signer))
-520 storeUint64(odKey(odId, "tx_" + ctr + "_amountSent"), txAmountSent)
-530 storeUint64(odKey(odId, "tx_" + ctr + "_amountReceived"), txAmountReceived)
-540 storeUint64(odKey(odId, "tx_" + ctr + "_timestamp"), timestamp)
-550 storeString(odKey(odId, "tx_" + ctr + "_txId"), HEX(TXID()))
-560 storeUint64(odKey(odId, "tx_" + ctr + "_fee"), priceCut)
-570 storeUint64(odKey(odId, "txCount"), ctr + 1)
-580 endStore()
+500 LET txCtr = LOAD(odKey(odId, "txCount"))
+//510 STORE(odKey(odId, "tx_" + txCtr + "_sender"), ADDRESS_STRING(signer))
+520 STORE(odKey(odId, "tx_" + txCtr + "_amountSent"), txAmountSent)
+530 STORE(odKey(odId, "tx_" + txCtr + "_amountReceived"), txAmountReceived)
+//540 STORE(odKey(odId, "tx_" + txCtr + "_timestamp"), timestamp)
+//550 STORE(odKey(odId, "tx_" + txCtr + "_txId"), HEX(TXID()))
+560 STORE(odKey(odId, "tx_" + txCtr + "_fee"), priceCut)
+570 STORE(odKey(odId, "txCount"), txCtr + 1)
+//580 endStore()
 590 RETURN 0
 600 RETURN 1
 End Function

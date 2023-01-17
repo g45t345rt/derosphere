@@ -15,13 +15,13 @@ type Wallet struct {
 	Address  string
 	Endpoint string
 	Auth     string
-	client   jsonrpc.RPCClient
+	Client   jsonrpc.RPCClient
 }
 
 func (c *Wallet) SetClient(address string) {
 	c.Address = address
 	c.Endpoint = fmt.Sprintf("%s/json_rpc", c.Address)
-	c.client = jsonrpc.NewClient(c.Endpoint)
+	c.Client = jsonrpc.NewClient(c.Endpoint)
 }
 
 func (c *Wallet) SetClientWithAuth(address, username string, password string) {
@@ -29,7 +29,7 @@ func (c *Wallet) SetClientWithAuth(address, username string, password string) {
 	c.Endpoint = fmt.Sprintf("%s/json_rpc", c.Address)
 	auth := username + ":" + password
 	c.Auth = "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
-	c.client = jsonrpc.NewClientWithOpts(c.Endpoint, &jsonrpc.RPCClientOpts{
+	c.Client = jsonrpc.NewClientWithOpts(c.Endpoint, &jsonrpc.RPCClientOpts{
 		CustomHeaders: map[string]string{
 			"Authorization": c.Auth,
 		},
@@ -51,24 +51,24 @@ func (c *Wallet) NeedAuth() (bool, error) {
 
 func (c *Wallet) Echo() (string, error) {
 	var result string
-	err := c.client.CallFor(&result, "Echo")
+	err := c.Client.CallFor(&result, "Echo")
 	return result, err
 }
 
 func (c *Wallet) GetAddress() (string, error) {
 	var result *rpc.GetAddress_Result
-	err := c.client.CallFor(&result, "GetAddress")
+	err := c.Client.CallFor(&result, "GetAddress")
 	return result.Address, err
 }
 
 func (c *Wallet) GetBalance(params *rpc.GetBalance_Params) (*rpc.GetBalance_Result, error) {
 	var result *rpc.GetBalance_Result
-	err := c.client.CallFor(&result, "GetBalance", params)
+	err := c.Client.CallFor(&result, "GetBalance", params)
 	return result, err
 }
 
 func (c *Wallet) GetRegistered() (bool, error) {
-	res, err := c.client.Call("GetBalance")
+	res, err := c.Client.Call("GetBalance")
 	if err != nil {
 		return false, err
 	}
@@ -84,25 +84,25 @@ func (c *Wallet) GetRegistered() (bool, error) {
 
 func (c *Wallet) Transfer(params *rpc.Transfer_Params) (*rpc.Transfer_Result, error) {
 	var result *rpc.Transfer_Result
-	err := c.client.CallFor(&result, "Transfer", params)
+	err := c.Client.CallFor(&result, "Transfer", params)
 	return result, err
 }
 
 func (c *Wallet) GetTransfers(params *rpc.Get_Transfers_Params) (*rpc.Get_Transfers_Result, error) {
 	var result *rpc.Get_Transfers_Result
-	err := c.client.CallFor(&result, "GetTransfers", params)
+	err := c.Client.CallFor(&result, "GetTransfers", params)
 	return result, err
 }
 
 func (c *Wallet) GetHeight() (*rpc.GetHeight_Result, error) {
 	var result *rpc.GetHeight_Result
-	err := c.client.CallFor(&result, "GetHeight")
+	err := c.Client.CallFor(&result, "GetHeight")
 	return result, err
 }
 
 func (c *Wallet) GetSeed() (string, error) {
 	var result *rpc.Query_Key_Result
-	err := c.client.CallFor(&result, "QueryKey", &rpc.Query_Key_Params{
+	err := c.Client.CallFor(&result, "QueryKey", &rpc.Query_Key_Params{
 		Key_type: "mnemonic",
 	})
 

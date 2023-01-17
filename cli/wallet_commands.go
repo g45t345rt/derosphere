@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -554,12 +557,12 @@ func CommandWalletTransferFromFile() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			walletInstance := app.Context.WalletInstance
 
-			filePath, err := app.Prompt("Filepath", "")
+			transferFilePath, err := app.Prompt("Filepath", "")
 			if app.HandlePromptErr(err) {
 				return nil
 			}
 
-			content, err := ioutil.ReadFile(filePath)
+			content, err := ioutil.ReadFile(transferFilePath)
 			if err != nil {
 				fmt.Println(err)
 				return nil
@@ -572,18 +575,28 @@ func CommandWalletTransferFromFile() *cli.Command {
 				return nil
 			}
 
-			for _, t := range transfer.Transfers {
+			sums := make(map[string]uint64)
+			var invalidAddrs []map[string]interface{}
+
+			i := 0
+			for ti, t := range transfer.Transfers {
 				addr := t.Destination
 
+				valid := false
 				if !strings.HasPrefix(addr, "dero") {
 					result, err := walletInstance.Daemon.NameToAddress(&rpc.NameToAddress_Params{
 						Name: addr,
 					})
 					if err != nil {
-						fmt.Println(addr, err)
-						return nil
+						fmt.Println(ti, addr, err)
+						invalidAddrs = append(invalidAddrs, map[string]interface{}{
+							"addr": addr,
+							"err":  err,
+						})
+					} else {
+						valid = true
+						fmt.Println(ti, addr, "->", result.Address)
 					}
-					fmt.Println(addr, "->", result.Address)
 				} else {
 					_, err = walletInstance.Daemon.GetEncrypedBalance(&rpc.GetEncryptedBalance_Params{
 						Address:    t.Destination,
@@ -591,21 +604,80 @@ func CommandWalletTransferFromFile() *cli.Command {
 					})
 
 					if err != nil {
-						fmt.Println(addr, err)
-						return nil
+						fmt.Println(ti, addr, err)
+						invalidAddrs = append(invalidAddrs, map[string]interface{}{
+							"addr": addr,
+							"err":  err,
+						})
+					} else {
+						valid = true
+						fmt.Println(ti, addr)
 					}
-					fmt.Println(addr)
+				}
+
+				if valid {
+					sum, ok := sums[t.SCID.String()]
+					if ok {
+						sum += t.Amount
+					} else {
+						sum = t.Amount
+					}
+
+					sums[t.SCID.String()] = sum
+
+					transfer.Transfers[i] = t
+					i++
 				}
 			}
 
-			txid, err := walletInstance.Transfer(transfer)
+			transfer.Transfers = transfer.Transfers[:i]
 
+			folder := filepath.Dir(transferFilePath)
+			name := filepath.Base(transferFilePath)
+
+			if invalidAddrs != nil {
+				invalidAddrBytes, err := json.MarshalIndent(invalidAddrs, "", "\t")
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+
+				err = ioutil.WriteFile(path.Join(folder, fmt.Sprintf("invalid-%s", name)), invalidAddrBytes, os.ModePerm)
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+			}
+
+			validTransferBytes, err := json.MarshalIndent(transfer, "", "\t")
 			if err != nil {
 				fmt.Println(err)
 				return nil
 			}
 
-			walletInstance.RunTxChecker(txid)
+			err = ioutil.WriteFile(path.Join(folder, fmt.Sprintf("valid-%s", name)), validTransferBytes, os.ModePerm)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+
+			fmt.Println(len(invalidAddrs), "invalid addrs")
+			fmt.Println(len(transfer.Transfers), "valid addrs")
+			fmt.Println("Ring size:", transfer.Ringsize)
+			fmt.Println(sums)
+			yes, _ := app.PromptYesNo("Are you sure you want to make the transfer?", false)
+
+			if yes {
+				txid, err := walletInstance.Transfer(transfer)
+
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+
+				walletInstance.RunTxChecker(txid)
+			}
+
 			return nil
 		},
 	}
